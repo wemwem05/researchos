@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+/* Keep react-pdf pages crisp and centered in their slot. */
+.react-pdf__Page {
+  position: relative;
+}
+.react-pdf__Page__canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* KaTeX equations should wrap inside the narrow lens panel. */
+.katex-display {
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}

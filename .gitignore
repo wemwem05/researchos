@@ -1,0 +1,15 @@
+# Secrets: never commit real keys
+.env
+
+# Project virtualenv
+.venv/
+
+# Generated prototype output (recreate with prototype/analyze_paper.py)
+prototype/output.json
+prototype/localized_output.json
+prototype/debug/
+
+# Python bytecode / caches
+__pycache__/
+*.pyc
+*.pyo

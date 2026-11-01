@@ -28,7 +28,7 @@ from typing import Literal, Optional
 
 from dotenv import load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 API_BASE_URL = "https://api.meta.ai/v1"
 DEFAULT_MODEL = "muse-spark-1.3"
@@ -47,20 +47,20 @@ class SymbolMeaning(BaseModel):
 
 class EquationDetails(BaseModel):
     latex: Optional[str] = None
-    symbols: list[SymbolMeaning] = []
+    symbols: list[SymbolMeaning] = Field(default_factory=list)
     role_in_method: Optional[str] = None
 
 
 class FigureDetails(BaseModel):
-    components: list[str] = []
-    flow: list[str] = []
+    components: list[str] = Field(default_factory=list)
+    flow: list[str] = Field(default_factory=list)
     role_in_method: Optional[str] = None
 
 
 class TableDetails(BaseModel):
     metric: Optional[str] = None
     higher_or_lower_is_better: Optional[Literal["higher", "lower"]] = None
-    important_comparisons: list[str] = []
+    important_comparisons: list[str] = Field(default_factory=list)
     result_interpretation: Optional[str] = None
 
 
@@ -75,7 +75,7 @@ class SciObject(BaseModel):
     claim_supported: str
     limitations: str
     research_relevance: str
-    related_objects: list[str] = []
+    related_objects: list[str] = Field(default_factory=list)
     confidence: float = Field(ge=0.0, le=1.0)
     evidence: str
     equation: Optional[EquationDetails] = None
@@ -83,10 +83,24 @@ class SciObject(BaseModel):
     table: Optional[TableDetails] = None
 
 
+REQUIRED_OBJECT_TYPES = ("equation", "figure", "table", "claim")
+
+
 class AnalysisResult(BaseModel):
-    paper_title: Optional[str] = None
+    paper_title: str = Field(min_length=1)
     research_question: str
-    objects: list[SciObject] = []
+    objects: list[SciObject] = Field(min_length=4)
+
+    @model_validator(mode="after")
+    def require_all_object_types(self) -> "AnalysisResult":
+        present = {o.type for o in self.objects}
+        missing = [t for t in REQUIRED_OBJECT_TYPES if t not in present]
+        if missing:
+            raise ValueError(
+                "objects must include at least one of each required type; "
+                f"missing: {missing}"
+            )
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -129,7 +143,10 @@ def build_question_text(pdf_filename: str, question: str) -> str:
     return (
         f'Paper file: "{pdf_filename}"\n'
         f'Research question: "{question}"\n\n'
-        "Analyze the attached PDF and return the structured JSON now."
+        "You MUST analyze the attached paper. An empty objects array is invalid. "
+        "Identify at least one important equation, one figure/diagram, one results "
+        "table, and one experimentally testable claim. Prefer objects most relevant "
+        "to the user's research question."
     )
 
 
@@ -139,11 +156,21 @@ def build_question_text(pdf_filename: str, question: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def json_schema_format() -> dict:
+def responses_json_schema_format() -> dict:
     return {
         "type": "json_schema",
         "name": "paper_analysis",
         "schema": AnalysisResult.model_json_schema(),
+    }
+
+
+def chat_json_schema_format() -> dict:
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "paper_analysis",
+            "schema": AnalysisResult.model_json_schema(),
+        },
     }
 
 
@@ -155,6 +182,18 @@ def extract_json(text: str) -> str:
         if text.rsplit("```", 1):
             text = text.rsplit("```", 1)[0]
     return text.strip()
+
+
+def sanity_check(result: AnalysisResult) -> None:
+    """Defense-in-depth after Pydantic validation: reject empty analyses."""
+    if not result.paper_title.strip():
+        raise ValueError("sanity check failed: paper_title is blank")
+    if len(result.objects) < 4:
+        raise ValueError("sanity check failed: fewer than 4 objects")
+    present = {o.type for o in result.objects}
+    missing = [t for t in REQUIRED_OBJECT_TYPES if t not in present]
+    if missing:
+        raise ValueError(f"sanity check failed: missing object types: {missing}")
 
 
 def try_responses_api(
@@ -172,13 +211,16 @@ def try_responses_api(
                         "type": "input_file",
                         "filename": filename,
                         "file_data": pdf_b64_url,
+                        "detail": "high",
                     },
                 ],
             }
         ],
-        text={"format": json_schema_format()},
+        text={"format": responses_json_schema_format()},
     )
-    return AnalysisResult.model_validate_json(extract_json(resp.output_text))
+    result = AnalysisResult.model_validate_json(extract_json(resp.output_text))
+    sanity_check(result)
+    return result
 
 
 def try_chat_api(
@@ -206,10 +248,12 @@ def try_chat_api(
         ],
     }
     if use_json_schema:
-        kwargs["response_format"] = json_schema_format()
+        kwargs["response_format"] = chat_json_schema_format()
     resp = client.chat.completions.create(**kwargs)
     content = resp.choices[0].message.content or ""
-    return AnalysisResult.model_validate_json(extract_json(content))
+    result = AnalysisResult.model_validate_json(extract_json(content))
+    sanity_check(result)
+    return result
 
 
 def analyze_pdf(

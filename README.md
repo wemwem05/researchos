@@ -49,10 +49,40 @@ Notes:
 - The prompt forbids inventing evidence: missing pages/labels/numbers come back
   as `null` with lowered confidence, and grounding gaps are printed as warnings.
 
+## Milestone 2: visual localization
+
+For every equation/figure/table in `output.json` that has a page + label,
+renders only that PDF page (PyMuPDF, 3x scale) and locates the known object as
+a normalized 0..1000 box. Figures/equations use `muse-spark-1.3` high-detail
+vision on the page; tables use a hybrid path (PyMuPDF `find_tables()` matched
+to the caption paragraph, else vision on a caption-anchored crop). The model
+never rediscovers the document: it only locates the listed objects, returning
+`bbox: null` (confidence ≤ 0.3) when unsure. Each result records
+`localization_method` (`pdf_native`/`muse_vision`/`hybrid`) and a note.
+
+```bash
+source .venv/bin/activate
+python prototype/localize_objects.py \
+  --pdf samples/eot_shape_correspondence.pdf \
+  --analysis prototype/output.json \
+  --output prototype/localized_output.json \
+  --debug-dir prototype/debug
+```
+
+Output: `prototype/localized_output.json` (original analysis + localizations).
+`--debug-dir` saves per-page PNGs with the returned boxes drawn in red for
+visual inspection. Claims are not localized (textual, often label-less).
+
 ## Layout
 
-- `prototype/analyze_paper.py` — the whole prototype: CLI, prompt, API calls,
+- `prototype/analyze_paper.py` — Milestone 1: CLI, prompt, API calls,
   Pydantic models, validation
-- `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`
+- `prototype/localize_objects.py` — Milestone 2: page rendering, visual
+  localization, debug overlays
+- `prototype/test_analyze_paper.py`, `prototype/test_localize_objects.py` —
+  offline tests (no API key):
+  `.venv/bin/python -m unittest discover -s prototype -p "test_*.py"`
+- `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
+  `pymupdf`, `pillow`
 - `samples/` — sample paper PDF
 - `HACKATHON_LOG.md` — milestone log
