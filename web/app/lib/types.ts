@@ -33,6 +33,8 @@ export interface TableDetails {
   result_interpretation: string | null;
 }
 
+export type RelevanceLevel = "high" | "related" | "context";
+
 export interface SciObject {
   id: string;
   type: ObjectType;
@@ -43,7 +45,12 @@ export interface SciObject {
   why_it_is_here: string;
   claim_supported: string;
   limitations: string;
+  paper_importance: number;
+  paper_importance_reason: string;
   research_relevance: string;
+  research_relevance_score: number;
+  research_relevance_reason: string;
+  research_relevance_level: RelevanceLevel;
   related_objects: string[];
   confidence: number;
   evidence: string;

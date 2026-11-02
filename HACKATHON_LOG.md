@@ -93,3 +93,104 @@ overlays. Note: full-page vision is nondeterministic across runs — one
 intermediate run returned null for Figure 1 and Equation 10 (previously and
 subsequently located correctly), so vision hits should be re-verified per run
 while native table boxes are stable.
+
+## Milestone 3 — Interactive research-aware PDF reader (2026-11-02)
+
+**Goal:** first interactive ResearchOS reader — read the real PDF with
+clickable overlays on localized scientific objects and a Research Lens panel
+explaining each object against the research question.
+
+**Built (`web/`, Next.js + TypeScript + Tailwind, no backend):**
+
+- Header with ResearchOS branding + paper title; prominent research-question
+  bar; object navigator chips (Equation 10, Figure 1, Table 1, Table 4) that
+  scroll to the page and select the object.
+- Left (65%): full 11-page PDF via react-pdf, fixtures from `web/public/`
+  (`paper.pdf` + `data/localized_output.json`, copied from the prototype).
+  Overlays use percent positioning from the 0..1000 boxes, so they stay
+  aligned on resize. Subtle teal by default, highlight + label chip on hover,
+  persistent highlight when selected — no red debug boxes.
+- Right (35%): Research Lens. Default state shows paper title, question,
+  object counts, and the select-an-object instruction. Selection shows the
+  five required sections plus type-specific detail (KaTeX equation + symbols
+  + role; figure components + ordered flow + role; table metric + better
+  direction + comparisons + interpretation), evidence, and related-object
+  chips.
+- pdf.js worker is staged locally by an npm `postinstall` script (no CDN
+  dependency); the reader is client-only (`ssr: false`) since pdf.js needs
+  `window`.
+
+**Verification:** `next build` green (TypeScript clean); served the production
+build locally and confirmed HTTP 200 for `/`, `/paper.pdf`,
+`/data/localized_output.json`, and `/pdf.worker.min.mjs`. Note: this sandbox
+blocks Turbopack's loader workers and port binding, so verification used the
+webpack builder and an escalated local server; standard `npm run dev` applies
+on a normal machine. In-browser visual check left to the demo.
+
+**Explicitly out of scope:** authentication, databases, literature search,
+evidence graphs, Modal, experiment execution, production infrastructure.
+
+## Milestone 3.1 — Research Lens: complete scientific-object inventory with research-question-aware relevance ranking (2026-11-02)
+
+**Goal:** understand ALL major labeled objects in the paper while the research
+question only determines visual priority — Focus mode (default) vs Show All
+mode.
+
+**Built (backend):**
+
+- `prototype/inventory.py` — deterministic label discovery (caption-anchored
+  figures/tables, display-anchored equations) producing a completeness
+  checklist; the model finalizes from the PDF itself. Finds all 22 EOT labels
+  (Eq 1–14, Fig 1–4, Tab 1–4), no duplicates.
+- `prototype/relevance.py` — centralized thresholds (high ≥ 0.75, related ≥
+  0.40, else context) + paper-importance labels; single source of truth.
+- `prototype/analyze_paper.py` — two-stage pipeline. Stage 1 (PDF + checklist)
+  inventories every labeled equation/figure/table with full explanations +
+  `paper_importance`; claims stay selective. Stage 2 (cheap text-only call)
+  scores each object against the research question; levels derive
+  deterministically from scores at validation time. `--rescore` re-ranks a new
+  question without rediscovery/relocalization.
+- `prototype/localize_objects.py` — same strategies (native/hybrid tables,
+  vision figures/equations, null-box confidence ≤ 0.3) plus a success-only
+  cache (`prototype/loc_cache.json`, git-ignored) keyed by PDF hash + object +
+  page — never relevance. `--no-cache` disables it.
+
+**Live run (EOT paper):** 25 objects (14 eq + 4 fig + 4 tab + 3 claims);
+relevance 7 high / 13 related / 5 context. High: Eq 4 (SW), Eq 6 (EBSW),
+Eq 10, Eq 11, Eq 14 (refinement), Table 4 (ablation), OT-efficacy claim —
+Figure 1 scored related (0.50) as architecture context rather than an
+alternative-cost object. Localization 22/22 after cache-assisted retries
+(pages 3 and 6 needed re-runs — the known vision nondeterminism); every box
+verified correct against debug overlays.
+
+**Built (frontend, `web/`):**
+
+- Focus (default) / Show-all toggle; Focus summary line
+  ("ResearchOS found X scientific objects. Y are highly relevant…").
+- Overlays colored by level (indigo = high, blue = related, gray = context;
+  no red/green). Focus: high persistent, related faint, context invisible but
+  still clickable/hoverable; selection always accented. Show All: every object
+  visibly overlaid.
+- Navigator covers all 22 localized objects with All/Equations/Figures/Tables
+  filters, high-first ordering, relevance dots, and a restrained legend.
+- Research Lens panel: level badge, human-readable Importance/Relevance
+  (no raw scores), relevance reason under "Why it matters to your research";
+  existing type-specific details preserved.
+- `web/app/lib/relevance.ts` — TS mirror of thresholds + pure visibility /
+  ordering / filter helpers.
+
+**Verification:** 69/69 backend tests green (incl. new threshold, bounds,
+merge/rescore-identity, no-dupe, cache, and null-confidence tests); 8/8
+frontend vitest tests green (thresholds, Focus filtering, Show All, navigator
+ordering/filters); `tsc --noEmit` clean; `next build` green (webpack builder —
+sandbox blocks Turbopack loader workers and port binding, same as M3);
+production server smoke: HTTP 200 for `/`, `/paper.pdf`, `/pdf.worker.min.mjs`
+and the 25-object/22-box fixture. In-browser visual check left to the demo.
+
+**Explicitly out of scope:** authentication, databases, Supabase, literature
+search, cross-paper memory, evidence graph, Modal, experiment execution,
+deployment infrastructure, chat interface, unrelated refactors.
+
+**Caveats:** vision localization stays nondeterministic per run (cache +
+retries mitigate); Figure 1 is related rather than high by model judgment;
+raw relevance scores are hidden from the UI by design (kept in JSON).

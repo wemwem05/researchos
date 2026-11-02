@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import json
 import os
 import re
@@ -543,6 +544,66 @@ def draw_debug_image(page_png: bytes, localizations: list[ObjectLocalization]) -
 
 
 # ---------------------------------------------------------------------------
+# Localization cache: reuse SUCCESSFUL boxes across runs.
+# ---------------------------------------------------------------------------
+#
+# Key = pdf sha256 + object_id + page: identity depends on the PDF/object/page,
+# never on research relevance, so rescoring or frontend reloads never trigger
+# re-localization. Only non-null bboxes are stored; failures are retried.
+# Default file prototype/loc_cache.json is git-ignored.
+
+
+def pdf_fingerprint(pdf_bytes: bytes) -> str:
+    return hashlib.sha256(pdf_bytes).hexdigest()[:16]
+
+
+def cache_key(pdf_bytes: bytes, obj: SciObject) -> str:
+    return f"{pdf_fingerprint(pdf_bytes)}:{obj.id}:p{obj.page}:{obj.label}"
+
+
+def load_cache(path: Path) -> dict[str, dict]:
+    try:
+        raw = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def save_cache(path: Path, cache: dict[str, dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(cache, indent=1) + "\n", encoding="utf-8")
+
+
+def lookup_cached(
+    cache: dict[str, dict], pdf_bytes: bytes, obj: SciObject
+) -> ObjectLocalization | None:
+    """Return a validated cached hit, or None on miss/invalid entry.
+
+    Stale or malformed entries (unknown id shape, null bbox) are treated as
+    misses, never as successful hits.
+    """
+    entry = cache.get(cache_key(pdf_bytes, obj))
+    if not entry:
+        return None
+    try:
+        loc = ObjectLocalization.model_validate(entry)
+    except Exception:  # noqa: BLE001 - corrupt entry: treat as miss
+        return None
+    if loc.bbox is None or loc.object_id != obj.id or loc.page != obj.page:
+        return None
+    return loc
+
+
+def store_for_object(
+    cache: dict[str, dict], pdf_bytes: bytes, obj: SciObject, loc: ObjectLocalization
+) -> None:
+    """Preferred store: full key including the object's label."""
+    if loc.bbox is None:
+        return
+    cache[cache_key(pdf_bytes, obj)] = loc.model_dump(mode="json")
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -565,6 +626,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--debug-dir",
         default=None,
         help="If set, save rendered page images with boxes drawn here.",
+    )
+    p.add_argument(
+        "--cache",
+        default="prototype/loc_cache.json",
+        help="Localization cache file for successful boxes "
+        "(default: prototype/loc_cache.json).",
+    )
+    p.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable cache reads and writes (always re-localize).",
     )
     return p.parse_args(argv)
 
@@ -620,15 +692,34 @@ def main() -> int:
         debug_dir.mkdir(parents=True, exist_ok=True)
 
     client = OpenAI(base_url=args.base_url, api_key=api_key)
+    pdf_bytes = pdf_path.read_bytes()
+    use_cache = not args.no_cache
+    cache: dict[str, dict] = load_cache(Path(args.cache)) if use_cache else {}
+    n_cache_hits = 0
+    cached_by_id: dict[str, ObjectLocalization] = {}
+    if use_cache:
+        for o in targets:
+            hit = lookup_cached(cache, pdf_bytes, o)
+            if hit is not None:
+                cached_by_id[o.id] = hit
+                n_cache_hits += 1
+        if n_cache_hits:
+            print(f"[info] cache hits: {n_cache_hits}/{len(targets)}", file=sys.stderr)
+    live_targets = [o for o in targets if o.id not in cached_by_id]
+    if not live_targets:
+        print("[info] all localizations served from cache", file=sys.stderr)
+    by_live_page: dict[int, list[SciObject]] = {}
+    for o in live_targets:
+        by_live_page.setdefault(o.page, []).append(o)  # type: ignore[arg-type]
     all_localizations: list[ObjectLocalization] = []
     try:
         with pymupdf.open(pdf_path) as doc:
-            for page_number in sorted(by_page):
+            for page_number in sorted(by_live_page):
                 if page_number < 1 or page_number > len(doc):
                     raise ValueError(
                         f"page {page_number} out of range (PDF has {len(doc)})"
                     )
-                known = by_page[page_number]
+                known = by_live_page[page_number]
                 page = doc[page_number - 1]
                 # Tables go through the hybrid path; figures/equations (and
                 # tables with no caption anchor) use full-page vision.
@@ -666,10 +757,31 @@ def main() -> int:
                 if debug_dir:
                     debug_png = draw_debug_image(page_png, locs)
                     (debug_dir / f"page-{page_number:02d}.png").write_bytes(debug_png)
+                if use_cache:
+                    for o, m in zip(known, locs):
+                        store_for_object(cache, pdf_bytes, o, m)
                 all_localizations.extend(locs)
+            # Debug overlays for fully cached pages.
+            if debug_dir:
+                for page_number in sorted(set(by_page) - set(by_live_page)):
+                    page = doc[page_number - 1]
+                    page_png = page.get_pixmap(matrix=RENDER_MATRIX).tobytes("png")
+                    locs = [cached_by_id[o.id] for o in by_page[page_number]]
+                    (debug_dir / f"page-{page_number:02d}.png").write_bytes(
+                        draw_debug_image(page_png, locs)
+                    )
     except Exception as e:  # noqa: BLE001 - prototype: report and exit non-zero
         print(f"error: localization failed: {e}", file=sys.stderr)
         return 1
+
+    if use_cache:
+        save_cache(Path(args.cache), cache)
+    # Restore original analysis order: cached entries first, then live ones.
+    order = {o.id: i for i, o in enumerate(targets)}
+    all_localizations = sorted(
+        list(cached_by_id.values()) + all_localizations,
+        key=lambda m: order[m.object_id],
+    )
 
     out = LocalizedOutput(analysis=analysis, localizations=all_localizations)
     out_path = Path(args.output)

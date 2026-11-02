@@ -5,6 +5,7 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import OverlayLayer, { type OverlayBox } from "./OverlayLayer";
+import type { LensMode } from "../lib/relevance";
 
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
@@ -16,6 +17,7 @@ interface Props {
   pdfUrl: string;
   overlaysByPage: Map<number, OverlayBox[]>;
   selectedId: string | null;
+  mode: LensMode;
   onSelect: (objectId: string) => void;
   registerPageRef: (pageNumber: number, el: HTMLDivElement | null) => void;
 }
@@ -24,6 +26,7 @@ export default function PdfReader({
   pdfUrl,
   overlaysByPage,
   selectedId,
+  mode,
   onSelect,
   registerPageRef,
 }: Props) {
@@ -65,6 +68,7 @@ export default function PdfReader({
           <OverlayLayer
             boxes={overlaysByPage.get(pageNumber) ?? []}
             selectedId={selectedId}
+            mode={mode}
             onSelect={onSelect}
           />
           <div className="pointer-events-none absolute bottom-2 right-3 text-[11px] text-neutral-400">

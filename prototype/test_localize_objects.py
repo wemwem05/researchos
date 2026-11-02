@@ -31,7 +31,11 @@ def base_object(obj_id, obj_type, page=4, label="Figure 1"):
         "why_it_is_here": "x",
         "claim_supported": "x",
         "limitations": "x",
+        "paper_importance": 0.8,
+        "paper_importance_reason": "core",
         "research_relevance": "x",
+        "research_relevance_score": 0.9,
+        "research_relevance_reason": "directly about the question",
         "related_objects": [],
         "confidence": 0.9,
         "evidence": "p.1",
@@ -360,6 +364,113 @@ class TestHybridTables(unittest.TestCase):
                 self.assertEqual(m.localization_method, "pdf_native")
                 self.assertIsNotNone(m.bbox)
                 self.assertIn(label, m.localization_note or "")
+
+
+class TestLocalizationCache(unittest.TestCase):
+    """Part 9: successful boxes are reused; failures never poison the cache."""
+
+    def test_store_and_lookup_round_trip(self):
+        from analyze_paper import SciObject
+
+        obj = SciObject.model_validate(
+            base_object("fig1", "figure", page=4, label="Figure 1")
+        )
+        pdf = b"fake-pdf-bytes"
+        loc_box = loc.ObjectLocalization.model_validate(
+            {
+                "object_id": "fig1",
+                "page": 4,
+                "bbox": {"x_min": 1, "y_min": 2, "x_max": 3, "y_max": 4},
+                "confidence": 0.9,
+                "localization_method": "muse_vision",
+            }
+        )
+        cache: dict[str, dict] = {}
+        self.assertIsNone(loc.lookup_cached(cache, pdf, obj))  # miss first
+        loc.store_for_object(cache, pdf, obj, loc_box)
+        hit = loc.lookup_cached(cache, pdf, obj)
+        self.assertIsNotNone(hit)
+        assert hit is not None
+        self.assertEqual(hit.bbox, loc_box.bbox)
+        self.assertEqual(hit.localization_method, "muse_vision")
+
+    def test_null_localization_never_cached(self):
+        from analyze_paper import SciObject
+
+        obj = SciObject.model_validate(
+            base_object("tab9", "table", page=7, label="Table 9")
+        )
+        pdf = b"fake-pdf-bytes"
+        cache: dict[str, dict] = {}
+        loc.store_for_object(
+            cache,
+            pdf,
+            obj,
+            loc.ObjectLocalization.model_validate(
+                {"object_id": "tab9", "page": 7, "bbox": None, "confidence": 0.0}
+            ),
+        )
+        self.assertEqual(cache, {})
+        self.assertIsNone(loc.lookup_cached(cache, pdf, obj))
+
+    def test_cache_key_depends_on_pdf_object_page(self):
+        from analyze_paper import SciObject
+
+        obj = SciObject.model_validate(
+            base_object("fig1", "figure", page=4, label="Figure 1")
+        )
+        other_page = SciObject.model_validate(
+            base_object("fig1", "figure", page=5, label="Figure 1")
+        )
+        other_obj = SciObject.model_validate(
+            base_object("fig2", "figure", page=4, label="Figure 2")
+        )
+        pdf = b"fake-pdf-bytes"
+        cache: dict[str, dict] = {}
+        loc.store_for_object(
+            cache,
+            pdf,
+            obj,
+            loc.ObjectLocalization.model_validate(
+                {
+                    "object_id": "fig1",
+                    "page": 4,
+                    "bbox": {"x_min": 1, "y_min": 2, "x_max": 3, "y_max": 4},
+                    "confidence": 0.9,
+                }
+            ),
+        )
+        # Same PDF/object/page -> hit; anything else -> miss.
+        self.assertIsNotNone(loc.lookup_cached(cache, pdf, obj))
+        self.assertIsNone(loc.lookup_cached(cache, b"other-pdf", obj))
+        self.assertIsNone(loc.lookup_cached(cache, pdf, other_page))
+        self.assertIsNone(loc.lookup_cached(cache, pdf, other_obj))
+
+    def test_corrupt_or_null_entry_is_miss_not_hit(self):
+        from analyze_paper import SciObject
+
+        obj = SciObject.model_validate(
+            base_object("fig1", "figure", page=4, label="Figure 1")
+        )
+        pdf = b"fake-pdf-bytes"
+        key = loc.cache_key(pdf, obj)
+        for bad in (
+            {"object_id": "fig1", "page": 4, "bbox": None, "confidence": 0.0},
+            {"object_id": "fig1", "page": 4},  # malformed
+            "not-a-dict",
+        ):
+            with self.subTest(bad=bad):
+                self.assertIsNone(loc.lookup_cached(cache={key: bad}, pdf_bytes=pdf, obj=obj))
+
+    def test_save_and_load_round_trip(self):
+        import tempfile
+
+        cache = {"k": {"object_id": "x", "page": 1, "bbox": None, "confidence": 0.0}}
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / "c.json"
+            loc.save_cache(p, cache)
+            self.assertEqual(loc.load_cache(p), cache)
+            self.assertEqual(loc.load_cache(Path(d) / "missing.json"), {})
 
 
 if __name__ == "__main__":
