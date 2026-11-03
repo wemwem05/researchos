@@ -1,0 +1,1129 @@
+{
+  "analysis": {
+    "paper_title": "Deep Shells: Unsupervised Shape Correspondence with Optimal Transport",
+    "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+    "objects": [
+      {
+        "id": "eq-1",
+        "type": "equation",
+        "page": 2,
+        "label": "Equation 1",
+        "title": "Spectral convolution on manifold",
+        "what_it_is": "Defines convolution of signals F:X->R^L as pointwise multiplication in spectral space with learnable matrices.",
+        "why_it_is_here": "To introduce geometric deep learning background imitating CNNs on Riemannian manifolds.",
+        "claim_supported": "Manifold convolution can be expressed as spectral pointwise multiplication with learnable matrices.",
+        "limitations": "Does not establish transferability between shapes or discretization invariance; general filters are domain-dependent.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Foundational background for the spectral CNN, but not the novel contribution itself.",
+        "related_objects": [
+          "eq-2",
+          "eq-11"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.2, Eq.1 and surrounding paragraph in Sec. 2.1",
+        "equation": {
+          "latex": "G_{l'} = h\\left(\\sum_{l=1}^{L} \\Phi \\Gamma_{l',l} \\Phi^{\\dagger} F_{l}\\right)",
+          "symbols": [
+            {
+              "symbol": "G_{l'}",
+              "meaning": "output feature channel"
+            },
+            {
+              "symbol": "F_l",
+              "meaning": "input signal channels on manifold X"
+            },
+            {
+              "symbol": "\\Phi",
+              "meaning": "spectral basis (Laplacian eigenfunctions)"
+            },
+            {
+              "symbol": "\\Gamma_{l',l}",
+              "meaning": "learnable diagonal coefficient matrix"
+            },
+            {
+              "symbol": "h",
+              "meaning": "non-linearity"
+            }
+          ],
+          "role_in_method": "Background definition of spectral convolution on manifolds that the paper later smooths and truncates."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines generic spectral manifold convolution, unrelated to transport cost choice for correspondence.",
+        "research_relevance_score": 0.12,
+        "research_relevance_reason": "Background CNN theory, not OT cost.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-2",
+        "type": "equation",
+        "page": 2,
+        "label": "Equation 2",
+        "title": "Smooth spectral filter parameterization",
+        "what_it_is": "Parameterizes filter diagonals as linear combination of smooth basis functions with learnable weights.",
+        "why_it_is_here": "To explain how to obtain spatially localized and transferable filters despite domain-dependent eigenbasis.",
+        "claim_supported": "Smooth frequency-domain coefficients yield spatially localized, transferable filters.",
+        "limitations": "Does not specify choice of B or truncation; does not prove localization in this paper.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Key prior idea enabling the paper's smooth spectral filters.",
+        "related_objects": [
+          "eq-11",
+          "eq-12"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.2, Eq.2 and following paragraph citing [15]",
+        "equation": {
+          "latex": "\\mathrm{diag}(\\Gamma_{l',l}) = B \\gamma_{l',l}",
+          "symbols": [
+            {
+              "symbol": "B",
+              "meaning": "alternant matrix of smooth basis functions applied to eigenvalues"
+            },
+            {
+              "symbol": "\\lambda_i",
+              "meaning": "Laplacian eigenvalue"
+            },
+            {
+              "symbol": "\\gamma_{l',l}",
+              "meaning": "learnable weights"
+            }
+          ],
+          "role_in_method": "Motivates use of smooth low-rank basis B for filters to achieve localization and transferability."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Parameterizes smooth spectral filters for localization; does not involve optimal transport costs.",
+        "research_relevance_score": 0.14,
+        "research_relevance_reason": "Feature learning background only.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-3",
+        "type": "equation",
+        "page": 3,
+        "label": "Equation 3",
+        "title": "Product space embedding",
+        "what_it_is": "Embeds input shape X into R^{K+6} using intrinsic eigenfunctions plus extrinsic smoothed coordinates and normals.",
+        "why_it_is_here": "To set up joint extrinsic-intrinsic hierarchical matching from smooth shells [11].",
+        "claim_supported": "A shape can be embedded in product space of intrinsic eigenfunctions and extrinsic coordinates/normals.",
+        "limitations": "Does not define smoothing details; refers to [11] for construction.",
+        "paper_importance": 0.8,
+        "paper_importance_reason": "Core representation of smooth shells that the deepified pipeline operates on.",
+        "related_objects": [
+          "eq-4",
+          "eq-8"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.3, Eq.3 in Sec. 3.1 Product space embedding",
+        "equation": {
+          "latex": "\\mathbf{X}_k := (\\Phi_k, X_k, \\mathbf{n}^\\mathcal{X}_k) : \\mathcal{X} \\to \\mathbb{R}^{K+6}",
+          "symbols": [
+            {
+              "symbol": "\\Phi_k",
+              "meaning": "first k Laplace-Beltrami eigenfunctions (intrinsic features)"
+            },
+            {
+              "symbol": "X_k",
+              "meaning": "smoothed extrinsic coordinates"
+            },
+            {
+              "symbol": "\\mathbf{n}^\\mathcal{X}_k",
+              "meaning": "outer normals"
+            },
+            {
+              "symbol": "\\mathbf{X}_k",
+              "meaning": "embedding of shape X at scale k"
+            }
+          ],
+          "role_in_method": "Defines the multi-scale product space embedding on which alignment is computed."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines product embedding whose Euclidean distance becomes the ground cost used in OT matching.",
+        "research_relevance_score": 0.62,
+        "research_relevance_reason": "Embedding defines what alternative costs measure.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-4",
+        "type": "equation",
+        "page": 3,
+        "label": "Equation 4",
+        "title": "Smooth shells alignment energy",
+        "what_it_is": "L2 alignment energy between deformed source embedding and target embedding via map P.",
+        "why_it_is_here": "To formalize the optimization over P and (C,tau) with increasing k.",
+        "claim_supported": "Shape alignment can be parameterized by functional map C and extrinsic translation tau.",
+        "limitations": "Non-differentiable in P due to nearest-neighbor assignment; requires good initialization.",
+        "paper_importance": 0.8,
+        "paper_importance_reason": "Axiomatic energy that the paper reformulates with optimal transport to make differentiable.",
+        "related_objects": [
+          "eq-5",
+          "eq-8"
+        ],
+        "confidence": 0.92,
+        "evidence": "p.3, Eq.4 and paragraph on alternating optimization",
+        "equation": {
+          "latex": "E(\\mathcal{P},\\mathbf{C},\\tau) := \\|\\mathbf{X}^*_k - \\mathbf{Y}_k \\circ \\mathcal{P}\\|^2_{L_2} = \\|(\\Phi_k \\mathbf{C}^{\\dagger}, X_k+\\Phi_k\\tau, {}^*\\mathbf{n}^{\\mathcal{X}}_k) - \\mathbf{Y}_k \\circ \\mathcal{P}\\|^2_{L_2}",
+          "symbols": [
+            {
+              "symbol": "\\mathcal{P}",
+              "meaning": "pointwise map X->Y"
+            },
+            {
+              "symbol": "\\mathbf{C}",
+              "meaning": "functional map coefficients k x k"
+            },
+            {
+              "symbol": "\\tau",
+              "meaning": "extrinsic translation coefficients k x 3"
+            },
+            {
+              "symbol": "\\mathbf{X}^*_k",
+              "meaning": "deformed source embedding"
+            }
+          ],
+          "role_in_method": "Original smooth-shells energy jointly optimized for correspondences and deformation."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "L2 smooth-shells energy is the non-OT baseline alignment cost that the OT formulation replaces.",
+        "research_relevance_score": 0.55,
+        "research_relevance_reason": "Baseline cost for comparison to OT cost.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-5",
+        "type": "equation",
+        "page": 4,
+        "label": "Equation 5",
+        "title": "Differentiable deformation update",
+        "what_it_is": "Defines update of deformation coefficients as argmin of energy for fixed mapping.",
+        "why_it_is_here": "To separate differentiable least-squares part from non-differentiable correspondence part.",
+        "claim_supported": "Deformation update for fixed map is differentiable linear least squares.",
+        "limitations": "Does not address differentiability of P-update, handled separately.",
+        "paper_importance": 0.5,
+        "paper_importance_reason": "Justifies differentiability of one half of alternating scheme; minor technical step.",
+        "related_objects": [],
+        "confidence": 0.9,
+        "evidence": "p.4, Eq.5 in Sec. 3.2",
+        "equation": {
+          "latex": "(\\mathbf{X},\\mathbf{Y}) \\mapsto (\\mathbf{C},\\tau) := \\arg\\min_{(\\mathbf{C},\\tau)} E(\\mathcal{P},\\mathbf{C},\\tau)",
+          "symbols": [
+            {
+              "symbol": "(\\mathbf{X},\\mathbf{Y})",
+              "meaning": "embeddings of two shapes"
+            },
+            {
+              "symbol": "(\\mathbf{C},\\tau)",
+              "meaning": "deformation parameters"
+            }
+          ],
+          "role_in_method": "Shows (C,tau) step is differentiable and can stay in end-to-end network."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Least-squares deformation update for fixed map; concerns solver step, not choice of transport cost.",
+        "research_relevance_score": 0.22,
+        "research_relevance_reason": "Optimization detail, not cost design.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-6",
+        "type": "equation",
+        "page": 4,
+        "label": "Equation 6",
+        "title": "Fuzzy correspondence membership",
+        "what_it_is": "Replaces strict point-to-point map P with probability measure pi on product domain.",
+        "why_it_is_here": "To make mapping from inputs to correspondences differentiable.",
+        "claim_supported": "Hard assignment can be replaced by fuzzy probabilistic correspondence.",
+        "limitations": "Alone does not define how pi is computed or regularized.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Conceptual switch enabling differentiability and Sinkhorn layer.",
+        "related_objects": [
+          "eq-7",
+          "eq-8"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.4, Eq.6 and discussion of assignment matrix P",
+        "equation": {
+          "latex": "\\pi \\in \\Pi(\\mathcal{X},\\mathcal{Y})",
+          "symbols": [
+            {
+              "symbol": "\\pi",
+              "meaning": "fuzzy correspondence (probability measure on product)"
+            }
+          ],
+          "role_in_method": "Introduces soft correspondences to enable differentiable optimal transport formulation."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Introduces fuzzy measure pi that allows OT formulation, prerequisite for defining any OT cost.",
+        "research_relevance_score": 0.5,
+        "research_relevance_reason": "Foundational OT setup, not cost variant.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-7",
+        "type": "equation",
+        "page": 4,
+        "label": "Equation 7",
+        "title": "Marginal constraints",
+        "what_it_is": "Requires marginals of pi to equal surface area elements of X and Y.",
+        "why_it_is_here": "To define feasible set for optimal transport matching.",
+        "claim_supported": "Fuzzy correspondences must respect area measures as marginals.",
+        "limitations": "Does not include entropic regularization or cost; only constraints.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Standard OT constraints needed for Sinkhorn projections.",
+        "related_objects": [
+          "eq-9"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.4, Eq.7 defining Pi(X,Y)",
+        "equation": {
+          "latex": "\\int_{\\mathcal{X}} d\\pi(x,y)=dy,\\quad \\int_{\\mathcal{Y}} d\\pi(x,y)=dx",
+          "symbols": [
+            {
+              "symbol": "dx, dy",
+              "meaning": "surface differentials"
+            }
+          ],
+          "role_in_method": "Defines OT marginal constraints for valid transport plans."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Imposes area-measure marginals constraining feasible transports; same for any cost choice.",
+        "research_relevance_score": 0.45,
+        "research_relevance_reason": "Generic OT constraint, not cost comparison.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-8",
+        "type": "equation",
+        "page": 4,
+        "label": "Equation 8",
+        "title": "Entropy-regularized OT matching energy",
+        "what_it_is": "OT energy integrating squared embedding distance under pi minus entropy regularization.",
+        "why_it_is_here": "To reformulate smooth-shells energy differentiably following [8].",
+        "claim_supported": "Matching energy with entropy regularization enables differentiable Sinkhorn optimization.",
+        "limitations": "Alignment tightness is proxy for correspondence quality; does not guarantee semantic correctness alone.",
+        "paper_importance": 1.0,
+        "paper_importance_reason": "Core differentiable objective and unsupervised loss of the entire method.",
+        "related_objects": [
+          "eq-10",
+          "eq-9",
+          "table-1",
+          "fig-1"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.4, Eq.8 as OT reformulation of Eq.4; also used as loss in Sec.3.3 and Fig.1 caption",
+        "equation": {
+          "latex": "E(\\pi,\\mathbf{C},\\tau) := \\int_{\\mathcal{X}\\times\\mathcal{Y}} \\|\\mathbf{X}^*_k(x)-\\mathbf{Y}_k(y)\\|^2_2 d\\pi(x,y) - \\lambda H(\\pi)",
+          "symbols": [
+            {
+              "symbol": "\\lambda",
+              "meaning": "entropy regularization coefficient, 0.12 in experiments"
+            },
+            {
+              "symbol": "H(\\pi)",
+              "meaning": "entropy of transport plan"
+            }
+          ],
+          "role_in_method": "Central unsupervised loss / alignment-tightness objective averaged over scales; minimized by alternating updates."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines the entropy-regularized OT energy integrating squared embedding distance, the core transport cost whose alternatives would be tested.",
+        "research_relevance_score": 0.95,
+        "research_relevance_reason": "Central OT cost formulation directly needed.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "eq-9",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 9",
+        "title": "Sinkhorn alternating projection scheme",
+        "what_it_is": "Expresses transport density as repeated row/column normalizations of p_lambda.",
+        "why_it_is_here": "To efficiently and differentiably solve for correspondences pi.",
+        "claim_supported": "Sinkhorn iterations as alternating projections solve OT correspondence differentiably.",
+        "limitations": "Fixed iterations approximate exact OT; convergence rate cited from [12] not proven here.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "Provides the differentiable matching layer built into network.",
+        "related_objects": [
+          "eq-10"
+        ],
+        "confidence": 0.9,
+        "evidence": "p.5, Eq.9 and text on linear convergence and differentiability",
+        "equation": {
+          "latex": "\\frac{d\\pi(x,y)}{dxdy}= \\mathcal{S}^{\\mathcal{X}}(\\mathcal{S}^{\\mathcal{Y}}(\\dots \\mathcal{S}^{\\mathcal{X}}(\\mathcal{S}^{\\mathcal{Y}}(p_{\\lambda}))\\dots))",
+          "symbols": [
+            {
+              "symbol": "\\mathcal{S}^{\\mathcal{X}}, \\mathcal{S}^{\\mathcal{Y}}",
+              "meaning": "projection onto marginal constraint of X or Y"
+            },
+            {
+              "symbol": "p_{\\lambda}",
+              "meaning": "Gibbs density from costs"
+            }
+          ],
+          "role_in_method": "Differentiable update for pi_k used in hierarchical loop with fixed 10 iterations."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Gives Sinkhorn iterations to solve OT; a solver for a given cost, not evidence about alternative costs.",
+        "research_relevance_score": 0.32,
+        "research_relevance_reason": "Solver method, not cost improvement.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-10",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 10",
+        "title": "Gibbs density from embedding distance",
+        "what_it_is": "Defines p_lambda as exponential of negative scaled squared distance.",
+        "why_it_is_here": "To specify Sinkhorn initialization from current deformation.",
+        "claim_supported": "Pairwise costs induce Gibbs distribution for Sinkhorn input.",
+        "limitations": "Does not include learned features; only geometric embedding distance.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Links energy cost to Sinkhorn algorithm input.",
+        "related_objects": [
+          "eq-9"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.5, Eq.10 defining input density",
+        "equation": {
+          "latex": "p_{\\lambda}(x,y) \\propto \\exp\\left(-\\frac{1}{\\lambda} \\|\\mathbf{X}^*_k(x)-\\mathbf{Y}_k(y)\\|^2_2\\right)",
+          "symbols": [
+            {
+              "symbol": "p_{\\lambda}",
+              "meaning": "input probability density on product"
+            }
+          ],
+          "role_in_method": "Converts embedding distances to initial density for Sinkhorn."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines Gibbs density from negative scaled squared distance, explicitly encoding the pairwise OT ground cost.",
+        "research_relevance_score": 0.85,
+        "research_relevance_reason": "Direct specification of cost function.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "eq-11",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 11",
+        "title": "Truncated spectral convolution",
+        "what_it_is": "Defines convolution using truncated eigenbasis and low-rank smooth filter B gamma.",
+        "why_it_is_here": "To learn local features independent of discretization, unlike per-vertex MLPs.",
+        "claim_supported": "Truncated smooth spectral filters give discretization-agnostic local features.",
+        "limitations": "Approximates true convolution; requires choice of k, T; high frequencies truncated.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "The learnable component whose output initializes matching; key to generalization.",
+        "related_objects": [
+          "eq-12",
+          "eq-13",
+          "fig-1"
+        ],
+        "confidence": 0.93,
+        "evidence": "p.5, Eq.11 in Sec. 3.3; implementation details p.6",
+        "equation": {
+          "latex": "G_{l'} = h\\left(\\sum_{l=1}^{L} \\Phi_k (B\\gamma_{l',l} \\odot \\Phi_k^{\\dagger} F_l)\\right)",
+          "symbols": [
+            {
+              "symbol": "\\Phi_k",
+              "meaning": "truncated spectral basis with k eigenfunctions (200 used)"
+            },
+            {
+              "symbol": "\\odot",
+              "meaning": "pointwise product"
+            },
+            {
+              "symbol": "F_l",
+              "meaning": "SHOOT input dimension 352"
+            },
+            {
+              "symbol": "B",
+              "meaning": "cosine basis matrix, 16 bases, 120 filters"
+            }
+          ],
+          "role_in_method": "Learnable feature extractor applied to 352-dim SHOT to produce G^X, G^Y for initialization."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines truncated spectral convolution for learned features; unrelated to transport cost design.",
+        "research_relevance_score": 0.18,
+        "research_relevance_reason": "Feature extractor background.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-12",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 12",
+        "title": "Fourier cosine basis on frequency domain",
+        "what_it_is": "Defines basis matrix entries as cosines of scaled eigenvalues.",
+        "why_it_is_here": "To provide compact smooth basis for filters operating on fixed eigen-range.",
+        "claim_supported": "Cosine Fourier basis on fixed frequency interval parameterizes smooth filters.",
+        "limitations": "Assumes 200th eigenvalue stable across surfaces; fixed interval may not hold for extreme scales.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Implementation choice for B; supports reproducibility but not central theory.",
+        "related_objects": [
+          "eq-11"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.5, Eq.12 and p.6 implementation (T=2e4)",
+        "equation": {
+          "latex": "B_{ij} := b_j(\\lambda_i) = \\cos\\left(\\frac{\\lambda_i \\pi j}{T}\\right)",
+          "symbols": [
+            {
+              "symbol": "T",
+              "meaning": "frequency domain upper limit, 2e4"
+            },
+            {
+              "symbol": "\\lambda_i",
+              "meaning": "Laplacian eigenvalue"
+            }
+          ],
+          "role_in_method": "Concrete basis with T=2e4 used for 120 filters x 16 bases."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Cosine basis for smooth filters; concerns feature parameterization, not OT costs.",
+        "research_relevance_score": 0.12,
+        "research_relevance_reason": "Unrelated filter detail.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-13",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 13",
+        "title": "Feature-based initialization energy",
+        "what_it_is": "OT energy using learned feature distance to compute initial pi.",
+        "why_it_is_here": "To convert refined SHOT features into starting correspondences for hierarchical alignment.",
+        "claim_supported": "Learned features induce initial soft correspondences via OT.",
+        "limitations": "Quality depends on learned features; does not guarantee global optimum.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "Connects feature extractor to matching pipeline; replaces costly stochastic search.",
+        "related_objects": [
+          "eq-8",
+          "fig-1"
+        ],
+        "confidence": 0.94,
+        "evidence": "p.5, Eq.13 and Fig.1 caption describing initialization",
+        "equation": {
+          "latex": "E_{\\mathrm{init}}(\\pi) := \\int_{\\mathcal{X}\\times\\mathcal{Y}} \\|G^{\\mathcal{X}}(x)-G^{\\mathcal{Y}}(y)\\|^2_2 d\\pi(x,y) - \\lambda H(\\pi)",
+          "symbols": [
+            {
+              "symbol": "G^{\\mathcal{X}}, G^{\\mathcal{Y}}",
+              "meaning": "learned local features on X and Y"
+            }
+          ],
+          "role_in_method": "Initialization of deep shells hierarchy from learned features; replaces MCMC search."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines second OT energy using learned feature distance for initialization, showing an alternative ground cost in same pipeline.",
+        "research_relevance_score": 0.8,
+        "research_relevance_reason": "Exemplifies alternative OT cost.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "fig-1",
+        "type": "figure",
+        "page": 4,
+        "label": "Figure 1",
+        "title": "Network overview",
+        "what_it_is": "Diagram of full pipeline from SHOT inputs through spectral filtering to alternating pi and (tau,C) updates and textured outputs.",
+        "why_it_is_here": "To visualize how components interact and where loss is computed.",
+        "claim_supported": "End-to-end network combines SHOT, spectral filters, and hierarchical OT alignment with unsupervised alignment-tightness loss.",
+        "limitations": "Schematic illustration; does not quantify performance or show failure modes.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "Central architectural summary linking feature learning and OT matching.",
+        "related_objects": [
+          "eq-11",
+          "eq-13",
+          "eq-8"
+        ],
+        "confidence": 0.92,
+        "evidence": "p.4, Fig.1 caption and diagram showing Inputs->SHOT->Spectral Filters->Learned Features->Correspondences<->Alignment",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Input shapes X,Y",
+            "SHOT descriptors",
+            "Spectral filter plots",
+            "Learned features G",
+            "Soft correspondence matrix pi_k",
+            "Deformed shells X*_k, X*_k variations, Y_k",
+            "Deformation coefficients (tau_k,C_k)",
+            "Output color-coded correspondences"
+          ],
+          "flow": [
+            "Inputs to SHOT",
+            "SHOT to Spectral Filters",
+            "Filters to Learned Features",
+            "Features to Correspondences via Eq.13",
+            "Iterate Correspondences <-> Alignment increasing k minimizing Eq.8",
+            "Outputs + unsupervised loss as average Eq.8"
+          ],
+          "role_in_method": "Overview of trainable pipeline and unsupervised loss computation."
+        },
+        "table": null,
+        "research_relevance": "Overview shows where OT alignment energies sit in pipeline, helping locate cost modules but not comparing costs.",
+        "research_relevance_score": 0.45,
+        "research_relevance_reason": "Context diagram, no cost ablation.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "fig-2",
+        "type": "figure",
+        "page": 6,
+        "label": "Figure 2",
+        "title": "Inter-dataset qualitative comparison",
+        "what_it_is": "Texture transfer from FAUST source to SCAPE target for two baselines and ours.",
+        "why_it_is_here": "To show robust features on hybrid pairs lacking ground truth.",
+        "claim_supported": "Method yields best qualitative inter-dataset matching without postprocessing vs unsupervised baselines.",
+        "limitations": "Single visual example; no ground-truth metric for hybrid FAUST-SCAPE pair.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Illustrates generalization but not quantitative proof.",
+        "related_objects": [
+          "table-1"
+        ],
+        "confidence": 0.85,
+        "evidence": "p.6, Fig.2 with Source vs SurFMNet+icp, Unsup FMNet+pmf, Ours; FAUST->SCAPE",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Source textured human",
+            "Three target color-transfer results for compared methods"
+          ],
+          "flow": [
+            "Source texture transfer via predicted map to SCAPE target"
+          ],
+          "role_in_method": "Qualitative support for cross-dataset generalization claim in Table 1 last columns."
+        },
+        "table": null,
+        "research_relevance": "Qualitative FAUST-SCAPE texture transfer showing overall accuracy, not alternative OT costs.",
+        "research_relevance_score": 0.24,
+        "research_relevance_reason": "General matching demo.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "fig-3",
+        "type": "figure",
+        "page": 7,
+        "label": "Figure 3",
+        "title": "Cumulative conformal distortion",
+        "what_it_is": "Cumulative histograms of per-triangle conformal distortion vs other learning and axiomatic methods.",
+        "why_it_is_here": "To demonstrate map smoothness comparable to smooth shells despite no expensive regularization.",
+        "claim_supported": "Maps are as smooth (low conformal distortion) as smooth shells while more accurate.",
+        "limitations": "Smoothness does not imply correctness; FAUST smoother than ground-truth indicates over-smoothing possible.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Shows high-quality smooth correspondences without ARAP regularizer.",
+        "related_objects": [
+          "table-1"
+        ],
+        "confidence": 0.88,
+        "evidence": "p.7, Fig.3 cumulative distortion curves for FAUST and SCAPE remeshed vs baselines and ground-truth remeshing",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Two line plots FAUST remeshed and SCAPE remeshed, x 0-2 distortion, y cumulative fraction",
+            "9 curves + ground truth dashed"
+          ],
+          "flow": [
+            "Distortion computation per triangle to cumulative curves"
+          ],
+          "role_in_method": "Evaluates map quality beyond mean geodesic error."
+        },
+        "table": null,
+        "research_relevance": "Smoothness histograms show map quality but do not vary or evaluate transport costs.",
+        "research_relevance_score": 0.22,
+        "research_relevance_reason": "Smoothness result, not cost study.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "fig-4",
+        "type": "figure",
+        "page": 7,
+        "label": "Figure 4",
+        "title": "Training set size ablation",
+        "what_it_is": "Plot of mean geodesic error (% diameter) vs number of SURREAL training samples.",
+        "why_it_is_here": "To show stability with limited training data.",
+        "claim_supported": "Method remains accurate with as few as 10 training shapes, unlike GeoFMNet.",
+        "limitations": "Only compares to GeoFMNet; single train-test setup SURREAL->FAUST.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Key data-efficiency evidence distinguishing from prior learning methods.",
+        "related_objects": [
+          "table-1"
+        ],
+        "confidence": 0.88,
+        "evidence": "p.7, Fig.4 geodesic error vs # training samples 10-1000 trained on SURREAL evaluated on FAUST",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Log-x training size vs geodesic error",
+            "Three curves GeoFMNet, GeoFMNet+zo, Ours (flat low)"
+          ],
+          "flow": [
+            "Vary training size to test data efficiency"
+          ],
+          "role_in_method": "Supports claim that robust OT layer helps limited data regime."
+        },
+        "table": null,
+        "research_relevance": "Ablation of training size vs error; about data efficiency, not OT cost choice.",
+        "research_relevance_score": 0.12,
+        "research_relevance_reason": "Data ablation unrelated to costs.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "fig-5",
+        "type": "figure",
+        "page": 8,
+        "label": "Figure 5",
+        "title": "Non-isometric qualitative comparison",
+        "what_it_is": "Color-coded correspondence transfer to Discobolus statue scan for 7 methods.",
+        "why_it_is_here": "To illustrate robustness to significant deviation from training set.",
+        "claim_supported": "Method handles challenging non-isometric real-scan pair better than intrinsic baselines.",
+        "limitations": "Qualitative only; no quantitative error for this pair; weights trained on FAUST remeshed.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Demonstrates extrinsic-intrinsic advantage on non-isometric case.",
+        "related_objects": [
+          "table-1"
+        ],
+        "confidence": 0.82,
+        "evidence": "p.8, Fig.5 eight-panel color transfer from synthetic source to Discobolus scan",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Source synthetic human",
+            "7 target results: SurFMNet*, Unsup FMNet*, BCICP, ZoomOut, GeoFMNet*, Smooth Shells, Ours"
+          ],
+          "flow": [
+            "Same source texture mapped via each method to statue target"
+          ],
+          "role_in_method": "Qualitative generalization to non-isometric, out-of-distribution geometry."
+        },
+        "table": null,
+        "research_relevance": "Non-isometric visual comparison to baselines; no variation of OT ground cost.",
+        "research_relevance_score": 0.25,
+        "research_relevance_reason": "Robustness illustration only.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "table-1",
+        "type": "table",
+        "page": 6,
+        "label": "Table 1",
+        "title": "Matching accuracy summary",
+        "what_it_is": "Table of mean geodesic errors for axiomatic, supervised, unsupervised methods under 6 train-test regimes.",
+        "why_it_is_here": "To quantitatively compare accuracy and generalization of proposed unsupervised method.",
+        "claim_supported": "Unsupervised Deep Shells achieves lowest mean geodesic error on FAUST/SCAPE remeshed, including cross-dataset and joint training, beating supervised and axiomatic SOTA.",
+        "limitations": "Mean error hides per-pair variance and symmetry flips; remeshed benchmarks only; no statistical significance reported.",
+        "paper_importance": 1.0,
+        "paper_importance_reason": "Primary quantitative proof of SOTA claim across in-dataset and generalization settings.",
+        "related_objects": [
+          "fig-2",
+          "fig-3",
+          "eq-8"
+        ],
+        "confidence": 0.93,
+        "evidence": "p.6, Table 1 mean geodesic error % diameter; Ours 1.7,2.5,2.7,5.4,1.6,2.4 vs next best e.g. Smooth Shells 2.5,4.7",
+        "equation": null,
+        "figure": null,
+        "table": {
+          "metric": "mean geodesic error in % of shape diameter (sqrt area normalized, Princeton protocol)",
+          "higher_or_lower_is_better": "lower",
+          "important_comparisons": [
+            "Ours 1.7 vs Smooth Shells 2.5 vs GeoFMNet+zo 1.9 (with postproc) on FAUST",
+            "Ours 2.5 vs Smooth Shells 4.7 on SCAPE",
+            "Cross-dataset F-S 2.7 and S-F 5.4 vs Unsup FMNet 9.3/12",
+            "Joint training F-F+S 1.6 and S-F+S 2.4 slight improvement"
+          ],
+          "result_interpretation": "Ours is best in all six columns without pre/postprocessing, including training on one dataset tested on other and joint training."
+        },
+        "research_relevance": "Reports mean geodesic errors proving OT pipeline works but does not compare different OT costs.",
+        "research_relevance_score": 0.35,
+        "research_relevance_reason": "Overall accuracy, no cost variant.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "table-2",
+        "type": "table",
+        "page": 8,
+        "label": "Table 2",
+        "title": "Runtime comparison",
+        "what_it_is": "Breakdown of pre, query, post and total seconds per pair for 9 methods.",
+        "why_it_is_here": "To show reduced query time by learning initialization instead of stochastic search.",
+        "claim_supported": "Method has low total test time (14s) vs axiomatic MCMC (125s) without costly postprocessing.",
+        "limitations": "Hardware dependence not stated; preprocessing includes 500 eigenpairs; training geodesic cost for baselines noted separately.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Supports efficiency claim: replaces stochastic MCMC search with learned init.",
+        "related_objects": [
+          "table-1"
+        ],
+        "confidence": 0.88,
+        "evidence": "p.8, Table 2 pre/query/post times; Ours 8.7/4.9/-/14 total vs Smooth Shells 125 etc.",
+        "equation": null,
+        "figure": null,
+        "table": {
+          "metric": "average pre-processing, query, post-processing and total time per pair in seconds at test",
+          "higher_or_lower_is_better": "lower",
+          "important_comparisons": [
+            "Ours total 14s vs BCICP 881s, Smooth Shells 125s, FMNet+pmf 228s",
+            "Preproc 8.7s same as Smooth Shells; query 4.9s vs 116s; no postproc"
+          ],
+          "result_interpretation": "Large query-time reduction by removing MCMC proposals; no postprocessing needed unlike functional-map baselines."
+        },
+        "research_relevance": "Compares runtime per pair across methods; irrelevant to whether alternative costs improve correspondence.",
+        "research_relevance_score": 0.08,
+        "research_relevance_reason": "Runtime table, not cost quality.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "claim-1",
+        "type": "claim",
+        "page": 6,
+        "label": null,
+        "title": "State-of-the-art matching accuracy",
+        "what_it_is": "Major experimentally testable claim that method achieves best mean geodesic error.",
+        "why_it_is_here": "Summarizes core quantitative result justifying deepified OT pipeline.",
+        "claim_supported": "Unsupervised Deep Shells outperforms state-of-the-art axiomatic, supervised and unsupervised methods on FAUST and SCAPE remeshed without postprocessing.",
+        "limitations": "Limited to human benchmarks FAUST/SCAPE remeshed; mean error only; no test on partial or topological noise.",
+        "paper_importance": 1.0,
+        "paper_importance_reason": "Central paper contribution and title claim.",
+        "related_objects": [
+          "table-1",
+          "table-2"
+        ],
+        "confidence": 0.93,
+        "evidence": "p.6-7, Table 1 first two columns + text Matching accuracy; Ours 1.7% and 2.5% lowest",
+        "equation": null,
+        "figure": null,
+        "table": null,
+        "research_relevance": "Claims SOTA accuracy from full system; does not isolate contribution of alternative OT costs.",
+        "research_relevance_score": 0.33,
+        "research_relevance_reason": "System-level claim, not cost analysis.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "claim-2",
+        "type": "claim",
+        "page": 6,
+        "label": null,
+        "title": "Cross-dataset generalization",
+        "what_it_is": "Major claim that features trained on one dataset transfer to unseen dataset/geometry.",
+        "why_it_is_here": "To demonstrate robustness and discretization-agnostic extrinsic-intrinsic embedding.",
+        "claim_supported": "Learned spectral filters generalize across datasets, to hybrid FAUST-SCAPE pairs, and to non-isometric scans, and can be jointly trained.",
+        "limitations": "Hybrid quantitative lacks ground truth for some pairs; qualitative examples selective.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "Key differentiator vs intrinsic functional-map methods that overfit.",
+        "related_objects": [
+          "table-1",
+          "fig-2",
+          "fig-5"
+        ],
+        "confidence": 0.87,
+        "evidence": "p.6-8, Table 1 last four columns + Fig.2 inter-dataset + Fig.5 Discobolus",
+        "equation": null,
+        "figure": null,
+        "table": null,
+        "research_relevance": "Claims cross-dataset generalization of learned features, not improvement from different transport costs.",
+        "research_relevance_score": 0.28,
+        "research_relevance_reason": "Generalization claim, not OT cost.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "claim-3",
+        "type": "claim",
+        "page": 7,
+        "label": null,
+        "title": "Data efficiency and map smoothness",
+        "what_it_is": "Major claim combining stable few-shot training and smooth correspondences without ARAP.",
+        "why_it_is_here": "To show OT layer benefit and output quality beyond raw error numbers.",
+        "claim_supported": "Method is data-efficient (stable with 10 SURREAL shapes) and produces smooth low-distortion maps comparable to smooth shells.",
+        "limitations": "Data-efficiency shown only vs GeoFMNet on SURREAL->FAUST; smoothness metric does not guarantee semantic accuracy.",
+        "paper_importance": 0.75,
+        "paper_importance_reason": "Supports practical utility with limited data and high-quality maps for transfer applications.",
+        "related_objects": [
+          "fig-4",
+          "fig-3"
+        ],
+        "confidence": 0.86,
+        "evidence": "p.7, Fig.4 training-size curves + Fig.3 conformal distortion overlapping smooth shells",
+        "equation": null,
+        "figure": null,
+        "table": null,
+        "research_relevance": "Claims data efficiency and low distortion maps; about training stability and smoothness, not OT cost alternatives.",
+        "research_relevance_score": 0.2,
+        "research_relevance_reason": "Efficiency/smoothness claim.",
+        "research_relevance_level": "context"
+      }
+    ]
+  },
+  "localizations": [
+    {
+      "object_id": "eq-1",
+      "page": 2,
+      "bbox": {
+        "x_min": 400,
+        "y_min": 551,
+        "x_max": 594,
+        "y_max": 595
+      },
+      "confidence": 0.96,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-2",
+      "page": 2,
+      "bbox": {
+        "x_min": 428,
+        "y_min": 677,
+        "x_max": 571,
+        "y_max": 693
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-3",
+      "page": 3,
+      "bbox": {
+        "x_min": 378,
+        "y_min": 736,
+        "x_max": 618,
+        "y_max": 753
+      },
+      "confidence": 0.96,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-4",
+      "page": 3,
+      "bbox": {
+        "x_min": 238,
+        "y_min": 832,
+        "x_max": 758,
+        "y_max": 859
+      },
+      "confidence": 0.96,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-5",
+      "page": 4,
+      "bbox": {
+        "x_min": 358,
+        "y_min": 622,
+        "x_max": 658,
+        "y_max": 649
+      },
+      "confidence": 0.92,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-6",
+      "page": 4,
+      "bbox": {
+        "x_min": 450,
+        "y_min": 750,
+        "x_max": 565,
+        "y_max": 765
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-7",
+      "page": 4,
+      "bbox": {
+        "x_min": 364,
+        "y_min": 815,
+        "x_max": 636,
+        "y_max": 841
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-8",
+      "page": 4,
+      "bbox": {
+        "x_min": 293,
+        "y_min": 886,
+        "x_max": 704,
+        "y_max": 919
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-9",
+      "page": 5,
+      "bbox": {
+        "x_min": 344,
+        "y_min": 126,
+        "x_max": 665,
+        "y_max": 159
+      },
+      "confidence": 0.92,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-10",
+      "page": 5,
+      "bbox": {
+        "x_min": 349,
+        "y_min": 195,
+        "x_max": 647,
+        "y_max": 230
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-11",
+      "page": 5,
+      "bbox": {
+        "x_min": 378,
+        "y_min": 415,
+        "x_max": 625,
+        "y_max": 457
+      },
+      "confidence": 0.92,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-12",
+      "page": 5,
+      "bbox": {
+        "x_min": 400,
+        "y_min": 581,
+        "x_max": 606,
+        "y_max": 616
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-13",
+      "page": 5,
+      "bbox": {
+        "x_min": 305,
+        "y_min": 701,
+        "x_max": 698,
+        "y_max": 732
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-1",
+      "page": 4,
+      "bbox": {
+        "x_min": 172,
+        "y_min": 78,
+        "x_max": 830,
+        "y_max": 520
+      },
+      "confidence": 0.96,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-2",
+      "page": 6,
+      "bbox": {
+        "x_min": 180,
+        "y_min": 55,
+        "x_max": 830,
+        "y_max": 335
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-3",
+      "page": 7,
+      "bbox": {
+        "x_min": 172,
+        "y_min": 92,
+        "x_max": 828,
+        "y_max": 330
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-4",
+      "page": 7,
+      "bbox": {
+        "x_min": 174,
+        "y_min": 664,
+        "x_max": 826,
+        "y_max": 913
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-5",
+      "page": 8,
+      "bbox": {
+        "x_min": 180,
+        "y_min": 481,
+        "x_max": 833,
+        "y_max": 914
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "table-1",
+      "page": 6,
+      "bbox": {
+        "x_min": 169,
+        "y_min": 672,
+        "x_max": 833,
+        "y_max": 905
+      },
+      "confidence": 0.9,
+      "localization_method": "pdf_native",
+      "localization_note": "Detected by PyMuPDF table finder and matched to Table 1 caption."
+    },
+    {
+      "object_id": "table-2",
+      "page": 8,
+      "bbox": {
+        "x_min": 172,
+        "y_min": 89,
+        "x_max": 846,
+        "y_max": 221
+      },
+      "confidence": 0.95,
+      "localization_method": "hybrid",
+      "localization_note": "Located by Muse vision in a caption-anchored crop; mapped to page coordinates."
+    }
+  ]
+}

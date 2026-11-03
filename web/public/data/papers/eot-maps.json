@@ -1,0 +1,1261 @@
+{
+  "analysis": {
+    "paper_title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+    "objects": [
+      {
+        "id": "eq-1",
+        "type": "equation",
+        "page": 3,
+        "label": "Equation 1",
+        "title": "Optimal functional map objective",
+        "what_it_is": "Optimization objective for functional map C combining data and regularization terms.",
+        "why_it_is_here": "Recaps functional map representation before introducing learning framework.",
+        "claim_supported": "Functional map solver recovers dense correspondence from learned features.",
+        "limitations": "Does not establish how features A,B are learned or which E_reg is used in implementation.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Foundational background for deep functional map module, but not novel contribution.",
+        "related_objects": [
+          "eq-8",
+          "eq-12",
+          "fig-1"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.3, Eq.1 and Sec.3.1 paragraph",
+        "equation": {
+          "latex": "C^{*}_{xy} = \\arg\\min_{C} E_{data}(C) + E_{reg}(C)",
+          "symbols": [
+            {
+              "symbol": "C",
+              "meaning": "functional map matrix to optimize"
+            },
+            {
+              "symbol": "E_data",
+              "meaning": "descriptor preservation term ||CA-B||^2"
+            },
+            {
+              "symbol": "E_reg",
+              "meaning": "structural regularization term"
+            }
+          ],
+          "role_in_method": "Defines optimal functional map computation from descriptor coefficients; core solver used in pipeline."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Recaps standard functional map optimization, not an OT cost; provides background context for correspondence but does not test alternative costs.",
+        "research_relevance_score": 0.3,
+        "research_relevance_reason": "Background on functional maps, not OT.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-2",
+        "type": "equation",
+        "page": 3,
+        "label": "Equation 2",
+        "title": "Wasserstein distance definition",
+        "what_it_is": "Definition of p-Wasserstein distance as infimum over couplings.",
+        "why_it_is_here": "Introduces OT background and computational bottleneck.",
+        "claim_supported": "Wasserstein distance is accurate but O(m^3 log m) time and O(m^2) memory, motivating efficient OT.",
+        "limitations": "Does not give computable estimator; only definition and complexity discussion.",
+        "paper_importance": 0.5,
+        "paper_importance_reason": "Background definition to contrast with proposed sliced OT loss.",
+        "related_objects": [
+          "eq-4",
+          "eq-10"
+        ],
+        "confidence": 0.95,
+        "evidence": "p.3, Eq.2 and Sec.3.2 paragraph",
+        "equation": {
+          "latex": "W^{p}_{p}(\\mu,\\nu)=\\inf_{\\pi\\in\\Pi(\\mu,\\nu)}\\int_{R^{d}\\times R^{d}}||x-y||^{p}_{p}d\\pi(x,y)",
+          "symbols": [
+            {
+              "symbol": "mu, nu",
+              "meaning": "probability measures in P_p(R^d)"
+            },
+            {
+              "symbol": "Pi(mu,nu)",
+              "meaning": "set of couplings with marginals mu, nu"
+            },
+            {
+              "symbol": "pi",
+              "meaning": "transportation plan"
+            }
+          ],
+          "role_in_method": "Background OT metric; motivates need for sliced approximation due to cost."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines baseline Wasserstein distance and its cubic cost, establishing what alternative OT costs must improve upon.",
+        "research_relevance_score": 0.5,
+        "research_relevance_reason": "Baseline OT definition motivating alternatives.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-3",
+        "type": "equation",
+        "page": 3,
+        "label": "Equation 3",
+        "title": "Sinkhorn / entropic regularized OT divergence",
+        "what_it_is": "Entropic-regularized OT objective with KL constraint and entropy term.",
+        "why_it_is_here": "Explains Sinkhorn alternative and its remaining quadratic cost.",
+        "claim_supported": "Entropic OT allows Sinkhorn solver in O(m^2) time but still quadratic memory and not a valid metric.",
+        "limitations": "Does not establish metric properties; paper notes triangle inequality fails.",
+        "paper_importance": 0.5,
+        "paper_importance_reason": "Background for entropic OT used later only in refinement module.",
+        "related_objects": [
+          "eq-14"
+        ],
+        "confidence": 0.93,
+        "evidence": "p.3, Eq.3 and Sinkhorn divergence paragraph",
+        "equation": {
+          "latex": "S^{p}_{epsilon,p}(\\mu,\\nu)=\\inf_{\\pi\\in\\Pi_{epsilon}(\\mu,\\nu)}\\int c d\\pi(x,y)+\\epsilon H(\\pi)",
+          "symbols": [
+            {
+              "symbol": "Pi_epsilon",
+              "meaning": "KL-constrained coupling set"
+            },
+            {
+              "symbol": "c",
+              "meaning": "cost c_p(x,y)=||x-y||^p_p"
+            },
+            {
+              "symbol": "H(pi)",
+              "meaning": "entropy term enabling Sinkhorn"
+            }
+          ],
+          "role_in_method": "Background regularized OT; later reused only for adaptive refinement, not training loss."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Describes entropic-regularized Sinkhorn OT as one alternative cost with quadratic cost and non-metric limitation.",
+        "research_relevance_score": 0.7,
+        "research_relevance_reason": "Alternative OT cost with trade-offs.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-4",
+        "type": "equation",
+        "page": 3,
+        "label": "Equation 4",
+        "title": "Sliced Wasserstein distance definition",
+        "what_it_is": "Expectation of 1D Wasserstein distances over random projections.",
+        "why_it_is_here": "Introduces fast valid OT metric adopted for unsupervised loss.",
+        "claim_supported": "Sliced Wasserstein provides O(n log n) time and O(n) memory valid OT metric.",
+        "limitations": "Definition alone does not give Monte Carlo implementation or how applied to mesh features.",
+        "paper_importance": 0.8,
+        "paper_importance_reason": "Core efficient OT concept enabling novel losses; central to contribution.",
+        "related_objects": [
+          "eq-5",
+          "eq-10"
+        ],
+        "confidence": 0.94,
+        "evidence": "p.3, Eq.4 and Sliced Wasserstein paragraph",
+        "equation": {
+          "latex": "SW^{p}_{p}(\\mu,\\nu)=E_{theta\\sim U(S^{d-1})}[W^{p}_{p}(theta_{\\sharp}\\mu,theta_{\\sharp}\\nu)]",
+          "symbols": [
+            {
+              "symbol": "U(S^{d-1})",
+              "meaning": "uniform distribution on sphere"
+            },
+            {
+              "symbol": "theta_{\\sharp}",
+              "meaning": "push-forward via projection f(x)=theta^T x"
+            },
+            {
+              "symbol": "W^p_p",
+              "meaning": "1D Wasserstein distance"
+            }
+          ],
+          "role_in_method": "Theoretical basis for proposed efficient OT loss; expectation over 1D projections with closed form."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines sliced Wasserstein distance, the core efficient alternative OT metric proposed to improve correspondence.",
+        "research_relevance_score": 0.9,
+        "research_relevance_reason": "Central alternative OT cost definition.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "eq-5",
+        "type": "equation",
+        "page": 4,
+        "label": "Equation 5",
+        "title": "Monte Carlo sliced Wasserstein estimator",
+        "what_it_is": "Finite-sample average of 1D Wasserstein distances.",
+        "why_it_is_here": "Shows how SW is computed efficiently in practice.",
+        "claim_supported": "SW can be approximated with L Monte Carlo projections.",
+        "limitations": "Does not address discriminativeness of uniform slicing; motivates EBSW.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Implementation detail for computing SW, supports proposed loss.",
+        "related_objects": [
+          "eq-4",
+          "eq-10"
+        ],
+        "confidence": 0.94,
+        "evidence": "p.4, Eq.5 and preceding sentence",
+        "equation": {
+          "latex": "\\widehat{SW}^{p}_{p}(\\mu,\\nu;L)=1/L\\sum_{l=1}^{L}W^{p}_{p}(theta_{l\\sharp}\\mu,theta_{l\\sharp}\\nu)",
+          "symbols": [
+            {
+              "symbol": "L",
+              "meaning": "number of Monte Carlo directions"
+            },
+            {
+              "symbol": "theta_l",
+              "meaning": "sampled projection directions from unit sphere"
+            }
+          ],
+          "role_in_method": "Practical estimator for SW used in training."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Gives Monte Carlo estimator making sliced Wasserstein tractable, enabling its use as a correspondence loss.",
+        "research_relevance_score": 0.65,
+        "research_relevance_reason": "Practical computation of SW alternative.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-6",
+        "type": "equation",
+        "page": 4,
+        "label": "Equation 6",
+        "title": "Energy-based sliced Wasserstein definition",
+        "what_it_is": "Expectation under energy-weighted slicing distribution.",
+        "why_it_is_here": "Introduces discriminative SW extension to motivate bidirectional loss.",
+        "claim_supported": "Energy-based slicing gives more discriminative SW variant.",
+        "limitations": "Original EBSW definition, not yet bidirectional formulation used in paper.",
+        "paper_importance": 0.6,
+        "paper_importance_reason": "Basis for improved EBSW loss variant claimed as contribution.",
+        "related_objects": [
+          "eq-7",
+          "eq-11"
+        ],
+        "confidence": 0.92,
+        "evidence": "p.4, Eq.6 and Energy-based paragraph",
+        "equation": {
+          "latex": "EBSW^{p}_{p}(\\mu,\\nu;f)=E_{theta\\sim\\sigma_{\\mu,\\nu}(theta;f,p)}[W^{p}_{p}(theta_{\\sharp}\\mu,theta_{\\sharp}\\nu)]",
+          "symbols": [
+            {
+              "symbol": "f",
+              "meaning": "energy function e.g. exp"
+            },
+            {
+              "symbol": "sigma_{mu,nu}",
+              "meaning": "energy-based slicing distribution proportional to f(W^p_p)"
+            }
+          ],
+          "role_in_method": "Background for bidirectional EBSW loss; introduces energy-weighted slicing distribution."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines energy-based sliced Wasserstein, a more discriminative alternative OT cost variant tested for correspondence.",
+        "research_relevance_score": 0.85,
+        "research_relevance_reason": "Second key alternative OT cost.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "eq-7",
+        "type": "equation",
+        "page": 4,
+        "label": "Equation 7",
+        "title": "Importance-sampling EBSW estimator",
+        "what_it_is": "Weighted average of 1D distances with normalized importance weights.",
+        "why_it_is_here": "Shows tractable computation of EBSW from proposal samples.",
+        "claim_supported": "EBSW can be computed via importance sampling with normalized weights.",
+        "limitations": "Generic estimator; not yet bidirectional shared distribution.",
+        "paper_importance": 0.55,
+        "paper_importance_reason": "Supports implementation of EBSW but not final novel loss.",
+        "related_objects": [
+          "eq-6",
+          "eq-11"
+        ],
+        "confidence": 0.9,
+        "evidence": "p.4, Eq.7 and importance sampling paragraph",
+        "equation": {
+          "latex": "IS-\\widehat{EBSW}^{p}_{p}(\\mu,\\nu;f,L)=\\sum_{l=1}^{L}W^{p}_{p}(theta_{l\\sharp}\\mu,theta_{l\\sharp}\\nu)\\hat{w}_{\\mu,\\nu,\\sigma_{0},f,p}(theta_{l})",
+          "symbols": [
+            {
+              "symbol": "sigma_0",
+              "meaning": "proposal distribution e.g. uniform"
+            },
+            {
+              "symbol": "w",
+              "meaning": "importance weight f(W)/sigma0"
+            },
+            {
+              "symbol": "\\hat{w}",
+              "meaning": "normalized importance weight"
+            }
+          ],
+          "role_in_method": "Computational recipe for EBSW using proposal samples."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Details importance-sampling estimator for EBSW, an implementation detail rather than the cost comparison itself.",
+        "research_relevance_score": 0.55,
+        "research_relevance_reason": "Computation detail for EBSW.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-8",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 8",
+        "title": "Functional map structural loss",
+        "what_it_is": "Weighted sum of bijectivity and orthogonality penalties on C.",
+        "why_it_is_here": "Defines training objective for functional map module.",
+        "claim_supported": "Structural FM regularization promotes bijectivity and area preservation.",
+        "limitations": "Enforces intrinsic smoothness only; does not align extrinsic features explicitly.",
+        "paper_importance": 0.75,
+        "paper_importance_reason": "Standard FM component combined with novel OT losses.",
+        "related_objects": [
+          "eq-13",
+          "fig-1"
+        ],
+        "confidence": 0.93,
+        "evidence": "p.5, Eq.8 and Sec.4.2 paragraph",
+        "equation": {
+          "latex": "L_{fmap}=\\alpha_{1}L_{bij}+\\alpha_{2}L_{othor}",
+          "symbols": [
+            {
+              "symbol": "L_bij",
+              "meaning": "bijectivity term ||CxyCyx-I||^2+||CyxCxy-I||^2"
+            },
+            {
+              "symbol": "L_othor",
+              "meaning": "orthogonality / area-preserving term"
+            },
+            {
+              "symbol": "alpha1, alpha2",
+              "meaning": "loss weights"
+            }
+          ],
+          "role_in_method": "Unsupervised FM regularizer term in total loss enforcing map structure."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines bijectivity and orthogonality penalties for functional maps, unrelated to choice of OT cost.",
+        "research_relevance_score": 0.25,
+        "research_relevance_reason": "About FM regularization, not OT.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-9",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 9",
+        "title": "Soft feature similarity matrix",
+        "what_it_is": "Row-softmax of feature dot-products giving soft correspondence matrix.",
+        "why_it_is_here": "Enables differentiable extrinsic alignment via OT.",
+        "claim_supported": "Softmax feature similarity provides differentiable proxy for correspondence.",
+        "limitations": "Soft assignment only; not guaranteed to be permutation or cycle-consistent alone.",
+        "paper_importance": 0.85,
+        "paper_importance_reason": "Key bridge linking extractor features to OT and proper losses.",
+        "related_objects": [
+          "eq-10",
+          "eq-12",
+          "fig-1"
+        ],
+        "confidence": 0.94,
+        "evidence": "p.5, Eq.9 and Soft feature similarity paragraph",
+        "equation": {
+          "latex": "\\hat{\\Pi}^{i,j}_{xy}=exp((F^{i}_{x}\\cdot F^{j}_{y})/tau)/\\sum_{k=1}^{n_{y}}exp((F^{i}_{x}\\cdot F^{k}_{y})/tau)",
+          "symbols": [
+            {
+              "symbol": "F^i_x",
+              "meaning": "d-dim feature of point i in X"
+            },
+            {
+              "symbol": "F^j_y",
+              "meaning": "d-dim feature of point j in Y"
+            },
+            {
+              "symbol": "tau",
+              "meaning": "temperature scaling factor"
+            }
+          ],
+          "role_in_method": "Constructs soft permutation used to permute features for OT losses and proper loss."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Creates differentiable soft correspondence from features that OT losses then align, supporting but not comparing OT costs.",
+        "research_relevance_score": 0.45,
+        "research_relevance_reason": "Enabling similarity, not OT cost itself.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-10",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 10",
+        "title": "Bidirectional sliced Wasserstein loss",
+        "what_it_is": "Bidirectional SW discrepancy between Fx vs permuted Fy and vice versa.",
+        "why_it_is_here": "Proposes fast OT objective for explicit feature alignment.",
+        "claim_supported": "Bidirectional SW loss aligns feature distributions and encourages cycle consistency.",
+        "limitations": "Uses uniform slicing which may weight uninformative directions equally.",
+        "paper_importance": 0.95,
+        "paper_importance_reason": "First novel OT loss; central claim of efficient OT for shape matching.",
+        "related_objects": [
+          "eq-9",
+          "eq-11",
+          "eq-13"
+        ],
+        "confidence": 0.92,
+        "evidence": "p.5, Eq.10 and SW distance as efficient OT paragraph",
+        "equation": {
+          "latex": "L_{biSW}=(E_{theta\\sim U(S^{d-1})}[W^{p}_{p}(theta_{\\sharp}F_{x},theta_{\\sharp}\\hat{F}_{y})+W^{p}_{p}(theta_{\\sharp}F_{y},theta_{\\sharp}\\hat{F}_{x})])^{1/p}",
+          "symbols": [
+            {
+              "symbol": "\\hat{F}_y",
+              "meaning": "softly permuted features Pi_hat_xy Fy"
+            },
+            {
+              "symbol": "\\hat{F}_x",
+              "meaning": "softly permuted features Pi_hat_yx Fx"
+            },
+            {
+              "symbol": "E_theta",
+              "meaning": "uniform slicing expectation"
+            }
+          ],
+          "role_in_method": "Novel unsupervised OT loss minimizing discrepancy between features and softly permuted counterpart."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Proposes bidirectional sliced Wasserstein loss for explicit feature alignment, directly testing if SW improves correspondence.",
+        "research_relevance_score": 0.95,
+        "research_relevance_reason": "Proposed alternative OT loss for matching.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "eq-11",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 11",
+        "title": "Bidirectional energy-based SW loss",
+        "what_it_is": "Importance-sampled EBSW with slicing distribution shared by both directions.",
+        "why_it_is_here": "Improves over uniform SW by focusing on informative projections.",
+        "claim_supported": "Bidirectional EBSW with shared slicing distribution improves over uniform SW.",
+        "limitations": "Requires importance sampling; added complexity vs vanilla SW, still needs empirical validation.",
+        "paper_importance": 0.95,
+        "paper_importance_reason": "Second novel loss; claimed to be more discriminative and best performing.",
+        "related_objects": [
+          "eq-10",
+          "eq-13",
+          "table-4"
+        ],
+        "confidence": 0.9,
+        "evidence": "p.5, Eq.11 and Bidirectional EBSW paragraph",
+        "equation": {
+          "latex": "L_{biEBSW}=(E_{theta\\sim\\sigma_{0}}[(W_{theta,X}+W_{theta,Y})w(theta)]/E_{theta\\sim\\sigma_{0}}[w(theta)])^{1/p}",
+          "symbols": [
+            {
+              "symbol": "W_{theta,X}",
+              "meaning": "SW term for X side"
+            },
+            {
+              "symbol": "W_{theta,Y}",
+              "meaning": "SW term for Y side"
+            },
+            {
+              "symbol": "w(theta)",
+              "meaning": "weight exp(W_X+W_Y)/sigma0"
+            }
+          ],
+          "role_in_method": "More expressive OT loss weighting informative projection directions."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Proposes bidirectional EBSW loss with shared slicing distribution, directly testing if energy-weighted SW further improves correspondence.",
+        "research_relevance_score": 0.95,
+        "research_relevance_reason": "Improved alternative OT loss variant.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "eq-12",
+        "type": "equation",
+        "page": 5,
+        "label": "Equation 12",
+        "title": "Proper functional map loss",
+        "what_it_is": "Squared error between Cxy and map induced by soft correspondence.",
+        "why_it_is_here": "Introduces coupling loss regularizing both FM and OT.",
+        "claim_supported": "Properness regularization couples functional map with OT similarity for smoothness and precision.",
+        "limitations": "Does not alone guarantee bijectivity; relies on joint optimization with other losses.",
+        "paper_importance": 0.8,
+        "paper_importance_reason": "Links extrinsic OT alignment with intrinsic FM smoothness.",
+        "related_objects": [
+          "eq-9",
+          "eq-13"
+        ],
+        "confidence": 0.91,
+        "evidence": "p.5, Eq.12 and Proper functional maps paragraph",
+        "equation": {
+          "latex": "L_{proper}=||C_{xy}-\\Phi^{\\dagger}_{y}\\hat{\\Pi}_{yx}\\Phi_{x}||^{2}",
+          "symbols": [
+            {
+              "symbol": "Phi_x, Phi_y",
+              "meaning": "Laplacian eigenfunctions of X,Y"
+            },
+            {
+              "symbol": "\\hat{Pi}_{yx}",
+              "meaning": "soft feature similarity"
+            },
+            {
+              "symbol": "C_xy",
+              "meaning": "functional map"
+            }
+          ],
+          "role_in_method": "Couples FM and soft pointwise map to enforce properness."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines properness coupling between functional map and soft map, a smoothness regularizer not comparing OT costs.",
+        "research_relevance_score": 0.3,
+        "research_relevance_reason": "About FM-OT coupling, not cost choice.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "eq-13",
+        "type": "equation",
+        "page": 6,
+        "label": "Equation 13",
+        "title": "Total unsupervised loss",
+        "what_it_is": "Weighted sum of FM, OT, and proper losses.",
+        "why_it_is_here": "Summarizes training objective optimized end-to-end.",
+        "claim_supported": "Joint unsupervised training of FM, OT and proper terms yields precise smooth maps.",
+        "limitations": "Weights lambda need tuning; no supervision, performance depends on datasets.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "Defines end-to-end unsupervised framework combining all components.",
+        "related_objects": [
+          "eq-8",
+          "eq-10",
+          "eq-11",
+          "eq-12"
+        ],
+        "confidence": 0.92,
+        "evidence": "p.6, Eq.13 and Total loss paragraph",
+        "equation": {
+          "latex": "L_{total}=\\lambda_{1}L_{fmap}+\\lambda_{2}L_{OT}+\\lambda_{3}L_{proper}",
+          "symbols": [
+            {
+              "symbol": "lambda_i",
+              "meaning": "weight for each loss"
+            },
+            {
+              "symbol": "L_OT",
+              "meaning": "OT loss either biSW or biEBSW"
+            },
+            {
+              "symbol": "L_fmap, L_proper",
+              "meaning": "FM and proper losses"
+            }
+          ],
+          "role_in_method": "Overall training objective where LOT is L_biSW or L_biEBSW."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Sums FM, OT and proper terms into total training objective, showing joint use but not isolating OT cost effect.",
+        "research_relevance_score": 0.4,
+        "research_relevance_reason": "Overall loss summary, not ablation.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "eq-14",
+        "type": "equation",
+        "page": 6,
+        "label": "Equation 14",
+        "title": "Adaptive refinement via entropic OT",
+        "what_it_is": "Iterated Sinkhorn projections to obtain entropic OT plan.",
+        "why_it_is_here": "Defines per-pair refinement leveraging differentiability of Sinkhorn.",
+        "claim_supported": "Differentiable Sinkhorn refinement per pair improves final point map.",
+        "limitations": "Used only once at inference due to quadratic memory; not used for large-scale training.",
+        "paper_importance": 0.85,
+        "paper_importance_reason": "Novel adaptive refinement module claimed to boost accuracy.",
+        "related_objects": [
+          "eq-3",
+          "eq-13",
+          "table-4"
+        ],
+        "confidence": 0.89,
+        "evidence": "p.6, Eq.14 and Sec.4.5 paragraph",
+        "equation": {
+          "latex": "\\tilde{\\Pi}_{xy}=Q^{X}(Q^{Y}...(Q^{X}(p_{epsilon})))",
+          "symbols": [
+            {
+              "symbol": "Q",
+              "meaning": "Sinkhorn projection operator"
+            },
+            {
+              "symbol": "p_epsilon",
+              "meaning": "Gibbs kernel exp(-c2/epsilon)"
+            },
+            {
+              "symbol": "\\tilde{Pi}_{xy}",
+              "meaning": "refined soft correspondence"
+            }
+          ],
+          "role_in_method": "Adaptive test-time refinement estimating pseudo soft correspondence via entropic OT."
+        },
+        "figure": null,
+        "table": null,
+        "research_relevance": "Defines test-time adaptive refinement via entropic OT Sinkhorn plan, another alternative OT cost improving final maps.",
+        "research_relevance_score": 0.8,
+        "research_relevance_reason": "Entropic OT refinement alternative.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "fig-1",
+        "type": "figure",
+        "page": 4,
+        "label": "Figure 1",
+        "title": "Overview of unsupervised shape matching via efficient OT",
+        "what_it_is": "Pipeline diagram showing feature extraction, FM solver, soft similarity and OT cost.",
+        "why_it_is_here": "Visualizes proposed joint learning framework.",
+        "claim_supported": "Framework combining DiffusionNet extractor, FM solver and OT cost achieves precise smooth maps.",
+        "limitations": "Schematic only; does not quantify performance or show refinement loop.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "Central overview tying feature, FM and OT components together.",
+        "related_objects": [
+          "eq-10",
+          "eq-13"
+        ],
+        "confidence": 0.93,
+        "evidence": "p.4, Fig.1 caption and diagram",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Input shapes X Y",
+            "Features Extractor block",
+            "Fx Fy feature stacks",
+            "Fmap matrix",
+            "OT block with Pi-hat and Random Projections",
+            "Ltotal loss node"
+          ],
+          "flow": [
+            "X Y -> Features Extractor -> Fx Fy",
+            "Fx Fy -> Fmap solver -> Ltotal",
+            "Fx Fy + Pi-hat -> OT cost -> Ltotal"
+          ],
+          "role_in_method": "Illustrates end-to-end pipeline from shapes to point-to-point correspondence."
+        },
+        "table": null,
+        "research_relevance": "Visualizes pipeline combining feature extractor, FM solver and OT cost, giving context for where alternatives plug in.",
+        "research_relevance_score": 0.5,
+        "research_relevance_reason": "Framework overview, not cost comparison.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "fig-2",
+        "type": "figure",
+        "page": 7,
+        "label": "Figure 2",
+        "title": "Qualitative results on SHREC19 texture transfer",
+        "what_it_is": "Checker-texture transfer comparison across methods.",
+        "why_it_is_here": "Demonstrates fewer artifacts vs baselines.",
+        "claim_supported": "Method yields better texture transfer on SHREC19 than Deep Shells and ULRSSM.",
+        "limitations": "Visual only; subjective and limited to few SHREC19 examples.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Supports near-isometric SOTA claim visually.",
+        "related_objects": [
+          "table-1"
+        ],
+        "confidence": 0.88,
+        "evidence": "p.7, Fig.2 images and caption",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Source human shape",
+            "Deep Shells transfer",
+            "ULRSSM transfer",
+            "Ours transfer with checker texture",
+            "Red arrows marking errors"
+          ],
+          "flow": [
+            "Source texture -> transferred to target pose via each method"
+          ],
+          "role_in_method": "Qualitative validation of near-isometric generalization."
+        },
+        "table": null,
+        "research_relevance": "Shows qualitative texture transfer gains on SHREC19, evidencing improved correspondence but not isolating which OT cost caused it.",
+        "research_relevance_score": 0.55,
+        "research_relevance_reason": " Qualitative near-isometric results.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "fig-3",
+        "type": "figure",
+        "page": 8,
+        "label": "Figure 3",
+        "title": "Qualitative results on SMAL non-isometric matching",
+        "what_it_is": "Color-transfer comparison on animal shapes.",
+        "why_it_is_here": "Shows superior point mapping on non-isometric data.",
+        "claim_supported": "Method obtains precise smooth non-isometric maps where AFMap and ULRSSM fail.",
+        "limitations": "Few examples; does not isolate which loss causes improvement.",
+        "paper_importance": 0.7,
+        "paper_importance_reason": "Visual support for challenging SMAL non-isometric claim.",
+        "related_objects": [
+          "table-2"
+        ],
+        "confidence": 0.87,
+        "evidence": "p.8, Fig.3 images and caption",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Source animal (lioness/hippo)",
+            "AFMap result",
+            "ULRSSM result",
+            "Ours result with color transfer"
+          ],
+          "flow": [
+            "Source color map -> target animal via correspondence"
+          ],
+          "role_in_method": "Qualitative evidence for non-isometric generalization."
+        },
+        "table": null,
+        "research_relevance": "Shows qualitative non-isometric matching on SMAL animals, evidencing improvement without ablating OT costs.",
+        "research_relevance_score": 0.55,
+        "research_relevance_reason": "Qualitative non-isometric results.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "fig-4",
+        "type": "figure",
+        "page": 8,
+        "label": "Figure 4",
+        "title": "Qualitative segmentation transfer results",
+        "what_it_is": "Coarse and fine-grained body segmentation transfer examples.",
+        "why_it_is_here": "Visualizes segmentation transfer capability without training segmentation model.",
+        "claim_supported": "Correspondence enables high-quality segmentation transfer close to ground truth.",
+        "limitations": "Qualitative; quantitative mIOU in Table 3 needed for claim.",
+        "paper_importance": 0.65,
+        "paper_importance_reason": "Illustrates generalization to different mesh resolution and downstream use.",
+        "related_objects": [
+          "table-3"
+        ],
+        "confidence": 0.86,
+        "evidence": "p.8, Fig.4 images and caption",
+        "equation": null,
+        "figure": {
+          "components": [
+            "Source segmented human",
+            "Ours transferred segmentation",
+            "GT segmentation for coarse and fine-grained"
+          ],
+          "flow": [
+            "Source labels -> propagated via computed correspondence"
+          ],
+          "role_in_method": "Downstream task validation of correspondence quality."
+        },
+        "table": null,
+        "research_relevance": "Illustrates downstream body segmentation transfer, a different task that does not compare OT costs.",
+        "research_relevance_score": 0.25,
+        "research_relevance_reason": "About segmentation transfer application.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "table-1",
+        "type": "table",
+        "page": 7,
+        "label": "Table 1",
+        "title": "Quantitative near-isometric shape matching",
+        "what_it_is": "Mean geodesic errors for FAUST, SCAPE, SHREC19 under three training regimes.",
+        "why_it_is_here": "Benchmarks against axiomatic, supervised, unsupervised baselines.",
+        "claim_supported": "Method outperforms axiomatic, supervised and unsupervised baselines in most near-isometric settings.",
+        "limitations": "Mean geodesic error only; best/second-best coloring does not give variance or significance.",
+        "paper_importance": 0.95,
+        "paper_importance_reason": "Primary quantitative proof of near-isometric SOTA including SHREC19.",
+        "related_objects": [
+          "fig-2"
+        ],
+        "confidence": 0.91,
+        "evidence": "p.7, Table 1 values and caption",
+        "equation": null,
+        "figure": null,
+        "table": {
+          "metric": "Mean geodesic error x100",
+          "higher_or_lower_is_better": "lower",
+          "important_comparisons": [
+            "Ours 1.5 vs ULRSSM 1.6 on FAUST-trained FAUST; Ours 5.5 second-best on FAUST-trained SHREC19",
+            "Ours 1.6/1.8/7.0 and 1.6/2.2/4.7 on SCAPE and FAUST+SCAPE splits beating Deep Shells and AFMap"
+          ],
+          "result_interpretation": "Ours best or second-best in most train/test splits; supervised overfit, unsupervised generalizes."
+        },
+        "research_relevance": "Reports SOTA geodesic errors on FAUST/SCAPE/SHREC19, showing overall method with efficient OT improves near-isometric correspondence.",
+        "research_relevance_score": 0.65,
+        "research_relevance_reason": "Overall near-isometric improvement evidence.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "table-2",
+        "type": "table",
+        "page": 7,
+        "label": "Table 2",
+        "title": "Quantitative non-isometric matching on SMAL and DT4D-H",
+        "what_it_is": "Geodesic errors comparing Deep Shells, GeoFMaps, AFMap, ULRSSM, Ours.",
+        "why_it_is_here": "Validates method on non-isometric animal/humanoid data.",
+        "claim_supported": "Method surpasses SOTA on challenging SMAL and DT4D-H non-isometric sets.",
+        "limitations": "Only intra-class DT4D-H tested; limited baselines listed.",
+        "paper_importance": 0.9,
+        "paper_importance_reason": "Key evidence for non-isometric generalization, core contribution.",
+        "related_objects": [
+          "fig-3"
+        ],
+        "confidence": 0.9,
+        "evidence": "p.7, Table 2 values",
+        "equation": null,
+        "figure": null,
+        "table": {
+          "metric": "Mean geodesic error x100",
+          "higher_or_lower_is_better": "lower",
+          "important_comparisons": [
+            "Ours 4.0 vs ULRSSM 4.2 vs AFMap 5.4 on SMAL",
+            "Ours 4.2 vs ULRSSM 4.5 vs AFMap 11.6 on DT4D-H"
+          ],
+          "result_interpretation": "Ours lowest error on both datasets, establishing new SOTA."
+        },
+        "research_relevance": "Reports SOTA errors on SMAL and DT4D-H, showing efficient OT method improves challenging non-isometric correspondence.",
+        "research_relevance_score": 0.65,
+        "research_relevance_reason": "Overall non-isometric improvement evidence.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "table-3",
+        "type": "table",
+        "page": 7,
+        "label": "Table 3",
+        "title": "Quantitative 3D shape segmentation transfer",
+        "what_it_is": "mIOU for coarse and fine-grained segmentation transfer.",
+        "why_it_is_here": "Evaluates downstream co-segmentation performance.",
+        "claim_supported": "Correspondence-based transfer sets new SOTA for 3D segmentation without segmentation training.",
+        "limitations": "Trained on FAUST_r 10K faces, tested on 20K faces; mIOU only, no per-class breakdown.",
+        "paper_importance": 0.8,
+        "paper_importance_reason": "Demonstrates downstream utility and discretization-agnostic generalization.",
+        "related_objects": [
+          "fig-4"
+        ],
+        "confidence": 0.89,
+        "evidence": "p.7, Table 3 values",
+        "equation": null,
+        "figure": null,
+        "table": {
+          "metric": "Semantic segmentation mIOU",
+          "higher_or_lower_is_better": "higher",
+          "important_comparisons": [
+            "Ours 87.8 vs ULRSSM 84.2 coarse",
+            "Ours 60.5 vs ULRSSM 58.2 fine-grained"
+          ],
+          "result_interpretation": "Ours highest on both coarse (4 classes) and fine-grained (17 classes)."
+        },
+        "research_relevance": "Reports mIOU for segmentation transfer, a downstream application unrelated to comparing OT costs.",
+        "research_relevance_score": 0.25,
+        "research_relevance_reason": "About segmentation downstream task.",
+        "research_relevance_level": "context"
+      },
+      {
+        "id": "table-4",
+        "type": "table",
+        "page": 8,
+        "label": "Table 4",
+        "title": "Ablation study on SHREC19",
+        "what_it_is": "Ablation over OT loss variants and adaptive refinement.",
+        "why_it_is_here": "Validates design choices for feature alignment and refinement.",
+        "claim_supported": "BiSW/EBSW and adaptive refinement each improve over MSE and no-refinement.",
+        "limitations": "Trained on FAUST+SCAPE, tested only on SHREC19; does not separate biEBSW number in table body beyond text.",
+        "paper_importance": 0.85,
+        "paper_importance_reason": "Directly isolates contribution of OT loss choice and refinement.",
+        "related_objects": [
+          "eq-10",
+          "eq-11",
+          "eq-14"
+        ],
+        "confidence": 0.88,
+        "evidence": "p.8, Table 4 ablation values",
+        "equation": null,
+        "figure": null,
+        "table": {
+          "metric": "Mean geodesic error x100 on SHREC19",
+          "higher_or_lower_is_better": "lower",
+          "important_comparisons": [
+            "LMSE 34.3 vs LbiSW 4.8 vs Ours (biEBSW+refine) 4.7",
+            "w.o. adaptive refinement 7.2 vs Ours 4.7"
+          ],
+          "result_interpretation": "MSE fails to align; bidirectional SW slightly beats uniSW; refinement gives large gain."
+        },
+        "research_relevance": "Ablates MSE vs BiSW/EBSW and refinement on SHREC19, directly answering whether alternative OT costs improve correspondence.",
+        "research_relevance_score": 1.0,
+        "research_relevance_reason": "Direct OT cost comparison ablation.",
+        "research_relevance_level": "high"
+      },
+      {
+        "id": "claim-1",
+        "type": "claim",
+        "page": 7,
+        "label": null,
+        "title": "SOTA near-isometric shape correspondence",
+        "what_it_is": "Experimentally testable claim that method outperforms prior axiomatic/supervised/unsupervised baselines on remeshed FAUST/SCAPE/SHREC19.",
+        "why_it_is_here": "Summarizes primary empirical contribution for near-isometric scenario.",
+        "claim_supported": "Proposed unsupervised EOT+FM method achieves SOTA near-isometric matching (FAUST/SCAPE/SHREC19).",
+        "limitations": "Not stated whether gains are statistically significant; limited to mean geodesic error.",
+        "paper_importance": 0.95,
+        "paper_importance_reason": "Central performance claim covering main human shape benchmarks.",
+        "related_objects": [
+          "table-1",
+          "fig-2"
+        ],
+        "confidence": 0.89,
+        "evidence": "p.6-7, Sec.5.1 text plus Table 1 and Fig.2",
+        "equation": null,
+        "figure": null,
+        "table": null,
+        "research_relevance": "Claims SOTA near-isometric matching with EOT+FM, providing empirical yes to improvement but without cost-wise breakdown.",
+        "research_relevance_score": 0.65,
+        "research_relevance_reason": "Overall near-isometric SOTA claim.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "claim-2",
+        "type": "claim",
+        "page": 7,
+        "label": null,
+        "title": "SOTA non-isometric matching and transfer",
+        "what_it_is": "Claim of superior geodesic error on SMAL/DT4D-H and higher mIOU on FAUST segmentation transfer.",
+        "why_it_is_here": "Captures generalization beyond near-isometric humans.",
+        "claim_supported": "Proposed method achieves SOTA non-isometric matching (SMAL/DT4D-H) and segmentation transfer.",
+        "limitations": "Does not establish cross-dataset training details beyond splits from [16]; resolution differs (10K vs 20K).",
+        "paper_importance": 0.93,
+        "paper_importance_reason": "Extends SOTA claim to harder non-isometric and downstream tasks showing generalization.",
+        "related_objects": [
+          "table-2",
+          "table-3",
+          "fig-3",
+          "fig-4"
+        ],
+        "confidence": 0.88,
+        "evidence": "p.7-8, Sec.5.2-5.3 text plus Table 2, Table 3, Fig.3, Fig.4",
+        "equation": null,
+        "figure": null,
+        "table": null,
+        "research_relevance": "Claims SOTA non-isometric matching and segmentation transfer, supporting generalization but not isolating OT cost effect.",
+        "research_relevance_score": 0.6,
+        "research_relevance_reason": "Overall non-isometric and transfer claim.",
+        "research_relevance_level": "related"
+      },
+      {
+        "id": "claim-3",
+        "type": "claim",
+        "page": 8,
+        "label": null,
+        "title": "OT loss and refinement efficacy",
+        "what_it_is": "Claim that replacing LOT with MSE degrades drastically and removing refinement degrades 4.7 to 7.2.",
+        "why_it_is_here": "Justifies novel components as causal drivers of performance.",
+        "claim_supported": "Bidirectional SW/EBSW OT loss and entropic adaptive refinement are necessary for best accuracy.",
+        "limitations": "Ablation only on SHREC19 after FAUST+SCAPE training; does not ablate proper or fmap weights.",
+        "paper_importance": 0.85,
+        "paper_importance_reason": "Mechanistic claim attributing gains to proposed OT losses and refinement.",
+        "related_objects": [
+          "table-4",
+          "eq-10",
+          "eq-11",
+          "eq-14"
+        ],
+        "confidence": 0.86,
+        "evidence": "p.8, Sec.6 text plus Table 4",
+        "equation": null,
+        "figure": null,
+        "table": null,
+        "research_relevance": "Claims replacing OT loss with MSE degrades drastically and refinement helps, directly attributing gains to alternative OT costs.",
+        "research_relevance_score": 0.9,
+        "research_relevance_reason": "Causal claim for OT loss efficacy.",
+        "research_relevance_level": "high"
+      }
+    ]
+  },
+  "localizations": [
+    {
+      "object_id": "eq-1",
+      "page": 3,
+      "bbox": {
+        "x_min": 144,
+        "y_min": 882,
+        "x_max": 470,
+        "y_max": 905
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-2",
+      "page": 3,
+      "bbox": {
+        "x_min": 527,
+        "y_min": 291,
+        "x_max": 876,
+        "y_max": 320
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-3",
+      "page": 3,
+      "bbox": {
+        "x_min": 517,
+        "y_min": 563,
+        "x_max": 876,
+        "y_max": 591
+      },
+      "confidence": 0.94,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-4",
+      "page": 3,
+      "bbox": {
+        "x_min": 560,
+        "y_min": 759,
+        "x_max": 876,
+        "y_max": 781
+      },
+      "confidence": 0.94,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-5",
+      "page": 4,
+      "bbox": {
+        "x_min": 142,
+        "y_min": 501,
+        "x_max": 470,
+        "y_max": 537
+      },
+      "confidence": 0.92,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-6",
+      "page": 4,
+      "bbox": {
+        "x_min": 92,
+        "y_min": 620,
+        "x_max": 471,
+        "y_max": 642
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-7",
+      "page": 4,
+      "bbox": {
+        "x_min": 98,
+        "y_min": 760,
+        "x_max": 469,
+        "y_max": 831
+      },
+      "confidence": 0.9,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-8",
+      "page": 5,
+      "bbox": {
+        "x_min": 172,
+        "y_min": 152,
+        "x_max": 379,
+        "y_max": 170
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-9",
+      "page": 5,
+      "bbox": {
+        "x_min": 144,
+        "y_min": 414,
+        "x_max": 408,
+        "y_max": 451
+      },
+      "confidence": 0.94,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-10",
+      "page": 5,
+      "bbox": {
+        "x_min": 101,
+        "y_min": 802,
+        "x_max": 436,
+        "y_max": 841
+      },
+      "confidence": 0.92,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-11",
+      "page": 5,
+      "bbox": {
+        "x_min": 528,
+        "y_min": 427,
+        "x_max": 862,
+        "y_max": 462
+      },
+      "confidence": 0.93,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-12",
+      "page": 5,
+      "bbox": {
+        "x_min": 588,
+        "y_min": 848,
+        "x_max": 802,
+        "y_max": 866
+      },
+      "confidence": 0.94,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-13",
+      "page": 6,
+      "bbox": {
+        "x_min": 115,
+        "y_min": 218,
+        "x_max": 405,
+        "y_max": 235
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "eq-14",
+      "page": 6,
+      "bbox": {
+        "x_min": 167,
+        "y_min": 414,
+        "x_max": 400,
+        "y_max": 433
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-1",
+      "page": 4,
+      "bbox": {
+        "x_min": 80,
+        "y_min": 78,
+        "x_max": 912,
+        "y_max": 442
+      },
+      "confidence": 0.98,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-2",
+      "page": 7,
+      "bbox": {
+        "x_min": 80,
+        "y_min": 443,
+        "x_max": 470,
+        "y_max": 765
+      },
+      "confidence": 0.95,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-3",
+      "page": 8,
+      "bbox": {
+        "x_min": 75,
+        "y_min": 88,
+        "x_max": 475,
+        "y_max": 365
+      },
+      "confidence": 0.96,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "fig-4",
+      "page": 8,
+      "bbox": {
+        "x_min": 78,
+        "y_min": 372,
+        "x_max": 474,
+        "y_max": 725
+      },
+      "confidence": 0.96,
+      "localization_method": "muse_vision",
+      "localization_note": "Located by Muse vision on the full page render."
+    },
+    {
+      "object_id": "table-1",
+      "page": 7,
+      "bbox": {
+        "x_min": 75,
+        "y_min": 86,
+        "x_max": 897,
+        "y_max": 419
+      },
+      "confidence": 0.9,
+      "localization_method": "pdf_native",
+      "localization_note": "Detected by PyMuPDF table finder and matched to Table 1 caption."
+    },
+    {
+      "object_id": "table-2",
+      "page": 7,
+      "bbox": {
+        "x_min": 501,
+        "y_min": 444,
+        "x_max": 891,
+        "y_max": 647
+      },
+      "confidence": 0.96,
+      "localization_method": "hybrid",
+      "localization_note": "Located by Muse vision in a caption-anchored crop; mapped to page coordinates."
+    },
+    {
+      "object_id": "table-3",
+      "page": 7,
+      "bbox": {
+        "x_min": 498,
+        "y_min": 693,
+        "x_max": 897,
+        "y_max": 862
+      },
+      "confidence": 0.9,
+      "localization_method": "pdf_native",
+      "localization_note": "Detected by PyMuPDF table finder and matched to Table 3 caption."
+    },
+    {
+      "object_id": "table-4",
+      "page": 8,
+      "bbox": {
+        "x_min": 498,
+        "y_min": 301,
+        "x_max": 897,
+        "y_max": 504
+      },
+      "confidence": 0.9,
+      "localization_method": "pdf_native",
+      "localization_note": "Detected by PyMuPDF table finder and matched to Table 4 caption."
+    }
+  ]
+}

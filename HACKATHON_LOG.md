@@ -194,3 +194,62 @@ deployment infrastructure, chat interface, unrelated refactors.
 **Caveats:** vision localization stays nondeterministic per run (cache +
 retries mitigate); Figure 1 is related rather than high by model judgment;
 raw relevance scores are hidden from the UI by design (kept in JSON).
+
+## Milestone 4 — Research Project + Cross-Paper Memory (2026-11-03)
+
+**Goal:** stop treating each paper independently — one persistent research
+question across manually added papers, with findings, typed connections, open
+questions, and corpus-scoped novelty risks.
+
+**Built (backend, `prototype/project.py`, new; `analyze_paper.py` untouched):**
+
+- File-backed project state (`prototype/projects/<slug>/project.json`, no DB):
+  `init` creates a project with one question; `add-paper` runs one text-only
+  Muse call that interprets the new paper relative to existing findings
+  (≤5 grounded findings with paper evidence + object ids, connections,
+  contribution answering adds/stance/overlap/new-questions, open questions,
+  novelty risks); `stage-web` copies per-paper fixtures into `web/public/`.
+- Connection enum holds exactly the 7 requested types; only supported
+  relationships are created (zero instances valid). All ids canonical
+  (`f/c/q/n`); every finding/paper/object reference validated, first paper
+  must propose no connections.
+- Novelty risks are structured (direction + overlapping finding refs + note)
+  and the UI renders them under a fixed "Within the papers currently
+  analyzed…" prefix — global novelty is never claimed.
+
+**Live run (question unchanged; Deep Shells added first, EOT second):**
+Deep Shells analysis 23 objects (3 high incl. the entropic-OT baseline
+energy), localized 20/20 after one cache-assisted retry; EOT reused as-is.
+Project: 8 findings, 3 connections (f5 extends f3, f7 uses_same_method f1,
+f6 extends f5 — other 5 types zero, as allowed), 5 open questions, 4 risks.
+All EOT/Deep-Shells delta content manually reviewed in JSON for grounding.
+
+**Built (frontend, `web/`):**
+
+- Reader extracted to parameterized `components/Reader.tsx`; `/` unchanged
+  in behavior (EOT); new `/read/[paperId]` serves any staged paper;
+  findings deep-link via `?select=`.
+- New `/project` view: question + counts, paper cards opening in the reader,
+  key findings with evidence + deep links, connections grouped by present
+  type only (restrained semantic colors: green supports, red contradicts,
+  amber leaves-open/different-assumption), open questions and novelty risks
+  with finding refs.
+- `lib/project.ts` pure helpers + `project.test.ts` (6 tests).
+
+**Verification:** 85/85 backend tests (16 new); 14/14 frontend tests;
+`tsc` clean; `next build` green (webpack builder — sandbox blocks Turbopack,
+as before); production smoke 200 on `/`, `/project`, both readers,
+project/paper fixtures, and staged PDFs.
+
+**Asset rights:** paper PDFs are now local-only fixtures (`*.pdf` ignored;
+previously tracked PDFs untracked via `git rm --cached`, files kept).
+Caveat: earlier commits still contain the EOT PDF bytes; history was
+deliberately not rewritten. Only model-generated JSON fixtures are committed.
+
+**Explicitly out of scope:** literature search, vector DB, auth, Supabase,
+Modal, experiment execution, graph visualization, deployment infra.
+
+**Caveats:** cross-paper links are model-proposed (validated for reference
+integrity, not truth); adding a paper never revises earlier papers' deltas;
+project.json is single-writer (no concurrency); in-browser visual check left
+to the demo.

@@ -126,17 +126,50 @@ python prototype/analyze_paper.py \
   related, gray = context). No red/green — reserved for later verification
   states.
 
+## Milestone 4: Research Project + Cross-Paper Memory
+
+One project, one persistent question, multiple manually added papers.
+Per-paper analysis is unchanged; `prototype/project.py` adds the memory layer:
+
+```bash
+source .venv/bin/activate
+python prototype/project.py init \
+  --question "Can alternative optimal transport costs improve non-rigid shape correspondence?" \
+  --project-dir prototype/projects/ot-correspondence
+python prototype/project.py add-paper \
+  --project-dir prototype/projects/ot-correspondence \
+  --paper-id deep-shells \
+  --pdf samples/<paper>.pdf \
+  --analysis prototype/deep_shells_output.json \
+  --localized prototype/deep_shells_localized.json
+python prototype/project.py stage-web \
+  --project-dir prototype/projects/ot-correspondence \
+  --web-dir web
+```
+
+Each `add-paper` interprets the new paper relative to existing findings
+(grounded findings, typed connections, contribution, open questions,
+corpus-scoped novelty risks) and appends to `project.json` — no database.
+The web app gains `/project` (question, papers, findings, connections,
+questions, risks) and `/read/[paperId]` (any paper in the existing Reader);
+`/` is unchanged.
+
+Paper PDFs are local-only fixtures and are never committed (see `.gitignore`).
+Only model-generated JSON is committed.
+
 ## Layout
 
 - `prototype/analyze_paper.py` — Milestone 1: CLI, prompt, API calls,
   Pydantic models, validation
 - `prototype/localize_objects.py` — Milestone 2: page rendering, visual
   localization, debug overlays
+- `prototype/project.py` — Milestone 4: project memory CLI + models
 - `prototype/test_analyze_paper.py`, `prototype/test_localize_objects.py`,
-  `prototype/test_inventory.py` — offline tests (no API key):
+  `prototype/test_inventory.py`, `prototype/test_project.py` — offline tests
+  (no API key):
   `.venv/bin/python -m unittest discover -s prototype -p "test_*.py"`
-- `web/app/lib/relevance.test.ts` — frontend unit tests (vitest):
-  `cd web && npm test`
+- `web/app/lib/relevance.test.ts`, `web/app/lib/project.test.ts` — frontend
+  unit tests (vitest): `cd web && npm test`
 - `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
   `pymupdf`, `pillow`
 - `web/` — Milestone 3 Next.js reader (`app/`, `public/paper.pdf`,

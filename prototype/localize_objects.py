@@ -755,7 +755,12 @@ def main() -> int:
                     file=sys.stderr,
                 )
                 if debug_dir:
-                    debug_png = draw_debug_image(page_png, locs)
+                    cached_here = [
+                        cached_by_id[o.id]
+                        for o in by_page[page_number]
+                        if o.id in cached_by_id
+                    ]
+                    debug_png = draw_debug_image(page_png, locs + cached_here)
                     (debug_dir / f"page-{page_number:02d}.png").write_bytes(debug_png)
                 if use_cache:
                     for o, m in zip(known, locs):
