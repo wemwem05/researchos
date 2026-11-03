@@ -201,7 +201,7 @@ class CriticVerdict(BaseModel):
 
 
 class HumanReviewRequest(BaseModel):
-    kind: Literal["ambiguity", "revision_disagreement", "novelty_risk"] = "ambiguity"
+    kind: Literal["ambiguity", "revision_disagreement", "novelty_risk", "verification"] = "ambiguity"
     question: str
     why_stopped: str
     investigator_position: str
@@ -237,7 +237,9 @@ class RunRecord(BaseModel):
     schema_version: str = SCHEMA_VERSION
     thread_id: str
     project_id: str
+    kind: str = "investigate"  # M6 adds "verify"; old records default correctly
     paper_id: str
+    claim_id: str = ""  # M6 verify runs only; empty for investigations
     research_question: str = ""
     status: str = "running"
     synthetic: bool = False

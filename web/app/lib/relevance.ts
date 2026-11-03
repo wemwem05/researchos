@@ -6,7 +6,7 @@
 import type { RelevanceLevel, SciObject } from "./types";
 
 export type LensMode = "focus" | "all";
-export type TypeFilter = "all" | "equation" | "figure" | "table";
+export type TypeFilter = "all" | "equation" | "figure" | "table" | "claim";
 
 export const HIGH_THRESHOLD = 0.75;
 export const RELATED_THRESHOLD = 0.4;
@@ -45,7 +45,7 @@ export function overlayTreatment(
   return level === "high" ? "accent" : level === "related" ? "subtle" : "hidden";
 }
 
-/** Navigator entries: every explainable (localized) object, high first. */
+/** Navigator entries: every localized object plus text-only claims, high first. */
 export function navigatorOrder(objects: SciObject[]): SciObject[] {
   const rank = { high: 0, related: 1, context: 2 } as const;
   return [...objects].sort(

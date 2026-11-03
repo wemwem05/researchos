@@ -107,6 +107,48 @@ def cmd_verify(_args: argparse.Namespace) -> int:
     return 0
 
 
+def paper_analysis(project_dir: Path, paper_id: str) -> tuple[PaperEntry, AnalysisResult, str]:
+    """Load a project paper's full analysis from its localized fixture.
+
+    Raises ValueError when the paper or its analysis is unavailable.
+    Returns (paper, analysis, repo-relative localized path).
+    """
+    project = load_project(project_dir)
+    paper = next((p for p in project.papers if p.paper_id == paper_id), None)
+    if paper is None:
+        raise ValueError(f"unknown paper '{paper_id}'")
+    if not paper.localized_path:
+        raise ValueError(f"paper '{paper_id}' has no localized analysis")
+    localized_file = _resolve(paper.localized_path)
+    if not localized_file.is_file():
+        raise ValueError(f"localized analysis missing: {paper.localized_path}")
+    try:
+        doc = json.loads(localized_file.read_text())
+        analysis = AnalysisResult.model_validate(doc["analysis"])
+    except Exception as e:
+        raise ValueError(f"invalid localized analysis: {e}") from e
+    return paper, analysis, paper.localized_path
+
+
+def validate_claim_ref(project_dir: Path, paper_id: str, claim_id: str) -> tuple[PaperEntry, AnalysisResult, str]:
+    """Validate a (paper, claim) reference for verification. Claims only."""
+    paper, analysis, loc_path = paper_analysis(project_dir, paper_id)
+    target = next((o for o in analysis.objects if o.id == claim_id), None)
+    if target is None:
+        raise ValueError(f"unknown object '{claim_id}' in paper '{paper_id}'")
+    if target.type != "claim":
+        raise ValueError(f"object '{claim_id}' is a {target.type}, not a claim")
+    return paper, analysis, loc_path
+
+
+def load_record_analysis(record: RunRecord) -> AnalysisResult:
+    """Load analysis for a run record (plain analysis or localized wrapper)."""
+    doc = json.loads(_resolve(record.analysis_path).read_text())
+    if isinstance(doc, dict) and "analysis" in doc and "objects" not in doc:
+        doc = doc["analysis"]
+    return AnalysisResult.model_validate(doc)
+
+
 def cmd_investigate(args: argparse.Namespace) -> int:
     project_dir = Path(args.project_dir)
     if not project_path(project_dir).is_file():
@@ -183,7 +225,9 @@ def cmd_status(args: argparse.Namespace) -> int:
         return 0
     for r in records:
         steps = " -> ".join(t.node for t in r.transitions[-6:])
-        print(f"{r.thread_id}  paper={r.paper_id}  status={r.status}  updated={r.updated_at}")
+        extra = f"  claim={r.claim_id}" if r.kind == "verify" else ""
+        print(f"{r.thread_id}  kind={r.kind}  paper={r.paper_id}{extra}  "
+              f"status={r.status}  updated={r.updated_at}")
         print(f"    {steps}")
     summary = telemetry_summary(project_dir)
     print(f"telemetry: {summary['calls']} calls, avg "
@@ -209,14 +253,53 @@ def resume_investigation(project_dir: Path, thread_id: str, choice: str, free_te
     return load_run_record(project_dir, thread_id)
 
 
+def resume_verification(project_dir: Path, thread_id: str, choice: str, free_text: str = "") -> RunRecord:
+    """Resume an awaiting_human verification run.
+
+    Unlike investigations, the verify path past a review may still need
+    model calls (replan/repair) and Modal execution, so real clients are
+    built. Checkpointing guarantees completed calls never repeat.
+    """
+    from modal_exec import ModalExec
+    from verify_graph import VerifyContext, build_verify_graph, initial_verify_state
+
+    record = load_run_record(project_dir, thread_id)
+    if record.status != "awaiting_human":
+        raise ValueError(f"thread {thread_id} is '{record.status}', not awaiting_human")
+    analysis = load_record_analysis(record)
+    paper = PaperEntry.model_validate(record.paper)
+    ctx = VerifyContext(
+        project_dir=project_dir, analysis=analysis, paper=paper,
+        claim_id=record.claim_id, spark=SparkOpenClient(), modal=ModalExec(),
+    )
+    config = {"configurable": {"thread_id": thread_id, "ctx": ctx}}
+    with _checkpointer(project_dir) as checkpointer:
+        graph = build_verify_graph(checkpointer)
+        graph.invoke(resume_command(choice, free_text), config)
+    return load_run_record(project_dir, thread_id)
+
+
 def cmd_review(args: argparse.Namespace) -> int:
     project_dir = Path(args.project_dir)
     try:
-        record = resume_investigation(project_dir, args.thread_id, args.choice, args.free_text or "")
+        kind = load_run_record(project_dir, args.thread_id).kind or "investigate"
+    except FileNotFoundError:
+        print(f"error: unknown thread {args.thread_id}", file=sys.stderr)
+        return 2
+    try:
+        if kind == "verify":
+            record = resume_verification(project_dir, args.thread_id, args.choice,
+                                         args.free_text or "")
+        else:
+            record = resume_investigation(project_dir, args.thread_id, args.choice,
+                                          args.free_text or "")
     except FileNotFoundError:
         print(f"error: unknown thread {args.thread_id}", file=sys.stderr)
         return 2
     except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    except SparkOpenError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
     print(f"[{record.status}] thread {args.thread_id}", file=sys.stderr)
@@ -224,6 +307,70 @@ def cmd_review(args: argparse.Namespace) -> int:
         print(f"  error: {record.error}", file=sys.stderr)
         return 1
     return 0
+
+
+def cmd_verify_claim(args: argparse.Namespace) -> int:
+    from modal_exec import ModalExec, ModalError
+    from verify_graph import VerifyContext, build_verify_graph, initial_verify_state, new_verify_thread_id
+
+    project_dir = Path(args.project_dir)
+    if not project_path(project_dir).is_file():
+        print(f"error: no project in {project_dir} (run project.py init first)", file=sys.stderr)
+        return 2
+    try:
+        paper, analysis, loc_path = validate_claim_ref(project_dir, args.paper_id, args.claim_id)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    try:
+        spark = SparkOpenClient()
+    except SparkOpenError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    modal = ModalExec()
+    try:
+        auth = modal.verify_auth()
+    except ModalError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    print(f"[modal] authenticated ({auth.get('app')})", file=sys.stderr)
+
+    project_id = project_dir.resolve().name
+    thread_id = args.thread_id or new_verify_thread_id(project_id, args.paper_id, args.claim_id)
+    record = RunRecord(
+        thread_id=thread_id,
+        project_id=project_id,
+        kind="verify",
+        paper_id=args.paper_id,
+        claim_id=args.claim_id,
+        research_question=load_project(project_dir).research_question,
+        status="running",
+        created_at=utc_now_iso(),
+        updated_at=utc_now_iso(),
+        paper=paper.model_dump(),
+        analysis_path=loc_path,
+    )
+    save_run_record(project_dir, record)
+    ctx = VerifyContext(project_dir=project_dir, analysis=analysis, paper=paper,
+                        claim_id=args.claim_id, spark=spark, modal=modal)
+    config = {"configurable": {"thread_id": thread_id, "ctx": ctx}}
+    with _checkpointer(project_dir) as checkpointer:
+        graph = build_verify_graph(checkpointer)
+        graph.invoke(initial_verify_state(project_id, thread_id, args.paper_id, args.claim_id), config)
+    record = load_run_record(project_dir, thread_id)
+    if record.status == "awaiting_human":
+        req = record.human_review_request or {}
+        print(f"[human review] thread {thread_id} is waiting.", file=sys.stderr)
+        print(f"  question: {req.get('question', '')[:300]}", file=sys.stderr)
+        print(f"  options: {req.get('options', [])}", file=sys.stderr)
+        print(f"  resume: agent.py review --project-dir {args.project_dir} "
+              f"--thread-id {thread_id} --choice \"...\"", file=sys.stderr)
+        return 0
+    if record.status == "completed":
+        print(f"[done] thread {thread_id} completed.", file=sys.stderr)
+        return 0
+    print(f"[failed] thread {thread_id}: {record.error}", file=sys.stderr)
+    return 1
 
 
 def stage_agent_web(project_dir: Path, web_dir: Path) -> None:
@@ -248,9 +395,56 @@ def stage_agent_web(project_dir: Path, web_dir: Path) -> None:
     print(f"[done] staged {len(records)} agent runs + telemetry into {out}", file=sys.stderr)
 
 
+def stage_verifications(project_dir: Path, web_dir: Path) -> None:
+    """Stage verification evidence + artifacts (code, CSV, plot, logs)."""
+    import shutil
+
+    from verify_graph import verify_thread_dir
+
+    out = web_dir / "public" / "data" / "agent" / "verifications"
+    out.mkdir(parents=True, exist_ok=True)
+    try:
+        project = load_project(project_dir)
+    except FileNotFoundError:
+        (web_dir / "public" / "data" / "agent" / "verifications.json").write_text(
+            "[]\n", encoding="utf-8")
+        return
+    staged = []
+    for v in project.verifications:
+        thread_out = out / v.thread_id
+        thread_out.mkdir(parents=True, exist_ok=True)
+        entry = v.model_dump()
+        for src_key, filename, web_key in (
+            ("code_path", "experiment.py", "web_code"),
+            ("measurements_path", "results.csv", "web_measurements"),
+            ("plot_path", "scaling.png", "web_plot"),
+            ("stdout_path", "stdout.txt", "web_stdout"),
+            ("stderr_path", "stderr.txt", "web_stderr"),
+        ):
+            rel = entry.get(src_key) or ""
+            src = (project_dir / rel) if rel else None
+            if src is not None and src.is_file():
+                shutil.copyfile(src, thread_out / filename)
+                entry[web_key] = f"/data/agent/verifications/{v.thread_id}/{filename}"
+            else:
+                entry[web_key] = None
+        ev_src = verify_thread_dir(project_dir, v.thread_id) / "evidence.json"
+        if ev_src.is_file():
+            shutil.copyfile(ev_src, thread_out / "evidence.json")
+            entry["web_evidence"] = f"/data/agent/verifications/{v.thread_id}/evidence.json"
+        else:
+            entry["web_evidence"] = None
+        staged.append(entry)
+    (web_dir / "public" / "data" / "agent" / "verifications.json").write_text(
+        json.dumps(staged, indent=2) + "\n", encoding="utf-8"
+    )
+    print(f"[done] staged {len(staged)} verifications into {out}", file=sys.stderr)
+
+
 def cmd_stage_web(args: argparse.Namespace) -> int:
     try:
         stage_agent_web(Path(args.project_dir), Path(args.web_dir))
+        stage_verifications(Path(args.project_dir), Path(args.web_dir))
     except Exception as e:
         print(f"error: stage-web failed: {e}", file=sys.stderr)
         return 1
@@ -290,6 +484,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     pw.add_argument("--project-dir", required=True)
     pw.add_argument("--web-dir", default="web")
 
+    pvf = sub.add_parser("verify-claim", help="Verify one claim computationally (Modal).")
+    pvf.add_argument("--project-dir", required=True)
+    pvf.add_argument("--paper-id", required=True)
+    pvf.add_argument("--claim-id", required=True)
+    pvf.add_argument("--thread-id", default=None)
+
     pv = sub.add_parser("verify", help="Probe Baseten connectivity with one real call.")
 
     pserve = sub.add_parser("serve", help="Serve the agent API for live HITL resume.")
@@ -308,6 +508,8 @@ def main() -> int:
         return cmd_review(args)
     if args.command == "stage-web":
         return cmd_stage_web(args)
+    if args.command == "verify-claim":
+        return cmd_verify_claim(args)
     if args.command == "verify":
         return cmd_verify(args)
     if args.command == "serve":

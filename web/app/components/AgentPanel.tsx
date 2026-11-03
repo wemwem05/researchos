@@ -47,6 +47,7 @@ export function AgentRunSection({ run }: { run: AgentRunRecord | null }) {
           <div className="text-sm font-semibold text-neutral-900">Agent run</div>
           <p className="mt-0.5 font-mono text-[11px] text-neutral-500">
             {run.thread_id} · paper {run.paper_id}
+            {run.kind === "verify" && run.claim_id ? ` · claim ${run.claim_id}` : ""}
           </p>
         </div>
         <span

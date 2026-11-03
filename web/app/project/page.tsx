@@ -14,6 +14,11 @@ import {
   ReviewCard,
   SyntheticWalkthrough,
 } from "../components/AgentPanel";
+import VerificationEvidence from "../components/VerificationEvidence";
+import {
+  fetchLiveVerifications,
+  type VerificationEvidenceView,
+} from "../lib/verification";
 import type { Connection, ConnectionType, ProjectData } from "../lib/project";
 import {
   CORPUS_SCOPE_PREFIX,
@@ -63,6 +68,7 @@ export default function ProjectPage() {
   const [agentRun, setAgentRun] = useState<AgentRunRecord | null>(null);
   const [agentSummary, setAgentSummary] = useState<AgentTelemetrySummary | null>(null);
   const [syntheticDemo, setSyntheticDemo] = useState<AgentRunRecord | null>(null);
+  const [verifications, setVerifications] = useState<VerificationEvidenceView[] | null>(null);
   const [liveAgent, setLiveAgent] = useState(false);
   const [agentTick, setAgentTick] = useState(0);
 
@@ -112,6 +118,30 @@ export default function ProjectPage() {
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null)) as AgentRunRecord | null;
         if (!cancelled && demo) setSyntheticDemo(demo);
+        if (live) {
+          const list = await fetchLiveVerifications().catch(() => null);
+          if (!cancelled && list) {
+            setVerifications(
+              list.map((v) => {
+                const base = `${AGENT_API_BASE}/api/agent/verifications/${v.thread_id}/files`;
+                return {
+                  ...v,
+                  web_code: `${base}/experiment.py`,
+                  web_measurements: `${base}/results.csv`,
+                  web_plot: `${base}/scaling.png`,
+                  web_stdout: `${base}/stdout.txt`,
+                  web_stderr: `${base}/stderr.txt`,
+                  web_evidence: `${base}/evidence.json`,
+                };
+              })
+            );
+          }
+        } else {
+          const staged = (await fetch("/data/agent/verifications.json")
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)) as VerificationEvidenceView[] | null;
+          if (!cancelled && staged) setVerifications(staged);
+        }
       } catch {
         // no agent data staged: sections stay hidden, M4 view unchanged
       }
@@ -198,6 +228,14 @@ export default function ProjectPage() {
           <div className="mt-8">
             <SyntheticWalkthrough demo={syntheticDemo} />
           </div>
+        )}
+
+        {verifications && verifications.length > 0 && (
+          <Section title={`Computational verification (${verifications.length})`}>
+            {verifications.map((v) => (
+              <VerificationEvidence key={v.id} evidence={v} />
+            ))}
+          </Section>
         )}
 
         <Section title={`Papers (${project.papers.length})`}>

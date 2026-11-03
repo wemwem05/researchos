@@ -186,6 +186,34 @@ Checkpoints are SQLite per project, so a run survives process restarts and
 delayed reviews without re-running completed model calls. PDF perception
 still uses hosted Muse; only investigator/critic/revision use Spark Open.
 
+## Milestone 6: Autonomous Computational Verification
+
+A researcher-selected claim is planned, executed in an isolated Modal
+Sandbox, and honestly interpreted (`prototype/verify_graph.py`, same
+Spark Open model via Baseten, same LangGraph/checkpoint/telemetry
+architecture as Milestone 5):
+
+```bash
+source .venv/bin/activate
+python prototype/agent.py verify-claim \
+  --project-dir prototype/projects/ot-correspondence \
+  --paper-id eot-maps --claim-id claim-3
+# answer any human review (expensive/unsafe/unavailable-data only):
+python prototype/agent.py review --project-dir prototype/projects/ot-correspondence \
+  --thread-id <id> --choice "Proceed anyway (record limitation)"
+python prototype/agent.py stage-web --project-dir prototype/projects/ot-correspondence --web-dir web
+```
+
+Nothing runs automatically: verification starts explicitly per claim from
+the CLI or the Reader's "Verify computationally" action (via the local
+agent server, refs only). CPU-only, network-blocked sandboxes with
+pinned dependencies; bounded repair (max 3); verdicts are supported /
+not supported in tested conditions, inconclusive, execution failed, or
+not computationally testable — never a universal "reproduced" badge.
+Evidence (code + hash, env, params/seeds, measurements, plot, logs,
+telemetry, interpretation, limitations) attaches to the originating
+paper and shows in the Project view's Verification section.
+
 ## Layout
 
 - `prototype/analyze_paper.py` — Milestone 1: CLI, prompt, API calls,
@@ -201,15 +229,20 @@ still uses hosted Muse; only investigator/critic/revision use Spark Open.
   stage-web/serve/verify)
 - `prototype/agent_server.py` — Milestone 5: stdlib API for live HITL resume
 - `prototype/synthetic_demo.py` — Milestone 5: labeled synthetic HITL fixture
+- `prototype/modal_exec.py` — Milestone 6: Modal Sandbox runner (limits,
+  network-blocked, pinned image, `FakeModal` double)
+- `prototype/verify_graph.py` — Milestone 6: verification subgraph
+  (classify/plan/code/execute/validate/interpret/repair/evidence/attach)
 - `prototype/test_analyze_paper.py`, `prototype/test_localize_objects.py`,
   `prototype/test_inventory.py`, `prototype/test_project.py`,
-  `prototype/test_agent_graph.py` — offline tests (no API key):
+  `prototype/test_agent_graph.py`, `prototype/test_verify_graph.py` —
+  offline tests (no API key):
   `.venv/bin/python -m unittest discover -s prototype -p "test_*.py"`
 - `web/app/lib/relevance.test.ts`, `web/app/lib/project.test.ts`,
-  `web/app/lib/agent.test.ts` — frontend unit tests (vitest):
-  `cd web && npm test`
+  `web/app/lib/agent.test.ts`, `web/app/lib/verification.test.ts` —
+  frontend unit tests (vitest): `cd web && npm test`
 - `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
-  `pymupdf`, `pillow`, `langgraph`, `langgraph-checkpoint-sqlite`
+  `pymupdf`, `pillow`, `langgraph`, `langgraph-checkpoint-sqlite`, `modal`
 - `web/` — Milestone 3 Next.js reader (`app/`, `public/paper.pdf`,
   `public/data/localized_output.json`)
 - `samples/` — sample paper PDF

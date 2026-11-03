@@ -1,4 +1,4 @@
-# Open-Weight Model Usage (Milestone 5)
+# Open-Weight Model Usage (Milestones 5–6)
 
 ## Identity
 
@@ -37,6 +37,26 @@ connections, verdict, and fixes ARE the decisions, and deterministic gates
 only check their grounding (known ids, valid types, bounds, corpus-scoped
 wording). Invalid output can never mutate project state.
 
+Milestone 6 adds a second workflow on the same model — computational
+verification (`prototype/verify_graph.py`). Spark Open acts as:
+
+- **Testability classifier** — is this claim's computational aspect
+  benchmarkable on synthetic data, or does it need unavailable real data?
+- **Experiment planner** — hypothesis, variables, algorithms, fixed seeds,
+  reps + warm-up, documented Sinkhorn parameters, pre-registered success
+  criteria, budget, limitations, and explicit scope notes.
+- **Experiment coder** — the full benchmark file under a strict,
+  deterministically checked contract (import allowlist, CSV schema,
+  sanity flags, artifacts).
+- **Failure diagnostician** — bounded repair (max 3) from preflight errors
+  or sandbox stdout/stderr.
+- **Interpreter** — observed-vs-interpreted report with one of five honest
+  statuses. A deterministic clamp re-checks the verdict: successful
+  execution alone can never yield "supported".
+
+PDF perception still uses hosted Muse (below); all agentic reasoning in
+Milestones 5–6 uses Spark Open.
+
 ## What still uses hosted Muse, and why
 
 PDF perception is unchanged and still uses `muse-spark-1.3` via the Meta
@@ -67,6 +87,10 @@ agentic reasoning layer is what moved to the open-weight model.
    interrupt; `agent.py review` or the Project view resumes it. The
    synthetic fixture is canned (provider `synthetic-demo`) and never mixes
    with real project output.
+6. **Inspect a real verification**: `web/public/data/agent/verifications.json`
+   plus per-thread `evidence.json`, `experiment.py`, `results.csv`,
+   `scaling.png`, and logs show a Spark-planned, Modal-executed benchmark
+   with measured numbers and an honest (non-"supported") verdict.
 
 ## Where telemetry is stored
 
@@ -76,5 +100,9 @@ agentic reasoning layer is what moved to the open-weight model.
   request/response, final status).
 - `<project>/agent/checkpoints.sqlite` — LangGraph SQLite checkpoints
   (durable interrupt/resume across process restarts).
+- `<project>/agent/verifications/<thread>/` — per-attempt code, CSV, plot,
+  stdout/stderr, env record, and `evidence.json` for each verification.
 
 API keys are never written to any of these files (covered by test).
+Modal credentials stay on the host (env or `~/.modal.toml`) and are never
+passed into sandboxes; sandboxes run network-blocked with pinned packages.

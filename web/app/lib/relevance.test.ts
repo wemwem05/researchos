@@ -98,10 +98,12 @@ describe("navigator", () => {
       obj({ id: "e", type: "equation" }),
       obj({ id: "f", type: "figure" }),
       obj({ id: "t", type: "table" }),
+      obj({ id: "c", type: "claim" }),
     ];
-    expect(applyTypeFilter(typed, "all")).toHaveLength(3);
+    expect(applyTypeFilter(typed, "all")).toHaveLength(4);
     expect(applyTypeFilter(typed, "equation").map((o) => o.id)).toEqual(["e"]);
     expect(applyTypeFilter(typed, "figure").map((o) => o.id)).toEqual(["f"]);
     expect(applyTypeFilter(typed, "table").map((o) => o.id)).toEqual(["t"]);
+    expect(applyTypeFilter(typed, "claim").map((o) => o.id)).toEqual(["c"]);
   });
 });

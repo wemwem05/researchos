@@ -3,6 +3,7 @@
 import type { LocalizedData, SciObject } from "../lib/types";
 import { importanceLabel, relevanceLabel } from "../lib/relevance";
 import Latex from "./Latex";
+import VerifyClaim from "./VerifyClaim";
 
 interface Props {
   data: LocalizedData;
@@ -10,6 +11,7 @@ interface Props {
   localizedCount: number;
   highCount: number;
   onSelectRelated: (objectId: string) => void;
+  paperId?: string | null;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -46,7 +48,7 @@ const LEVEL_BADGE: Record<SciObject["research_relevance_level"], string> = {
   context: "bg-neutral-200 text-neutral-700",
 };
 
-export default function ResearchLens({ data, selected, localizedCount, highCount, onSelectRelated }: Props) {
+export default function ResearchLens({ data, selected, localizedCount, highCount, onSelectRelated, paperId = null }: Props) {
   const { analysis } = data;
 
   if (!selected) {
@@ -227,6 +229,17 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
       <Section title="Evidence">
         <span className="font-mono text-[13px]">{selected.evidence}</span>
       </Section>
+
+      {paperId && selected.type === "claim" && (
+        <section>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+            Computational verification
+          </h3>
+          <div className="mt-2">
+            <VerifyClaim paperId={paperId} claim={selected} />
+          </div>
+        </section>
+      )}
 
       {related.length > 0 && (
         <section>

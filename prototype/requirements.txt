@@ -5,3 +5,4 @@ pymupdf>=1.24
 pillow>=10.0
 langgraph>=0.6
 langgraph-checkpoint-sqlite>=2.0
+modal>=1.0

@@ -1,0 +1,324 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live2",
+  "project_id": "ot-correspondence",
+  "kind": "verify",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-3",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "completed",
+  "synthetic": false,
+  "created_at": "2026-11-03T19:23:02.428842+00:00",
+  "updated_at": "2026-11-03T20:57:11.903402+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "select_claim",
+      "at": "2026-11-03T19:23:02.470742+00:00",
+      "detail": "claim-3"
+    },
+    {
+      "node": "classify_testability",
+      "at": "2026-11-03T19:23:15.285386+00:00",
+      "detail": "testable=False needs_data=True"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T19:23:15.290808+00:00",
+      "detail": "unavailable_data"
+    },
+    {
+      "node": "human_review_resumed",
+      "at": "2026-11-03T19:25:15.560520+00:00",
+      "detail": "Proceed anyway (record limitation)"
+    },
+    {
+      "node": "apply_verify_decision",
+      "at": "2026-11-03T19:25:15.561361+00:00",
+      "detail": "proceeding with recorded limitation"
+    },
+    {
+      "node": "experiment_planner",
+      "at": "2026-11-03T19:25:40.569784+00:00",
+      "detail": "6 sizes, 4 criteria"
+    },
+    {
+      "node": "validate_plan",
+      "at": "2026-11-03T19:25:40.576460+00:00",
+      "detail": "over budget -> escalate"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T19:25:40.585917+00:00",
+      "detail": "budget"
+    },
+    {
+      "node": "human_review_resumed",
+      "at": "2026-11-03T19:27:09.386752+00:00",
+      "detail": "Approve capped experiment"
+    },
+    {
+      "node": "apply_verify_decision",
+      "at": "2026-11-03T19:27:09.387638+00:00",
+      "detail": "budget approved with deterministic caps"
+    },
+    {
+      "node": "failed",
+      "at": "2026-11-03T19:29:13.148347+00:00",
+      "detail": "Spark Open (generate_code) returned invalid structured output after 1 repair attempt: 1 validation error for GeneratedCode\n  Invalid JSON: EOF while parsing a value at line 1 column 0 [type=json_invalid, input_value='', input_type=str]\n    For further information visit https://errors.pydantic.dev/2."
+    },
+    {
+      "node": "code_preflight_failed",
+      "at": "2026-11-03T19:29:13.177561+00:00",
+      "detail": "1 errors"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T19:29:13.181608+00:00",
+      "detail": "unsafe"
+    },
+    {
+      "node": "human_review_resumed",
+      "at": "2026-11-03T19:33:15.492174+00:00",
+      "detail": "Auto-repair and retry"
+    },
+    {
+      "node": "apply_verify_decision",
+      "at": "2026-11-03T19:33:15.493151+00:00",
+      "detail": "researcher approved auto-repair"
+    },
+    {
+      "node": "diagnose_and_repair",
+      "at": "2026-11-03T19:33:54.721327+00:00",
+      "detail": "repair 1/3: preflight empty code: no file supplied, so no benchmark, no CSV, no RESULT_JSON, no provenance. Need full deterministic CPU benchmark implementing eq-"
+    },
+    {
+      "node": "code_preflight_failed",
+      "at": "2026-11-03T19:33:54.740110+00:00",
+      "detail": "1 errors"
+    },
+    {
+      "node": "diagnose_and_repair",
+      "at": "2026-11-03T19:34:14.944368+00:00",
+      "detail": "repair 2/3: Preflight SyntaxError at line 203: `sliced_wasserstein_mc Fxw, Fyw, Theta` is missing parentheses/commas for a function call, causing `invalid syntax "
+    },
+    {
+      "node": "code_preflight_failed",
+      "at": "2026-11-03T19:34:14.964590+00:00",
+      "detail": "6 errors"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T19:34:14.969724+00:00",
+      "detail": "unsafe"
+    },
+    {
+      "node": "human_review_resumed",
+      "at": "2026-11-03T19:43:01.631374+00:00",
+      "detail": "Auto-repair and retry"
+    },
+    {
+      "node": "apply_verify_decision",
+      "at": "2026-11-03T19:43:01.632283+00:00",
+      "detail": "researcher approved auto-repair"
+    },
+    {
+      "node": "diagnose_and_repair",
+      "at": "2026-11-03T19:43:27.344957+00:00",
+      "detail": "repair 3/3: Preflight blocked banned imports (traceback, scipy.special, scipy.spatial.distance, scipy, ot) and banned pattern open(. Code used scipy logsumexp/cdi"
+    },
+    {
+      "node": "code_preflight",
+      "at": "2026-11-03T19:43:27.363675+00:00",
+      "detail": "pass"
+    },
+    {
+      "node": "modal_execute",
+      "at": "2026-11-03T19:53:46.367790+00:00",
+      "detail": "attempt 0: rc=-1 timeout=False 600.3s"
+    },
+    {
+      "node": "validate_result_failed",
+      "at": "2026-11-03T19:53:46.418444+00:00",
+      "detail": "4 errors"
+    },
+    {
+      "node": "repair_budget_exhausted",
+      "at": "2026-11-03T19:53:46.419085+00:00",
+      "detail": "3 attempts used"
+    },
+    {
+      "node": "evidence_report",
+      "at": "2026-11-03T19:53:46.427770+00:00",
+      "detail": "status=not_testable"
+    },
+    {
+      "node": "attach_to_project",
+      "at": "2026-11-03T19:53:46.439761+00:00",
+      "detail": "attached v2 status=not_testable"
+    }
+  ],
+  "decisions": [
+    "human review requested (verification/unavailable_data): This claim may need data that is unavailable in the sandbox. Abort, or proceed with synthetic data and record the limitation?",
+    "human decision: Proceed anyway (record limitation)",
+    "human review requested (verification/budget): The planned experiment exceeds the CPU budget caps. Approve a deterministically capped version, or abort?",
+    "human decision: Approve capped experiment",
+    "human review requested (verification/unsafe): The generated code failed the static safety preflight. Abort, or auto-repair and retry (bounded)?",
+    "human decision: Auto-repair and retry",
+    "human review requested (verification/unsafe): The generated code failed the static safety preflight. Abort, or auto-repair and retry (bounded)?",
+    "human decision: Auto-repair and retry",
+    "evidence_report: status=not_testable (proposed=None)",
+    "verification complete: not_testable",
+    "AUDIT: attached evidence v2 withdrawn after the run - cause was a status-label bug (stale testable=false overrode the execution outcome as not_testable). Bug fixed with regression test; Modal timeout evidence preserved in attempt-0/. See live3/live4."
+  ],
+  "validation_failures": [
+    "preflight: empty code",
+    "preflight: syntax error: invalid syntax (<unknown>, line 203)",
+    "preflight: banned import: traceback",
+    "preflight: banned import: scipy.special",
+    "preflight: banned import: scipy.spatial.distance",
+    "preflight: banned import: scipy",
+    "preflight: banned import: ot",
+    "preflight: banned pattern: open(",
+    "result: experiment exited with code -1",
+    "result: stdout lacks a 'RESULT_JSON:' line",
+    "result: missing artifact: results.csv",
+    "result: missing artifact: scaling.png (empty or absent)"
+  ],
+  "revision_path": [],
+  "human_review_request": {
+    "kind": "verification",
+    "question": "The generated code failed the static safety preflight. Abort, or auto-repair and retry (bounded)?",
+    "why_stopped": "banned import: traceback; banned import: scipy.special; banned import: scipy.spatial.distance; banned import: scipy; banned import: ot; banned pattern: open(",
+    "investigator_position": "Attempt an automatic repair within the remaining budget.",
+    "critic_concern": "Code contains banned imports or patterns; it has NOT been executed.",
+    "evidence_a": "banned import: traceback; banned import: scipy.special; banned import: scipy.spatial.distance; banned import: scipy; banned import: ot; banned pattern: open(",
+    "evidence_b": "Code sha256: 27303987853953cb… (12457 chars, never executed)",
+    "finding_refs": [],
+    "object_refs": [
+      "claim-3",
+      "table-4",
+      "eq-10",
+      "eq-11",
+      "eq-14"
+    ],
+    "affected_connection_indexes": [],
+    "options": [
+      "Abort verification",
+      "Auto-repair and retry"
+    ],
+    "allow_free_text": true
+  },
+  "human_review_response": {
+    "choice": "Auto-repair and retry",
+    "free_text": "",
+    "decided_at": "2026-11-03T19:43:01.627511+00:00",
+    "decided_by": "researcher"
+  },
+  "final_status": "completed",
+  "error": "Spark Open (generate_code) returned invalid structured output after 1 repair attempt: 1 validation error for GeneratedCode\n  Invalid JSON: EOF while parsing a value at line 1 column 0 [type=json_invalid, input_value='', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/json_invalid",
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T19:23:15.281621+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live2",
+      "node": "classify_testability",
+      "latency_ms": 12809,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2670,
+      "completion_tokens": 2920,
+      "total_tokens": 5590,
+      "request_id": "chatcmpl-c31b609b9f24456faae969c1cd0191e7"
+    },
+    {
+      "timestamp": "2026-11-03T19:25:40.564330+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live2",
+      "node": "experiment_planner",
+      "latency_ms": 25002,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 6463,
+      "completion_tokens": 3109,
+      "total_tokens": 9572,
+      "request_id": "chatcmpl-33f4bc79aacd437fbbe8ea36b83e8808"
+    },
+    {
+      "timestamp": "2026-11-03T19:29:13.132635+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live2",
+      "node": "generate_code",
+      "latency_ms": 123744,
+      "success": false,
+      "error": "invalid output: 1 validation error for GeneratedCode\n  Invalid JSON: EOF while parsing a value at line 1 column 0 [type=json_invalid, input_value='', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/json_invalid",
+      "retry_count": 1,
+      "prompt_tokens": 2294,
+      "completion_tokens": 16000,
+      "total_tokens": 18294,
+      "request_id": "chatcmpl-ef557a0f1b6d44a0979657325eed8009"
+    },
+    {
+      "timestamp": "2026-11-03T19:33:54.710225+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live2",
+      "node": "diagnose_and_repair",
+      "latency_ms": 39216,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2026,
+      "completion_tokens": 10667,
+      "total_tokens": 12693,
+      "request_id": "chatcmpl-beb6ac08748c46bbbce00660f7968e53"
+    },
+    {
+      "timestamp": "2026-11-03T19:34:14.938635+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live2",
+      "node": "diagnose_and_repair",
+      "latency_ms": 20195,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 5907,
+      "completion_tokens": 6106,
+      "total_tokens": 12013,
+      "request_id": "chatcmpl-64644063d95a4ac0a115550ad4ca0746"
+    },
+    {
+      "timestamp": "2026-11-03T19:43:27.340742+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live2",
+      "node": "diagnose_and_repair",
+      "latency_ms": 25707,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 5447,
+      "completion_tokens": 6991,
+      "total_tokens": 12438,
+      "request_id": "chatcmpl-07a075d0ef9e40eeb98fb942b5cbae83"
+    }
+  ]
+}

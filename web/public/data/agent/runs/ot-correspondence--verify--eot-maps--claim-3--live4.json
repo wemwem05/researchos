@@ -1,0 +1,296 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+  "project_id": "ot-correspondence",
+  "kind": "verify",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-3",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "completed",
+  "synthetic": false,
+  "created_at": "2026-11-03T20:31:41.688572+00:00",
+  "updated_at": "2026-11-03T20:53:46.755859+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "select_claim",
+      "at": "2026-11-03T20:31:41.737413+00:00",
+      "detail": "claim-3"
+    },
+    {
+      "node": "classify_testability",
+      "at": "2026-11-03T20:31:52.101987+00:00",
+      "detail": "testable=False needs_data=True"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T20:31:52.107105+00:00",
+      "detail": "unavailable_data"
+    },
+    {
+      "node": "human_review_resumed",
+      "at": "2026-11-03T20:36:11.028034+00:00",
+      "detail": "Proceed anyway (record limitation)"
+    },
+    {
+      "node": "apply_verify_decision",
+      "at": "2026-11-03T20:36:11.029150+00:00",
+      "detail": "proceeding with recorded limitation"
+    },
+    {
+      "node": "experiment_planner",
+      "at": "2026-11-03T20:36:55.668703+00:00",
+      "detail": "4 sizes, 2 criteria"
+    },
+    {
+      "node": "validate_plan",
+      "at": "2026-11-03T20:36:55.678175+00:00",
+      "detail": "plan valid"
+    },
+    {
+      "node": "generate_code",
+      "at": "2026-11-03T20:38:09.874138+00:00",
+      "detail": "7816 chars, sha=0e14b6ade838"
+    },
+    {
+      "node": "code_preflight_failed",
+      "at": "2026-11-03T20:38:09.887315+00:00",
+      "detail": "1 errors"
+    },
+    {
+      "node": "diagnose_and_repair",
+      "at": "2026-11-03T20:39:21.456974+00:00",
+      "detail": "repair 1/3: preflight syntax error unmatched ']' on line 2 os.environ['OMP_NUM_THREADS']='1'] extra bracket prevents parsing no execution artifacts"
+    },
+    {
+      "node": "code_preflight_failed",
+      "at": "2026-11-03T20:39:21.486533+00:00",
+      "detail": "1 errors"
+    },
+    {
+      "node": "diagnose_and_repair",
+      "at": "2026-11-03T20:39:54.753260+00:00",
+      "detail": "repair 2/3: Preflight SyntaxError 'unexpected character after line continuation character (line 1)' caused by file written with literal \\n escape sequences instea"
+    },
+    {
+      "node": "code_preflight_failed",
+      "at": "2026-11-03T20:39:54.795759+00:00",
+      "detail": "1 errors"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T20:39:54.803871+00:00",
+      "detail": "unsafe"
+    },
+    {
+      "node": "human_review_resumed",
+      "at": "2026-11-03T20:48:42.607450+00:00",
+      "detail": "Auto-repair and retry"
+    },
+    {
+      "node": "apply_verify_decision",
+      "at": "2026-11-03T20:48:42.608338+00:00",
+      "detail": "researcher approved auto-repair"
+    },
+    {
+      "node": "diagnose_and_repair",
+      "at": "2026-11-03T20:49:07.407547+00:00",
+      "detail": "repair 3/3: Preflight banned-pattern `open(` was triggered by a comment line containing the literal string `open()` (e.g. '# Never call open() ...') not by an act"
+    },
+    {
+      "node": "code_preflight",
+      "at": "2026-11-03T20:49:07.420605+00:00",
+      "detail": "pass"
+    },
+    {
+      "node": "modal_execute",
+      "at": "2026-11-03T20:53:24.467758+00:00",
+      "detail": "attempt 0: rc=0 timeout=False 247.3s"
+    },
+    {
+      "node": "validate_result",
+      "at": "2026-11-03T20:53:24.525160+00:00",
+      "detail": "valid: 40 rows, 2 criteria evaluated, sanity failed: ['symmetry', 'symmetry_sinkhorn']"
+    },
+    {
+      "node": "interpret_result",
+      "at": "2026-11-03T20:53:46.661674+00:00",
+      "detail": "proposed=not_supported"
+    },
+    {
+      "node": "evidence_report",
+      "at": "2026-11-03T20:53:46.676416+00:00",
+      "detail": "status=not_supported"
+    },
+    {
+      "node": "attach_to_project",
+      "at": "2026-11-03T20:53:46.754343+00:00",
+      "detail": "attached v3 status=not_supported"
+    }
+  ],
+  "decisions": [
+    "human review requested (verification/unavailable_data): This claim may need data that is unavailable in the sandbox. Abort, or proceed with synthetic data and record the limitation?",
+    "human decision: Proceed anyway (record limitation)",
+    "human review requested (verification/unsafe): The generated code failed the static safety preflight. Abort, or auto-repair and retry (bounded)?",
+    "human decision: Auto-repair and retry",
+    "sanity flags failed but contract holds; routing to interpretation as findings (flags: ['symmetry', 'symmetry_sinkhorn'])",
+    "evidence_report: status=not_supported (proposed=not_supported)",
+    "verification complete: not_supported"
+  ],
+  "validation_failures": [
+    "preflight: syntax error: unmatched ']' (<unknown>, line 2)",
+    "preflight: syntax error: unexpected character after line continuation character (<unknown>, line 1)",
+    "preflight: banned pattern: open("
+  ],
+  "revision_path": [],
+  "human_review_request": {
+    "kind": "verification",
+    "question": "The generated code failed the static safety preflight. Abort, or auto-repair and retry (bounded)?",
+    "why_stopped": "banned pattern: open(",
+    "investigator_position": "Attempt an automatic repair within the remaining budget.",
+    "critic_concern": "Code contains banned imports or patterns; it has NOT been executed.",
+    "evidence_a": "banned pattern: open(",
+    "evidence_b": "Code sha256: 81d9a19785f5e369… (15605 chars, never executed)",
+    "finding_refs": [],
+    "object_refs": [
+      "claim-3",
+      "table-4",
+      "eq-10",
+      "eq-11",
+      "eq-14"
+    ],
+    "affected_connection_indexes": [],
+    "options": [
+      "Abort verification",
+      "Auto-repair and retry"
+    ],
+    "allow_free_text": true
+  },
+  "human_review_response": {
+    "choice": "Auto-repair and retry",
+    "free_text": "",
+    "decided_at": "2026-11-03T20:48:42.600612+00:00",
+    "decided_by": "researcher"
+  },
+  "final_status": "completed",
+  "error": null,
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T20:31:52.098955+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+      "node": "classify_testability",
+      "latency_ms": 10360,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2670,
+      "completion_tokens": 2494,
+      "total_tokens": 5164,
+      "request_id": "chatcmpl-09a5122570a24dd28c58689bac3bb273"
+    },
+    {
+      "timestamp": "2026-11-03T20:36:55.660195+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+      "node": "experiment_planner",
+      "latency_ms": 44630,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 6299,
+      "completion_tokens": 4968,
+      "total_tokens": 11267,
+      "request_id": "chatcmpl-f1825524b7324032981e34d12ad73222"
+    },
+    {
+      "timestamp": "2026-11-03T20:38:09.862532+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+      "node": "generate_code",
+      "latency_ms": 74182,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 6013,
+      "completion_tokens": 4739,
+      "total_tokens": 10752,
+      "request_id": "chatcmpl-5ee2aa422865404ca227b9c359fa196a"
+    },
+    {
+      "timestamp": "2026-11-03T20:39:21.449869+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+      "node": "diagnose_and_repair",
+      "latency_ms": 71560,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 4759,
+      "completion_tokens": 21103,
+      "total_tokens": 25862,
+      "request_id": "chatcmpl-d29bcde90deb4e708b53084796f109d6"
+    },
+    {
+      "timestamp": "2026-11-03T20:39:54.748096+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+      "node": "diagnose_and_repair",
+      "latency_ms": 33255,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 5680,
+      "completion_tokens": 9734,
+      "total_tokens": 15414,
+      "request_id": "chatcmpl-d0c1fc61813f4c24b762dcbdceaacb45"
+    },
+    {
+      "timestamp": "2026-11-03T20:49:07.403101+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+      "node": "diagnose_and_repair",
+      "latency_ms": 24794,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 6198,
+      "completion_tokens": 6749,
+      "total_tokens": 12947,
+      "request_id": "chatcmpl-0c8852fb45e2464981596db66dc2b9d7"
+    },
+    {
+      "timestamp": "2026-11-03T20:53:46.657631+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live4",
+      "node": "interpret_result",
+      "latency_ms": 22128,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 3428,
+      "completion_tokens": 5612,
+      "total_tokens": 9040,
+      "request_id": "chatcmpl-4dd070c5965d42e38e5752f37df9e719"
+    }
+  ]
+}

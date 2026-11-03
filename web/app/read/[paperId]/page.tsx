@@ -46,6 +46,7 @@ function PaperReader() {
       pdfUrl={paper.web_pdf as string}
       dataUrl={paper.web_data as string}
       initialSelectedId={search.get("select")}
+      paperId={paperId}
     />
   );
 }

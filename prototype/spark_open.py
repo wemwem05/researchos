@@ -122,18 +122,21 @@ class SparkOpenClient:
         *,
         node: str,
         thread_id: str,
+        max_tokens: Optional[int] = None,
     ) -> tuple[T, TelemetryRecord]:
         """Request structured JSON and validate it. One bounded repair retry.
 
         Returns (parsed_model, telemetry). Raises SparkOpenError on transport
         failure or after the repair budget is exhausted. Never substitutes
-        another model.
+        another model. max_tokens overrides the client default for this call
+        only (code generation needs a larger budget than judgments).
         """
         t0 = time.time()
         retries = 0
         last_error: Optional[str] = None
+        budget = max_tokens if max_tokens is not None else self.max_tokens
         try:
-            content = self._chat(messages)
+            content = self._chat(messages, budget)
             try:
                 return (
                     schema.model_validate_json(extract_json(content or "")),
@@ -156,7 +159,7 @@ class SparkOpenClient:
                     ),
                 },
             ]
-            content = self._chat(repair_messages)
+            content = self._chat(repair_messages, budget)
             try:
                 parsed = schema.model_validate_json(extract_json(content or ""))
             except Exception as e:  # noqa: BLE001 - message surfaced in SparkOpenError
@@ -176,9 +179,9 @@ class SparkOpenClient:
                 self._telemetry(thread_id, node, t0, False, f"{type(e).__name__}: {e}", retries),
             ) from e
 
-    def _chat(self, messages: list[dict[str, Any]]) -> str:
+    def _chat(self, messages: list[dict[str, Any]], max_tokens: int) -> str:
         resp = self._client.chat.completions.create(
-            model=MODEL_ID, messages=messages, max_tokens=self.max_tokens
+            model=MODEL_ID, messages=messages, max_tokens=max_tokens
         )
         # Stash usage where complete_json can read it (single-threaded CLI use).
         self._last_usage = resp.usage

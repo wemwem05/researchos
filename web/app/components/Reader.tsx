@@ -24,9 +24,10 @@ interface Props {
   pdfUrl: string;
   dataUrl: string;
   initialSelectedId?: string | null;
+  paperId?: string | null;
 }
 
-export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null }: Props) {
+export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, paperId = null }: Props) {
   const [data, setData] = useState<LocalizedData | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
@@ -78,8 +79,10 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null }: Pr
     const withBox = new Set(
       data.localizations.filter((l) => l.bbox).map((l) => l.object_id)
     );
+    // Claims have no PDF bounding box but are first-class inventory items
+    // (selectable, page-scrolled, verifiable).
     return navigatorOrder(
-      data.analysis.objects.filter((o) => withBox.has(o.id))
+      data.analysis.objects.filter((o) => withBox.has(o.id) || o.type === "claim")
     );
   }, [data]);
 
@@ -216,6 +219,7 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null }: Pr
             localizedCount={navigable.length}
             highCount={highCount}
             onSelectRelated={jumpTo}
+            paperId={paperId}
           />
         </aside>
       </main>

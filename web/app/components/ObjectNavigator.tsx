@@ -16,6 +16,7 @@ const FILTERS: { id: TypeFilter; label: string }[] = [
   { id: "equation", label: "Equations" },
   { id: "figure", label: "Figures" },
   { id: "table", label: "Tables" },
+  { id: "claim", label: "Claims" },
 ];
 
 const DOT: Record<SciObject["research_relevance_level"], string> = {

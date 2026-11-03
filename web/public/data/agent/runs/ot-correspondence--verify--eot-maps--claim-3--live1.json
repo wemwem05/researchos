@@ -1,0 +1,75 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live1",
+  "project_id": "ot-correspondence",
+  "kind": "verify",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-3",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "completed",
+  "synthetic": false,
+  "created_at": "2026-11-03T19:19:53.728618+00:00",
+  "updated_at": "2026-11-03T19:20:00.827797+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "select_claim",
+      "at": "2026-11-03T19:19:53.758123+00:00",
+      "detail": "claim-3"
+    },
+    {
+      "node": "classify_testability",
+      "at": "2026-11-03T19:20:00.812855+00:00",
+      "detail": "testable=False needs_data=True"
+    },
+    {
+      "node": "evidence_report",
+      "at": "2026-11-03T19:20:00.816466+00:00",
+      "detail": "status=not_testable"
+    },
+    {
+      "node": "attach_to_project",
+      "at": "2026-11-03T19:20:00.827101+00:00",
+      "detail": "attached v1 status=not_testable"
+    }
+  ],
+  "decisions": [
+    "evidence_report: status=not_testable (proposed=None)",
+    "verification complete: not_testable"
+  ],
+  "validation_failures": [],
+  "revision_path": [],
+  "human_review_request": null,
+  "human_review_response": null,
+  "final_status": "completed",
+  "error": null,
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T19:20:00.810835+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-3--live1",
+      "node": "classify_testability",
+      "latency_ms": 7051,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2617,
+      "completion_tokens": 1410,
+      "total_tokens": 4027,
+      "request_id": "chatcmpl-e354b81db9f44ac49643184f19a6e116"
+    }
+  ]
+}

@@ -323,3 +323,61 @@ literature search, vector DB, auth, Supabase, React Flow, deployment infra.
 **Caveats:** both live Spark calls needed one schema repair (JSON shape
 drift, fixed in-budget); project.json stays single-writer; in-browser
 visual check left to the demo.
+
+## Milestone 6 — Autonomous Computational Verification (2026-11-04)
+
+**Goal:** researcher-selected claims get planned, executed (Modal Sandbox),
+and honestly interpreted through a bounded subgraph on the M5 architecture.
+
+**Built (backend):**
+
+- `prototype/modal_exec.py` — Modal Sandbox wrapper: CPU-only (2 CPU /
+  4 GiB), 10-min exec cap, `block_network=True`, pinned
+  numpy==2.1.3/matplotlib==3.9.2 image, `filesystem` transfers, env probe
+  (pip freeze + runtime), artifact pull before terminate. Auth via stock
+  SDK resolution (env or `~/.modal.toml`); credentials never enter the
+  sandbox. `FakeModal` double with scripted outcomes.
+- `prototype/verify_graph.py` — select → classify → plan → validate →
+  codegen → preflight → execute → validate → interpret | diagnose(≤3) →
+  evidence → attach, with durable interrupt/resume for budget/unsafe/data
+  escalations. Spark Open does classify/plan/code/diagnose/interpret;
+  deterministic gates own budgets, imports, CSV schema, criteria math, and
+  a status clamp (exec success alone ⇒ never "supported"; unmet criteria
+  ⇒ at most inconclusive).
+- `project.py`: `VerificationEvidence` + `verifications[]` (additive),
+  atomic `save_project` (tmp + replace), idempotent attach.
+- `agent.py`: `verify-claim`, kind-routed `review`/`status`/`stage-web`
+  (evidence + code/CSV/plot/logs staged). `agent_server.py`: validated
+  `verifications/start` (refs only, localhost), kind-routed review,
+  allowlisted live artifact downloads.
+
+**Live demo (EOT claim-3, real Modal runs):** classifier correctly judged
+the accuracy numbers untestable without FAUST/SHREC19; researcher scoped
+to the SW efficiency motivation via review. v3: SW 2.7–5.1 ms vs Sinkhorn
+0.33–28.0 s (n=256–2048, 5 reps + warm-up, 40 rows, real plot) — but the
+pre-registered symmetry sanity criterion failed, so the verdict is
+honestly NOT SUPPORTED with numbers under "partially tested". v1 shows
+not_testable, v2 execution_failed (live repair exhaustion). One
+mislabeled v2 from an earlier run was withdrawn with an audit note after
+a status-label bugfix (live2 run record preserves the story).
+
+**Bugs found live and fixed (each with regression tests):** data
+escalation now precedes not_testable; failed Spark nodes route to END
+instead of falling through; diagnose exhaustion routes to evidence (was
+a potential loop); codegen budget 32k (16k truncated); Modal exec
+timeout surfaces as rc=-1 without raising (now inferred); sanity flags
+are findings for interpretation, not repair fodder.
+
+**Built (frontend):** "Verify computationally" on Reader claims (confirm →
+live timeline/review/evidence), Project Verification section (observed
+vs interpreted, criteria, table, plot, artifacts, limitations). UI start
++ abort proven live against the API on a scratch project.
+
+**Verification:** 142/142 backend (30 new); 28/28 frontend (5 new);
+`tsc` clean; `next build` green (webpack); production smoke 200 on all
+routes, staged artifacts, and live API/file endpoints.
+
+**Caveats:** symmetry sanity tolerances in generated code can be
+stricter than Monte-Carlo noise allows (drove the honest not_supported);
+shared repair budget covers codegen + exec (per spec); project.json
+stays single-writer; in-browser visual check left to the demo.

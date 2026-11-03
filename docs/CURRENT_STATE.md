@@ -223,6 +223,69 @@ clean
 Production build:
 passing (webpack builder — sandbox blocks Turbopack, as before)
 
+## Milestone 6 — Autonomous Computational Verification
+
+Working.
+
+A researcher-selected claim flows through a bounded LangGraph subgraph
+(`prototype/verify_graph.py`) reusing the M5 architecture (same checkpointer
+file, telemetry log, run records, review UI, server):
+
+select_claim
+→ classify_testability (Spark Open)
+→ experiment_planner (Spark Open: hypothesis, variables, algorithms, seeds,
+  reps + warm-up, documented Sinkhorn params, pre-registered criteria,
+  budget, limitations, scope notes)
+→ validate_plan (deterministic caps; over-budget escalates)
+→ generate_code (Spark Open under a strict checked contract)
+→ code_preflight (AST import allowlist + banned patterns; syntax slips
+  auto-repair, security failures escalate — sandbox isolation is the real
+  boundary, never host execution)
+→ modal_execute (Modal Sandbox: CPU-only, 2 CPU / 4 GiB, 10-min exec cap,
+  network blocked, pinned numpy/matplotlib image, artifacts pulled before
+  terminate)
+→ validate_result (returncode, CSV schema/rows/labels, finite values,
+  artifacts; failed sanity flags route to interpretation as FINDINGS, not
+  repair fodder)
+→ interpret_result (Spark Open) | diagnose_and_repair (Spark Open, max 3)
+→ evidence_report (deterministic honesty clamp) → attach_to_project
+  (atomic, idempotent)
+
+Verdicts (no universal "reproduced" badge): supported / not supported in
+tested conditions, inconclusive, execution failed, not computationally
+testable. Execution success alone can never yield "supported".
+
+Live demo (EOT claim-3, efficiency-motivation proxy on synthetic point
+sets, researcher-scoped via two human reviews): SW median 2.7–5.1 ms vs
+Sinkhorn 0.33–28.0 s across n=256–2048 (5 reps + warm-up, tight IQRs);
+~5500x gap at n=2048. Pre-registered sanity criterion failed (symmetry
+tolerances), so the system reported NOT SUPPORTED with the numbers
+preserved under "partially tested" — the clamp working as designed.
+Three attached evidence records demonstrate not_testable (v1),
+execution_failed (v2, repair budget exhausted live), and not_supported
+(v3). A fourth run's mislabeled evidence was withdrawn with an audit note
+after a status-label bugfix.
+
+UI: "Verify computationally" action on claims in the Reader (confirm →
+start via agent server → live Agent Run timeline + review + evidence),
+Verification section in the Project view (status, observed vs
+interpreted, criteria, results table, plot, artifacts, limitations), live
+artifact downloads from the server (strict filename allowlist).
+
+Backend tests:
+142 passing (30 new: Modal mock, bounded repair, timeout/infra handling,
+artifact preservation, escalation, restart resume with zero repeated
+model calls, no-false-verified clamp, idempotent attach)
+
+Frontend tests:
+28 passing (5 new)
+
+TypeScript:
+clean
+
+Production build:
+passing (webpack builder — sandbox blocks Turbopack, as before)
+
 ## Next milestone
 
-TBD (Modal execution is explicitly out of scope for Milestone 5).
+TBD.

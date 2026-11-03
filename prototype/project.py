@@ -145,6 +145,52 @@ class PaperContribution(BaseModel):
     new_open_questions: list[str] = Field(default_factory=list)
 
 
+class VerificationEvidence(BaseModel):
+    """Milestone 6: auditable record of one computational verification.
+
+    Heavy blobs (code, CSV, plot, full logs) live under
+    agent/verifications/<thread>/; this record carries project-relative
+    paths plus the full interpretation. Observed measurements and
+    model-generated interpretations are stored in separate fields.
+    """
+
+    id: str = ""
+    thread_id: str
+    paper_id: str
+    claim_id: str
+    claim_statement: str = ""
+    object_refs: list[str] = Field(default_factory=list)
+    status: Literal["supported", "not_supported", "inconclusive",
+                    "execution_failed", "not_testable"]
+    status_label: str = ""
+    plan: dict = Field(default_factory=dict)
+    testability: dict = Field(default_factory=dict)
+    code_sha256: str = ""
+    code_path: str = ""
+    params: dict = Field(default_factory=dict)
+    environment: dict = Field(default_factory=dict)
+    measurements_path: str = ""
+    plot_path: str = ""
+    stdout_path: str = ""
+    stderr_path: str = ""
+    stdout_tail: str = ""
+    stderr_tail: str = ""
+    criteria: list[dict] = Field(default_factory=list)
+    sanity_failed: list[str] = Field(default_factory=list)
+    result_summary: dict = Field(default_factory=dict)
+    observed: list[str] = Field(default_factory=list)
+    supported_conclusions: list[str] = Field(default_factory=list)
+    partial: list[str] = Field(default_factory=list)
+    out_of_scope: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+    scaling_comment: str = ""
+    repairs: list[dict] = Field(default_factory=list)
+    attempts: int = 0
+    modal: dict = Field(default_factory=dict)
+    telemetry: list[dict] = Field(default_factory=list)
+    created_at: str = ""
+
+
 class Project(BaseModel):
     schema_version: str = "m4-1"
     research_question: str = Field(min_length=1)
@@ -154,6 +200,7 @@ class Project(BaseModel):
     contributions: list[PaperContribution] = Field(default_factory=list)
     open_questions: list[OpenQuestion] = Field(default_factory=list)
     novelty_risks: list[NoveltyRisk] = Field(default_factory=list)
+    verifications: list[VerificationEvidence] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def check_integrity(self) -> "Project":
@@ -185,6 +232,12 @@ class Project(BaseModel):
             for ref in r.overlapping_finding_refs:
                 if ref not in finding_ids:
                     raise ValueError(f"risk {r.id} references unknown finding '{ref}'")
+        verify_ids = {v.id for v in self.verifications if v.id}
+        if len(verify_ids) != len([v for v in self.verifications if v.id]):
+            raise ValueError("verification ids must be unique")
+        for v in self.verifications:
+            if v.paper_id not in paper_ids:
+                raise ValueError(f"verification {v.id} references unknown paper '{v.paper_id}'")
         return self
 
 
@@ -510,10 +563,24 @@ def load_project(project_dir: Path) -> Project:
 
 
 def save_project(project_dir: Path, project: Project) -> None:
+    """Atomic write (temp file + os.replace) so interrupted writes cannot
+    corrupt the existing project."""
+    import os
+    import tempfile
+
     project_dir.mkdir(parents=True, exist_ok=True)
-    project_path(project_dir).write_text(
-        project.model_dump_json(indent=2) + "\n", encoding="utf-8"
-    )
+    target = project_path(project_dir)
+    fd, tmp = tempfile.mkstemp(dir=str(project_dir), prefix="project.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(project.model_dump_json(indent=2) + "\n")
+        os.replace(tmp, target)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def stage_web(project_dir: Path, web_dir: Path) -> None:
