@@ -1,0 +1,220 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--audit--eot-maps--claim-3--c17813d2",
+  "project_id": "ot-correspondence",
+  "kind": "audit",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-3",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "completed",
+  "synthetic": false,
+  "created_at": "2026-11-03T22:46:21.232686+00:00",
+  "updated_at": "2026-11-03T22:56:47.748379+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "load_claim_and_project",
+      "at": "2026-11-03T22:46:21.278147+00:00",
+      "detail": "claim-3"
+    },
+    {
+      "node": "classify_claim",
+      "at": "2026-11-03T22:46:30.554695+00:00",
+      "detail": "causal,empirical_benchmark,numerical"
+    },
+    {
+      "node": "collect_internal_evidence",
+      "at": "2026-11-03T22:46:30.627806+00:00",
+      "detail": "5 objects, 3 pages, 1 gaps"
+    },
+    {
+      "node": "plan_audit_checks",
+      "at": "2026-11-03T22:46:56.559595+00:00",
+      "detail": "7 numerical checks, external=no"
+    },
+    {
+      "node": "execute_numerical_checks",
+      "at": "2026-11-03T22:46:56.565327+00:00",
+      "detail": "7 checks: {'PASSED': 7}"
+    },
+    {
+      "node": "methodology_assessment",
+      "at": "2026-11-03T22:47:22.043858+00:00",
+      "detail": "11 findings"
+    },
+    {
+      "node": "compare_project_evidence",
+      "at": "2026-11-03T22:47:33.030245+00:00",
+      "detail": "4 comparisons"
+    },
+    {
+      "node": "failed",
+      "at": "2026-11-03T22:47:50.859709+00:00",
+      "detail": "Spark Open (scientific_critic) returned invalid structured output after 1 repair attempt: 7 validation errors for CriticVerdict\nchecks.0\n  Input should be an object [type=model_type, input_value='All 7 numerical checks P... {34.3,4.9,4.8,7.2,4.7}', input_type=str]\n    For further information visit h"
+    },
+    {
+      "node": "audit_decision_gate",
+      "at": "2026-11-03T22:47:50.865664+00:00",
+      "detail": "verdict= -> human_review"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T22:47:50.869987+00:00",
+      "detail": "audit"
+    },
+    {
+      "node": "human_review_resumed",
+      "at": "2026-11-03T22:56:47.730902+00:00",
+      "detail": "Accept audit as-is"
+    },
+    {
+      "node": "apply_audit_decision",
+      "at": "2026-11-03T22:56:47.732984+00:00",
+      "detail": "researcher accepted: Accept audit as-is"
+    },
+    {
+      "node": "finalize",
+      "at": "2026-11-03T22:56:47.734231+00:00",
+      "detail": "audit accepted"
+    },
+    {
+      "node": "evidence_report",
+      "at": "2026-11-03T22:56:47.738530+00:00",
+      "detail": "overall=discrepancies identified"
+    },
+    {
+      "node": "attach_to_project",
+      "at": "2026-11-03T22:56:47.748138+00:00",
+      "detail": "attached a5 overall=discrepancies identified"
+    }
+  ],
+  "decisions": [
+    "audit decision:  -> human_review",
+    "human review requested (audit): The audit critic flagged consequential ambiguity. How should it be resolved?",
+    "human decision: Accept audit as-is",
+    "audit report: overall=discrepancies identified",
+    "audit complete: discrepancies identified"
+  ],
+  "validation_failures": [],
+  "revision_path": [],
+  "human_review_request": {
+    "kind": "audit",
+    "question": "The audit critic flagged consequential ambiguity. How should it be resolved?",
+    "why_stopped": "Critic verdict requires researcher judgment.",
+    "investigator_position": "Audit position: checks [:PASSED; :PASSED; :PASSED; :PASSED; :PASSED; :PASSED; :PASSED]",
+    "critic_concern": "",
+    "evidence_a": "OT loss and refinement efficacy: Claim that replacing LOT with MSE degrades drastically and removing refinement degrades 4.7 to 7.2. Bidirectional SW/EBSW OT loss and entropic adaptive refinement are necessary for best accuracy.\nTypes: causal,empirical_benchmark,numerical",
+    "evidence_b": "{\"claim\": \"OT loss and refinement efficacy: Claim that replacing LOT with MSE degrades drastically and removing refinement degrades 4.7 to 7.2. Bidirectional SW/EBSW OT loss and entropic adaptive refinement are necessary for best accuracy.\", \"claim_types\": [\"causal\", \"empirical_benchmark\", \"numerical\"], \"numerical_results\": [{\"check_id\": \"\", \"check_type\": \"difference\", \"description\": \"\", \"status\": \"PASSED\", \"evidence_refs\": [\"table-4\", \"claim-3\"], \"actual_computation_or_reasoning\": \"difference(a-b): expected=2.5 recomputed=2.5. \", \"limitations\": \"\"}, {\"check_id\": \"\", \"check_type\": \"ratio\", \"description\": \"\", \"status\": \"PASSED\", \"evidence_refs\": [\"table-4\"], \"actual_computation_or_reasoning\": \"ratio(a/b): expected=1.5319 recomputed=1.531915. \", \"limitations\": \"\"}, {\"check_id\": \"\", \"check_type\": \"percentage_improvement\", \"description\": \"\", \"status\": \"PASSED\", \"evidence_refs\": [\"table-4\"], \"actual_computation_or_reasoning\": \"percentage_improvement(lower-is-better): expected=34.72 recomputed=34.722222. baseline=7.2 proposed=4.7\", \"limitations\": \"\"}, {\"check_id\": \"\", \"check_type\": \"difference\", \"description\": \"\", \"status\": \"PASSED\", \"evidence_refs\": [\"table-4\"], \"actual_computation_or_reasoning\": \"difference(a-b): expected=29.6 recomputed=29.6. \", \"limitations\": \"\"}, {\"check_id\": \"\", \"check_type\": \"ratio\", \"description\": \"\", \"status\": \"PASSED\", \"evidence_refs\": [\"table-4\"], \"actual_computation_or_reasoning\": \"ratio(a/b): expected=7.2979 recomputed=7.297872. \", \"limitations\": \"\"}, {\"check_id\": \"\", \"check_type\": \"percentage_improvement\", \"description\": \"\", \"status\": \"PASSED\", \"evidence_refs\": [\"table-4\"], \"actual_computation_or_reasoning\": \"percentage_improvement(lower-is-better): expected=86.3 recomputed=86.297376. baseline=34.3 proposed=4.7\", \"limitations\": \"\"}, {\"check_id\": \"\", \"check_type\": \"best_method\", \"description\": \"\", \"status\": \"PASSED\", \"evidence_refs\": [\"table-4\"], \"actual_computation_or_reasoning\": \"best_method(lower-is-better): expected=Ours recomputed=Ours. ",
+    "finding_refs": [],
+    "object_refs": [
+      "claim-3",
+      "table-4",
+      "eq-10",
+      "eq-11",
+      "eq-14"
+    ],
+    "affected_connection_indexes": [],
+    "options": [
+      "Accept audit as-is",
+      "Discard audit"
+    ],
+    "allow_free_text": true
+  },
+  "human_review_response": {
+    "choice": "Accept audit as-is",
+    "free_text": "smoke test via UI review endpoint",
+    "decided_at": "2026-11-03T22:56:47.698861+00:00",
+    "decided_by": "researcher"
+  },
+  "final_status": "completed",
+  "error": "Spark Open (scientific_critic) returned invalid structured output after 1 repair attempt: 7 validation errors for CriticVerdict\nchecks.0\n  Input should be an object [type=model_type, input_value='All 7 numerical checks P... {34.3,4.9,4.8,7.2,4.7}', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nchecks.1\n  Input should be an object [type=model_type, input_value='All checks grounded in e...iption is cosmetic only', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nchecks.2\n  Input should be an object [type=model_type, input_value='No false PASS: large MSE...not overstated as large', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nchecks.3\n  Input should be an object [type=model_type, input_value='Cross-paper and methodol...s=[] prevents overclaim', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nconcerns.0\n  Input should be an object [type=model_type, input_value='No material flaws: sever...licing hyperparameters)', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nconcerns.1\n  Input should be an object [type=model_type, input_value='Cross-paper comparabilit...e or necessity transfer', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nconcerns.2\n  Input should be an object [type=model_type, input_value='Scope honest about singl...ed to internal variants', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type",
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T22:46:30.551570+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--c17813d2",
+      "node": "classify_claim",
+      "latency_ms": 9263,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2597,
+      "completion_tokens": 1651,
+      "total_tokens": 4248,
+      "request_id": "chatcmpl-284822f58bee432387fe0ff3e3e1be60"
+    },
+    {
+      "timestamp": "2026-11-03T22:46:56.554887+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--c17813d2",
+      "node": "plan_audit_checks",
+      "latency_ms": 25926,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 6973,
+      "completion_tokens": 2121,
+      "total_tokens": 9094,
+      "request_id": "chatcmpl-66ff857f53f448a38b832f904172fe23"
+    },
+    {
+      "timestamp": "2026-11-03T22:47:22.040021+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--c17813d2",
+      "node": "methodology_assessment",
+      "latency_ms": 25473,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 7775,
+      "completion_tokens": 2336,
+      "total_tokens": 10111,
+      "request_id": "chatcmpl-a011fe97091440b6a9c9355f79fcaa46"
+    },
+    {
+      "timestamp": "2026-11-03T22:47:33.023711+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--c17813d2",
+      "node": "compare_project_evidence",
+      "latency_ms": 10974,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 750,
+      "completion_tokens": 3713,
+      "total_tokens": 4463,
+      "request_id": "chatcmpl-b716f898117b4fb2af0678449a83c8e4"
+    },
+    {
+      "timestamp": "2026-11-03T22:47:50.855344+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--c17813d2",
+      "node": "scientific_critic",
+      "latency_ms": 17821,
+      "success": false,
+      "error": "invalid output: 7 validation errors for CriticVerdict\nchecks.0\n  Input should be an object [type=model_type, input_value='All 7 numerical checks P... {34.3,4.9,4.8,7.2,4.7}', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nchecks.1\n  Input should be an object [type=model_type, input_value='All checks grounded in e...iption is cosmetic only', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nchecks.2\n  Input should be an object [type=model_type, input_value='No false PASS: large MSE...not overstated as large', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nchecks.3\n  Input should be an object [type=model_type, input_value='Cross-paper and methodol...s=[] prevents overclaim', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nconcerns.0\n  Input should be an object [type=model_type, input_value='No material flaws: sever...licing hyperparameters)', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nconcerns.1\n  Input should be an object [type=model_type, input_value='Cross-paper comparabilit...e or necessity transfer', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type\nconcerns.2\n  Input should be an object [type=model_type, input_value='Scope honest about singl...ed to internal variants', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/model_type",
+      "retry_count": 1,
+      "prompt_tokens": 4050,
+      "completion_tokens": 1263,
+      "total_tokens": 5313,
+      "request_id": "chatcmpl-80a326eb1b5d4738ae777e507fbefefe"
+    }
+  ]
+}

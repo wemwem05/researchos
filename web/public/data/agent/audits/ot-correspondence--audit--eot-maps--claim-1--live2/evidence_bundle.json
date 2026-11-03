@@ -1,0 +1,48 @@
+{
+  "claim": {
+    "id": "claim-1",
+    "title": "SOTA near-isometric shape correspondence",
+    "statement": "Experimentally testable claim that method outperforms prior axiomatic/supervised/unsupervised baselines on remeshed FAUST/SCAPE/SHREC19. Proposed unsupervised EOT+FM method achieves SOTA near-isometric matching (FAUST/SCAPE/SHREC19).",
+    "evidence": "p.6-7, Sec.5.1 text plus Table 1 and Fig.2",
+    "limitations": "Not stated whether gains are statistically significant; limited to mean geodesic error.",
+    "page": 7
+  },
+  "objects": [
+    {
+      "id": "claim-1",
+      "type": "claim",
+      "page": 7,
+      "label": null,
+      "truncated": false,
+      "text": "SOTA near-isometric shape correspondence. Experimentally testable claim that method outperforms prior axiomatic/supervised/unsupervised baselines on remeshed FAUST/SCAPE/SHREC19. Proposed unsupervised EOT+FM method achieves SOTA near-isometric matching (FAUST/SCAPE/SHREC19). Evidence: p.6-7, Sec.5.1 text plus Table 1 and Fig.2 Limitations: Not stated whether gains are statistically significant; limited to mean geodesic error."
+    },
+    {
+      "id": "table-1",
+      "type": "table",
+      "page": 7,
+      "label": "Table 1",
+      "truncated": false,
+      "text": "Quantitative near-isometric shape matching. Mean geodesic errors for FAUST, SCAPE, SHREC19 under three training regimes. Method outperforms axiomatic, supervised and unsupervised baselines in most near-isometric settings. Evidence: p.7, Table 1 values and caption Limitations: Mean geodesic error only; best/second-best coloring does not give variance or significance."
+    },
+    {
+      "id": "fig-2",
+      "type": "figure",
+      "page": 7,
+      "label": "Figure 2",
+      "truncated": false,
+      "text": "Qualitative results on SHREC19 texture transfer. Checker-texture transfer comparison across methods. Method yields better texture transfer on SHREC19 than Deep Shells and ULRSSM. Evidence: p.7, Fig.2 images and caption Limitations: Visual only; subjective and limited to few SHREC19 examples."
+    }
+  ],
+  "page_texts": [
+    {
+      "page": 7,
+      "chars": 2287,
+      "truncated": false,
+      "text": "Table 1. Quantitative results on near-isometric shape matching. The color denotes the best and second -best result. Our method\noutperforms various methods including axiomatic, supervised and unsupervised methods in most settings.\nMethod\nFAUST\nSCAPE\nFAUST + SCAPE\nFAUST\nSCAPE\nSHREC\u201919\nFAUST\nSCAPE\nSHREC\u201919\nFAUST\nSCAPE\nSHREC\u201919\nAxiomatic\nZoomOut [36]\n6.1\n\\\n\\\n\\\n7.5\n\\\n\\\n\\\n\\\nBCICP [43]\n6.1\n\\\n\\\n\\\n11.0\n\\\n\\\n\\\n\\\nSmooth Shells [17]\n2.5\n\\\n\\\n\\\n4.7\n\\\n\\\n\\\n\\\nSupervised\nFMNet [33]\n11.0\n30.0\n\\\n33.0\n17.0\n\\\n\\\n\\\n\\\nGeomFMaps [15]\n2.6\n3.3\n9.9\n3.0\n3.0\n12.2\n2.6\n3.0\n7.9\nTransMatch [57]\n1.8\n32.8\n19.0\n18.5\n16.0\n39.5\n1.7\n13.5\n12.9\nUnsupervised\nSURFMNet [47]\n15.0\n32.0\n\\\n32.0\n12.0\n\\\n33.0\n29.0\n\\\nDeep Shells [18]\n1.7\n5.4\n27.4\n2.7\n2.5\n23.4\n1.6\n2.4\n21.1\nAFMap [28]\n1.9\n2.6\n6.4\n2.2\n2.2\n9.9\n1.9\n2.3\n5.8\nSSLMSM [11]\n2.0\n7.0\n9.1\n2.7\n3.1\n8.4\n1.9\n4.3\n6.2\nUDMSM [10]\n1.5\n7.5\n20.1\n3.2\n2.0\n28.3\n1.7\n7.6\n28.7\nULRSSM [12]\n1.6\n3.6\n7.2\n1.9\n1.9\n7.6\n1.7\n3.2\n4.6\nOurs\n1.5\n3.4\n5.5\n1.6\n1.8\n7.0\n1.6\n2.2\n4.7\nFigure 2. Qualitative results of different methods evaluated on\nSHREC\u201919 datasets.\nCorrespondence is visualized by texture\ntransfer. The red arrow indicates poor mappings.\nmethod outperforms previous methods in both dataset as\nshown in Tab. 2. Visualization in Fig. 3 shows that AFMap\noften fails to retrieve a non-isometric mapping. In addition,\nULRSSM demonstrates better mapping despite some ambi-\nguity. On the other hand, our method obtains a precise and\nsmooth mapping, thus visually better than the two state-of-\nthe-art methods.\nTable 2. Quantitative results for non-isometric matching on\nSMAL and DT4D-H. Our method surpass state-of-the-art meth-\nods on challenging non-isometric dataset such as SMAL and\nDT4D-H.\nMethod\nSMAL\nDT4D-H\nDeep Shells [18]\n29.3\n31.1\nGeoFMaps [15]\n7.6\n22.6\nAFMap [28]\n5.4\n11.6\nULRSSM [12]\n4.2\n4.5\nOurs\n4.0\n4.2\n5.3. Segmentation transfer\nTable 3. Quantitative results for 3D shape segmentation trans-\nfer. Our method is effectively applied to semantic segmentation\ntransfer on 3D shapes, establishing a new benchmark for state-of-\nthe-art performance in this domain.\nMethod\nCoarse\nFine-grained\nAFMaps [28]\n81.3\n43.2\nUDMSM [10]\n85.3\n45.2\nULRSSM [12]\n84.2\n58.2\nOurs\n87.8\n60.5\nDatasets. We illustrate the performance of our proposed\nmethod on the task of segmentation transfer on 3D seman-\n23194"
+    }
+  ],
+  "gaps": [
+    "section-level retrieval (methods/limitations/conclusions) unavailable; audit uses object evidence plus page excerpts only"
+  ],
+  "project_findings_brief": "- [f1] (deep-shells): Entropy-regularized OT energy integrating squared product-embedding distance enables differentiable Sinkhorn-based shape matching. [evidence: Eq. 8: OT energy integrating squared embedding distance under pi minus entropy regularization enables differentiable Sinkhorn optimization]\n- [f2] (deep-shells): Pairwise OT ground cost is explicitly encoded as Gibbs density from negative scaled squared embedding distance. [evidence: Eq. 10 defines p_lambda as exponential of negative scaled squared distance for Sinkhorn input]\n- [f3] (deep-shells): A second OT energy using learned feature distance computes initial soft correspondences, exemplifying an alternative ground cost. [evidence: Eq. 13: OT energy using learned feature distance to compute initial pi, showing alternative ground cost in same pipeline]\n- [f4] (deep-shells): Product-space embedding of intrinsic eigenfunctions and extrinsic coordinates/normals defines the space where Euclidean distance serves as OT ground cost. [evidence: Eq. 3 embeds shape X into R^{K+6} using intrinsic eigenfunctions plus extrinsic smoothed coordinates and normals whose Euclidean distance becomes ground cost]"
+}

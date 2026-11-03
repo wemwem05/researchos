@@ -1,0 +1,94 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live1",
+  "project_id": "ot-correspondence",
+  "kind": "audit",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-1",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "failed",
+  "synthetic": false,
+  "created_at": "2026-11-03T22:21:19.571566+00:00",
+  "updated_at": "2026-11-03T22:22:04.347879+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "load_claim_and_project",
+      "at": "2026-11-03T22:21:19.604550+00:00",
+      "detail": "claim-1"
+    },
+    {
+      "node": "classify_claim",
+      "at": "2026-11-03T22:21:30.103387+00:00",
+      "detail": "empirical_benchmark,novelty_sota"
+    },
+    {
+      "node": "collect_internal_evidence",
+      "at": "2026-11-03T22:21:30.150485+00:00",
+      "detail": "3 objects, 1 pages, 1 gaps"
+    },
+    {
+      "node": "failed",
+      "at": "2026-11-03T22:22:04.342844+00:00",
+      "detail": "Spark Open (plan_audit_checks) returned invalid structured output after 1 repair attempt: 11 validation errors for AuditPlan\nnumerical_checks.0.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information"
+    },
+    {
+      "node": "execute_numerical_checks",
+      "at": "2026-11-03T22:22:04.347795+00:00",
+      "detail": "0 checks: none proposed"
+    }
+  ],
+  "decisions": [
+    "external literature search ENABLED by researcher (default is off)"
+  ],
+  "validation_failures": [],
+  "revision_path": [],
+  "human_review_request": null,
+  "human_review_response": null,
+  "final_status": "failed",
+  "error": "Spark Open (plan_audit_checks) returned invalid structured output after 1 repair attempt: 11 validation errors for AuditPlan\nnumerical_checks.0.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.0.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='Ours_C3 < AFMap_C3 < ULR... = (6.4-5.5)/6.4=14.06%', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.1.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.1.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='Ours_C6 < ULRSSM_C6; imp...t = (7.6-7.0)/7.6=7.89%', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.2.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.2.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='C1 tie Ours=UDMSM best; ...arable without variance', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.3.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.3.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='ULRSSM_C9 (4.6) < Ours_C... +2.17% worse than best', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.4.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.4.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='AFMap_C2 (2.6) < GeomFMa... +30.7% worse than best', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nlimitations\n  Input should be a valid array [type=list_type, input_value='Audit relies on object e...numerical verification.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/list_type",
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T22:21:30.100646+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live1",
+      "node": "classify_claim",
+      "latency_ms": 10495,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2619,
+      "completion_tokens": 2215,
+      "total_tokens": 4834,
+      "request_id": "chatcmpl-c15b275f0d3b4bdabec0cc33eef432ce"
+    },
+    {
+      "timestamp": "2026-11-03T22:22:04.338206+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live1",
+      "node": "plan_audit_checks",
+      "latency_ms": 34186,
+      "success": false,
+      "error": "invalid output: 11 validation errors for AuditPlan\nnumerical_checks.0.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.0.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='Ours_C3 < AFMap_C3 < ULR... = (6.4-5.5)/6.4=14.06%', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.1.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.1.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='Ours_C6 < ULRSSM_C6; imp...t = (7.6-7.0)/7.6=7.89%', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.2.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.2.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='C1 tie Ours=UDMSM best; ...arable without variance', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.3.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.3.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='ULRSSM_C9 (4.6) < Ours_C... +2.17% worse than best', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nnumerical_checks.4.metric_direction\n  Input should be 'higher', 'lower' or 'na' [type=literal_error, input_value='lower is better', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/literal_error\nnumerical_checks.4.expected_value\n  Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value='AFMap_C2 (2.6) < GeomFMa... +30.7% worse than best', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/float_parsing\nlimitations\n  Input should be a valid array [type=list_type, input_value='Audit relies on object e...numerical verification.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/list_type",
+      "retry_count": 1,
+      "prompt_tokens": 4761,
+      "completion_tokens": 2797,
+      "total_tokens": 7558,
+      "request_id": "chatcmpl-a9711e8297dd4503af5f0b942e096b54"
+    }
+  ]
+}

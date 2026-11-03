@@ -14,6 +14,8 @@ Endpoints (JSON, CORS open for localhost demo use):
   GET  /api/agent/verifications             (Milestone 6: attached evidence)
   GET  /api/agent/verifications/<thread>/files/<name>  (allowlisted artifacts)
   POST /api/agent/verifications/start       {"paper_id","claim_id"} (validated refs only)
+  GET  /api/agent/audits                    (Milestone 6.1: attached audits)
+  POST /api/agent/audits/start              {"paper_id","claim_id","external?"} (refs only)
 
 The verifications/start endpoint accepts only validated project/claim
 references — never arbitrary code. Bound to localhost for the hackathon demo.
@@ -84,6 +86,15 @@ class Handler(BaseHTTPRequestHandler):
                     _send(self, 404, {"error": "no project"})
                     return
                 _send(self, 200, {"verifications": [v.model_dump() for v in project.verifications]})
+            elif path == "/api/agent/audits":
+                from project import load_project
+
+                try:
+                    project = load_project(PROJECT_DIR)
+                except FileNotFoundError:
+                    _send(self, 404, {"error": "no project"})
+                    return
+                _send(self, 200, {"audits": [a.model_dump() for a in project.audits]})
             elif path.startswith("/api/agent/verifications/"):
                 # Live artifact download: /api/agent/verifications/<thread>/files/<name>
                 # with a strict filename allowlist (never arbitrary paths).
@@ -145,7 +156,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):  # noqa: N802 - stdlib name
-        from agent import resume_investigation, resume_verification
+        from agent import resume_audit, resume_investigation, resume_verification
         from agent_graph import load_run_record as _load_record
 
         try:
@@ -169,7 +180,12 @@ class Handler(BaseHTTPRequestHandler):
                     _send(self, 404, {"error": f"unknown thread {thread_id}"})
                     return
                 try:
-                    resume = resume_verification if kind == "verify" else resume_investigation
+                    if kind == "verify":
+                        resume = resume_verification
+                    elif kind == "audit":
+                        resume = resume_audit
+                    else:
+                        resume = resume_investigation
                     record = resume(
                         PROJECT_DIR, thread_id, choice,
                         str(payload.get("free_text", "") or ""),
@@ -210,6 +226,32 @@ class Handler(BaseHTTPRequestHandler):
                 thread = threading.Thread(
                     target=_run_verification,
                     args=(paper_id, claim_id, thread_id), daemon=True,
+                )
+                thread.start()
+                _send(self, 202, {"status": "started", "thread_id": thread_id})
+            elif path == "/api/agent/audits/start":
+                from agent import validate_claim_ref
+                from audit_graph import new_audit_thread_id
+
+                paper_id = payload.get("paper_id", "")
+                claim_id = payload.get("claim_id", "")
+                external = payload.get("external", False)
+                if not isinstance(paper_id, str) or not isinstance(claim_id, str):
+                    _send(self, 400, {"error": "paper_id and claim_id must be strings"})
+                    return
+                if not isinstance(external, bool):
+                    _send(self, 400, {"error": "external must be a boolean"})
+                    return
+                try:
+                    validate_claim_ref(PROJECT_DIR, paper_id, claim_id)
+                except ValueError as e:
+                    _send(self, 400, {"error": str(e)})
+                    return
+                thread_id = new_audit_thread_id(
+                    PROJECT_DIR.resolve().name, paper_id, claim_id)
+                thread = threading.Thread(
+                    target=_run_audit,
+                    args=(paper_id, claim_id, external, thread_id), daemon=True,
                 )
                 thread.start()
                 _send(self, 202, {"status": "started", "thread_id": thread_id})
@@ -254,6 +296,25 @@ def _run_verification(paper_id: str, claim_id: str, thread_id: str) -> None:
     )
     try:
         cmd_verify_claim(args)
+    except Exception:  # noqa: BLE001 - background job; traceback is the record
+        traceback.print_exc()
+
+
+def _run_audit(paper_id: str, claim_id: str, external: bool, thread_id: str) -> None:
+    """Background audit-claim (own SQLite connection; validated refs only)."""
+    import argparse as _ap
+
+    from agent import cmd_audit_claim
+
+    args = _ap.Namespace(
+        project_dir=str(PROJECT_DIR),
+        paper_id=paper_id,
+        claim_id=claim_id,
+        thread_id=thread_id,
+        external=external,
+    )
+    try:
+        cmd_audit_claim(args)
     except Exception:  # noqa: BLE001 - background job; traceback is the record
         traceback.print_exc()
 

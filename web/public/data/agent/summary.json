@@ -1,16 +1,21 @@
 {
   "model": "meta-models/muse-spark-open-1026",
   "provider": "Baseten",
-  "calls": 20,
-  "successful_calls": 19,
-  "failed_calls": 1,
-  "avg_latency_ms": 37028,
+  "calls": 57,
+  "successful_calls": 52,
+  "failed_calls": 5,
+  "avg_latency_ms": 23187,
   "calls_by_node": {
-    "classify_testability": 4,
+    "classify_testability": 7,
     "experiment_planner": 3,
     "generate_code": 3,
     "diagnose_and_repair": 9,
-    "interpret_result": 1
+    "interpret_result": 1,
+    "classify_claim": 8,
+    "plan_audit_checks": 8,
+    "methodology_assessment": 6,
+    "compare_project_evidence": 6,
+    "scientific_critic": 6
   },
-  "latest_at": "2026-11-03T20:53:46.657631+00:00"
+  "latest_at": "2026-11-03T22:59:20.082313+00:00"
 }

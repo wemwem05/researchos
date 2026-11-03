@@ -3,6 +3,7 @@
 import type { LocalizedData, SciObject } from "../lib/types";
 import { importanceLabel, relevanceLabel } from "../lib/relevance";
 import Latex from "./Latex";
+import AuditClaim from "./AuditClaim";
 import VerifyClaim from "./VerifyClaim";
 
 interface Props {
@@ -233,10 +234,16 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
       {paperId && selected.type === "claim" && (
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-            Computational verification
+            Scientific verification
           </h3>
-          <div className="mt-2">
-            <VerifyClaim paperId={paperId} claim={selected} />
+          <div className="mt-2 flex flex-col items-start gap-2">
+            <AuditClaim paperId={paperId} claim={selected} />
+            <div className="w-full border-t border-neutral-100 pt-2">
+              <p className="mb-1 text-[11px] leading-relaxed text-neutral-500">
+                Optional: run a computational test of this claim in an isolated sandbox.
+              </p>
+              <VerifyClaim paperId={paperId} claim={selected} />
+            </div>
           </div>
         </section>
       )}

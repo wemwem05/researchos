@@ -1,0 +1,189 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live2",
+  "project_id": "ot-correspondence",
+  "kind": "audit",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-1",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "completed",
+  "synthetic": false,
+  "created_at": "2026-11-03T22:27:00.753031+00:00",
+  "updated_at": "2026-11-03T22:28:30.030971+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "load_claim_and_project",
+      "at": "2026-11-03T22:27:00.775264+00:00",
+      "detail": "claim-1"
+    },
+    {
+      "node": "classify_claim",
+      "at": "2026-11-03T22:27:08.607407+00:00",
+      "detail": "empirical_benchmark,novelty_sota,numerical"
+    },
+    {
+      "node": "collect_internal_evidence",
+      "at": "2026-11-03T22:27:08.675243+00:00",
+      "detail": "3 objects, 1 pages, 1 gaps"
+    },
+    {
+      "node": "plan_audit_checks",
+      "at": "2026-11-03T22:27:29.301217+00:00",
+      "detail": "5 numerical checks, external=yes"
+    },
+    {
+      "node": "execute_numerical_checks",
+      "at": "2026-11-03T22:27:29.306384+00:00",
+      "detail": "5 checks: {'NOT_EVALUATED': 3, 'DISCREPANCY': 1, 'PASSED': 1}"
+    },
+    {
+      "node": "methodology_assessment",
+      "at": "2026-11-03T22:27:46.404023+00:00",
+      "detail": "8 findings"
+    },
+    {
+      "node": "compare_project_evidence",
+      "at": "2026-11-03T22:27:55.447598+00:00",
+      "detail": "4 comparisons"
+    },
+    {
+      "node": "bounded_literature_search",
+      "at": "2026-11-03T22:27:58.752897+00:00",
+      "detail": "2 queries, 1 records"
+    },
+    {
+      "node": "assess_sources",
+      "at": "2026-11-03T22:27:58.755493+00:00",
+      "detail": "1 selected (abstract-level)"
+    },
+    {
+      "node": "scientific_critic",
+      "at": "2026-11-03T22:28:30.010886+00:00",
+      "detail": "verdict=SUPPORTED"
+    },
+    {
+      "node": "audit_decision_gate",
+      "at": "2026-11-03T22:28:30.016231+00:00",
+      "detail": "verdict=SUPPORTED -> finalize"
+    },
+    {
+      "node": "finalize",
+      "at": "2026-11-03T22:28:30.019308+00:00",
+      "detail": "audit accepted"
+    },
+    {
+      "node": "evidence_report",
+      "at": "2026-11-03T22:28:30.023411+00:00",
+      "detail": "overall=discrepancies identified"
+    },
+    {
+      "node": "attach_to_project",
+      "at": "2026-11-03T22:28:30.030231+00:00",
+      "detail": "attached a1 overall=discrepancies identified"
+    }
+  ],
+  "decisions": [
+    "external literature search ENABLED by researcher (default is off)",
+    "openalex query: remeshed FAUST SCAPE SHREC19 mean geodesic error benchmark SOTA 2023 2024 unsupervised",
+    "openalex query: ULRSSM AFMap GeomFMaps FAUST SHREC19 reported geodesic error comparison protocol",
+    "audit decision: SUPPORTED -> finalize",
+    "audit report: overall=discrepancies identified",
+    "audit complete: discrepancies identified"
+  ],
+  "validation_failures": [],
+  "revision_path": [],
+  "human_review_request": null,
+  "human_review_response": null,
+  "final_status": "completed",
+  "error": null,
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T22:27:08.603006+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live2",
+      "node": "classify_claim",
+      "latency_ms": 7827,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2619,
+      "completion_tokens": 1667,
+      "total_tokens": 4286,
+      "request_id": "chatcmpl-19fcc69c4cc84ea7a9d54ef1a3d6a9cf"
+    },
+    {
+      "timestamp": "2026-11-03T22:27:29.297402+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live2",
+      "node": "plan_audit_checks",
+      "latency_ms": 20621,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2582,
+      "completion_tokens": 6697,
+      "total_tokens": 9279,
+      "request_id": "chatcmpl-d82833151b2542958d7befd8939d401c"
+    },
+    {
+      "timestamp": "2026-11-03T22:27:46.400780+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live2",
+      "node": "methodology_assessment",
+      "latency_ms": 17093,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2446,
+      "completion_tokens": 5313,
+      "total_tokens": 7759,
+      "request_id": "chatcmpl-53fc7516fb244986a0432f366224ebb5"
+    },
+    {
+      "timestamp": "2026-11-03T22:27:55.438670+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live2",
+      "node": "compare_project_evidence",
+      "latency_ms": 9030,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 575,
+      "completion_tokens": 2466,
+      "total_tokens": 3041,
+      "request_id": "chatcmpl-6ec7e3c4680147349cce000357dc8e0f"
+    },
+    {
+      "timestamp": "2026-11-03T22:28:30.005959+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live2",
+      "node": "scientific_critic",
+      "latency_ms": 31248,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 4876,
+      "completion_tokens": 2590,
+      "total_tokens": 7466,
+      "request_id": "chatcmpl-3b8f77dec4494c13aa34c494f5b89e2d"
+    }
+  ]
+}

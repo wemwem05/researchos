@@ -290,6 +290,9 @@ def cmd_review(args: argparse.Namespace) -> int:
         if kind == "verify":
             record = resume_verification(project_dir, args.thread_id, args.choice,
                                          args.free_text or "")
+        elif kind == "audit":
+            record = resume_audit(project_dir, args.thread_id, args.choice,
+                                  args.free_text or "")
         else:
             record = resume_investigation(project_dir, args.thread_id, args.choice,
                                           args.free_text or "")
@@ -307,6 +310,105 @@ def cmd_review(args: argparse.Namespace) -> int:
         print(f"  error: {record.error}", file=sys.stderr)
         return 1
     return 0
+
+
+def _pdf_path_for_paper(paper: PaperEntry) -> Path | None:
+    if not paper.pdf_path:
+        return None
+    resolved = _resolve(paper.pdf_path)
+    return resolved if resolved.is_file() else None
+
+
+def resume_audit(project_dir: Path, thread_id: str, choice: str, free_text: str = "") -> RunRecord:
+    """Resume an awaiting_human audit run. Post-review paths may call Spark
+    (revision); checkpointing guarantees completed calls never repeat.
+    OpenAlex reads are disk-cached, so searches never repeat either."""
+    from audit_graph import AuditContext, build_audit_graph, initial_audit_state, openalex_cache_dir
+    from openalex import OpenAlexClient
+
+    record = load_run_record(project_dir, thread_id)
+    if record.status != "awaiting_human":
+        raise ValueError(f"thread {thread_id} is '{record.status}', not awaiting_human")
+    analysis = load_record_analysis(record)
+    paper = PaperEntry.model_validate(record.paper)
+    # External flag lives on the checkpointed state post-review; re-derive
+    # from the start-of-run decision for an accurate resume context.
+    external = any("ENABLED by researcher" in d for d in record.decisions)
+    ctx = AuditContext(
+        project_dir=project_dir, analysis=analysis, paper=paper,
+        claim_id=record.claim_id, pdf_path=_pdf_path_for_paper(paper),
+        spark=SparkOpenClient(), openalex=OpenAlexClient(openalex_cache_dir(project_dir)),
+        external_enabled=external,
+    )
+    config = {"configurable": {"thread_id": thread_id, "ctx": ctx}}
+    with _checkpointer(project_dir) as checkpointer:
+        graph = build_audit_graph(checkpointer)
+        graph.invoke(resume_command(choice, free_text), config)
+    return load_run_record(project_dir, thread_id)
+
+
+def cmd_audit_claim(args: argparse.Namespace) -> int:
+    from audit_graph import AuditContext, build_audit_graph, initial_audit_state, new_audit_thread_id, openalex_cache_dir
+    from openalex import OpenAlexClient
+
+    project_dir = Path(args.project_dir)
+    if not project_path(project_dir).is_file():
+        print(f"error: no project in {project_dir} (run project.py init first)", file=sys.stderr)
+        return 2
+    try:
+        paper, analysis, loc_path = validate_claim_ref(project_dir, args.paper_id, args.claim_id)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+    try:
+        spark = SparkOpenClient()
+    except SparkOpenError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 2
+
+    project_id = project_dir.resolve().name
+    thread_id = args.thread_id or new_audit_thread_id(project_id, args.paper_id, args.claim_id)
+    record = RunRecord(
+        thread_id=thread_id,
+        project_id=project_id,
+        kind="audit",
+        paper_id=args.paper_id,
+        claim_id=args.claim_id,
+        research_question=load_project(project_dir).research_question,
+        status="running",
+        created_at=utc_now_iso(),
+        updated_at=utc_now_iso(),
+        paper=paper.model_dump(),
+        analysis_path=loc_path,
+    )
+    if args.external:
+        record.decisions.append("external literature search ENABLED by researcher (default is off)")
+    save_run_record(project_dir, record)
+    ctx = AuditContext(
+        project_dir=project_dir, analysis=analysis, paper=paper,
+        claim_id=args.claim_id, pdf_path=_pdf_path_for_paper(paper),
+        spark=spark, openalex=OpenAlexClient(openalex_cache_dir(project_dir)),
+        external_enabled=bool(args.external),
+    )
+    config = {"configurable": {"thread_id": thread_id, "ctx": ctx}}
+    with _checkpointer(project_dir) as checkpointer:
+        graph = build_audit_graph(checkpointer)
+        graph.invoke(initial_audit_state(project_id, thread_id, args.paper_id, args.claim_id,
+                                         external=bool(args.external)), config)
+    record = load_run_record(project_dir, thread_id)
+    if record.status == "awaiting_human":
+        req = record.human_review_request or {}
+        print(f"[human review] thread {thread_id} is waiting.", file=sys.stderr)
+        print(f"  question: {req.get('question', '')[:300]}", file=sys.stderr)
+        print(f"  options: {req.get('options', [])}", file=sys.stderr)
+        print(f"  resume: agent.py review --project-dir {args.project_dir} "
+              f"--thread-id {thread_id} --choice \"...\"", file=sys.stderr)
+        return 0
+    if record.status == "completed":
+        print(f"[done] thread {thread_id} completed.", file=sys.stderr)
+        return 0
+    print(f"[failed] thread {thread_id}: {record.error}", file=sys.stderr)
+    return 1
 
 
 def cmd_verify_claim(args: argparse.Namespace) -> int:
@@ -441,10 +543,45 @@ def stage_verifications(project_dir: Path, web_dir: Path) -> None:
     print(f"[done] staged {len(staged)} verifications into {out}", file=sys.stderr)
 
 
+def stage_audits(project_dir: Path, web_dir: Path) -> None:
+    """Stage scientific-audit reports (no binary artifacts)."""
+    import shutil
+
+    from audit_graph import audit_thread_dir
+
+    out = web_dir / "public" / "data" / "agent" / "audits"
+    out.mkdir(parents=True, exist_ok=True)
+    try:
+        project = load_project(project_dir)
+    except FileNotFoundError:
+        (web_dir / "public" / "data" / "agent" / "audits.json").write_text(
+            "[]\n", encoding="utf-8")
+        return
+    staged = []
+    for a in project.audits:
+        thread_out = out / a.thread_id
+        thread_out.mkdir(parents=True, exist_ok=True)
+        entry = a.model_dump()
+        for filename, web_key in (("audit.json", "web_audit"),
+                                  ("evidence_bundle.json", "web_evidence_bundle")):
+            src = audit_thread_dir(project_dir, a.thread_id) / filename
+            if src.is_file():
+                shutil.copyfile(src, thread_out / filename)
+                entry[web_key] = f"/data/agent/audits/{a.thread_id}/{filename}"
+            else:
+                entry[web_key] = None
+        staged.append(entry)
+    (web_dir / "public" / "data" / "agent" / "audits.json").write_text(
+        json.dumps(staged, indent=2) + "\n", encoding="utf-8"
+    )
+    print(f"[done] staged {len(staged)} audits into {out}", file=sys.stderr)
+
+
 def cmd_stage_web(args: argparse.Namespace) -> int:
     try:
         stage_agent_web(Path(args.project_dir), Path(args.web_dir))
         stage_verifications(Path(args.project_dir), Path(args.web_dir))
+        stage_audits(Path(args.project_dir), Path(args.web_dir))
     except Exception as e:
         print(f"error: stage-web failed: {e}", file=sys.stderr)
         return 1
@@ -490,6 +627,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     pvf.add_argument("--claim-id", required=True)
     pvf.add_argument("--thread-id", default=None)
 
+    pa = sub.add_parser("audit-claim", help="Audit one claim's scientific evidence (no execution).")
+    pa.add_argument("--project-dir", required=True)
+    pa.add_argument("--paper-id", required=True)
+    pa.add_argument("--claim-id", required=True)
+    pa.add_argument("--thread-id", default=None)
+    pa.add_argument("--external", action="store_true",
+                    help="Enable bounded external literature search (default off).")
+
     pv = sub.add_parser("verify", help="Probe Baseten connectivity with one real call.")
 
     pserve = sub.add_parser("serve", help="Serve the agent API for live HITL resume.")
@@ -510,6 +655,8 @@ def main() -> int:
         return cmd_stage_web(args)
     if args.command == "verify-claim":
         return cmd_verify_claim(args)
+    if args.command == "audit-claim":
+        return cmd_audit_claim(args)
     if args.command == "verify":
         return cmd_verify(args)
     if args.command == "serve":

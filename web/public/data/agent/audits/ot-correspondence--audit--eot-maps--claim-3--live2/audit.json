@@ -1,0 +1,365 @@
+{
+  "audit_id": "a3",
+  "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live2",
+  "project_id": "ot-correspondence",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-3",
+  "claim_text": "OT loss and refinement efficacy: Claim that replacing LOT with MSE degrades drastically and removing refinement degrades 4.7 to 7.2. Bidirectional SW/EBSW OT loss and entropic adaptive refinement are necessary for best accuracy.",
+  "claim_type": [
+    "numerical",
+    "empirical_benchmark",
+    "causal"
+  ],
+  "audit_scope": "Audit verifies internal consistency of Table 4 SHREC19 ablation (FAUST+SCAPE training) for OT loss variants (LMSE/LuniSW/LbiSW/biEBSW) and adaptive refinement (Eq.14 Sinkhorn) vs claimed degradations 34.3 and 4.7->7.2 and causal necessity. Does NOT cover re-execution of training, statistical significance/variance, generalization beyond SHREC19, historical/present SOTA status, undocumented protocol execution, or ablation of fmap/proper weights (lambda1/lambda3 in Eq.13).",
+  "checks": [
+    {
+      "check_id": "",
+      "check_type": "difference",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "difference(a-b): expected=2.5 recomputed=2.5. ",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "ratio",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "ratio(a/b): expected=1.5319 recomputed=1.531915. ",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "percentage_improvement",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "percentage_improvement(lower-is-better): expected=34.7222 recomputed=34.722222. baseline=7.2 proposed=4.7",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "difference",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "difference(a-b): expected=29.6 recomputed=29.6. ",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "ratio",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "ratio(a/b): expected=7.2979 recomputed=7.297872. ",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "error_reduction",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "error_reduction: expected=86.2974 recomputed=86.297376. absolute=29.599999999999998",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "best_method",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "best_method(lower-is-better): expected=Ours recomputed=Ours. candidates={'w_LMSE': 34.3, 'w_LuniSW': 4.9, 'w_LbiSW': 4.8, 'wo_adaptive': 7.2, 'Ours': 4.7}",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "ranking",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4"
+      ],
+      "actual_computation_or_reasoning": "ranking(lower-is-better): expected=['Ours', 'w_LbiSW', 'w_LuniSW', 'wo_adaptive', 'w_LMSE'] recomputed=['Ours', 'w_LbiSW', 'w_LuniSW', 'wo_adaptive', 'w_LMSE']. values={'w_LMSE': 34.3, 'w_LuniSW': 4.9, 'w_LbiSW': 4.8, 'wo_adaptive': 7.2, 'Ours': 4.7}",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "difference",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-4",
+        "eq-10",
+        "eq-11"
+      ],
+      "actual_computation_or_reasoning": "difference(a-b): expected=0.2 recomputed=0.2. ",
+      "limitations": ""
+    }
+  ],
+  "methodology_findings": [
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "reproducibility information",
+      "finding": "LOT substitution comparability not fully defined: Eq.10 defines LbiSW (bidirectional uniform slicing) and Eq.11 defines LbiEBSW (importance-sampled shared slicing) and Eq.13 defines Ltotal=lambda1 Lfmap+lambda2 LOT+lambda3 Lproper where LOT could be LbiSW or LbiEBSW, but Table 4 baselines LMSE and LuniSW have no equation/formula in bundle; whether they reuse identical Ltotal weights and optimization is unverifiable.",
+      "evidence": "Eq.10 LbiSW = (E_theta~U(Sd-1)[Wp^p(theta#Fx,theta#hatFy)+Wp^p(theta#Fy,theta#hatFx)])^{1/p} (p.5); Eq.11 LbiEBSW = (E_theta~sigma0[(W_theta,X+W_theta,Y)w(theta)]/E[w(theta)])^{1/p} (p.5); Ltotal = lambda1 Lfmap+lambda2 LOT+lambda3 Lproper where LOT could be either LbiSW or LbiEBSW (p.6 Eq.13); Table 4 caption: 'we replace LOT with LMSE in Eq.13' and 'substitute LOT with LuniSW' (p.8) with no LMSE/LuniSW definition provided",
+      "evidence_refs": [
+        "eq-10",
+        "eq-11",
+        "table-4"
+      ]
+    },
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "reproducibility information",
+      "finding": "Critical hyperparameters for all LOT variants and refinement missing: lambda1-3 values, number of slicing directions for LuniSW/LbiSW/LbiEBSW, temperature tau in soft similarity Eq.9, and Sinkhorn epsilon/iterations for Eq.14 entropic OT not reported, preventing reproducibility and baseline fairness check.",
+      "evidence": "Soft similarity hatPi_{i,j}^{xy}=exp((Fi^x\u00b7Fj^y)/tau)/sum_k exp((Fi^x\u00b7Fk^y)/tau) where tau is scaling factor (p.5 Eq.9) with no value; Ltotal weights lambdai unspecified (p.6 Eq.13); Eq.14tildePi_xy=QX(QY...(QX(p^epsilon))) where p^epsilon(x,y)/exp(-1/epsilon c^2(x,y)) (p.6) with epsilon/iterations not given; no slicing count reported",
+      "evidence_refs": [
+        "eq-10",
+        "eq-11",
+        "eq-14",
+        "table-4"
+      ]
+    },
+    {
+      "severity": "OBSERVED_PROBLEM",
+      "category": "datasets",
+      "finding": "Ablation supporting necessity claim is limited to single evaluation protocol: trained on FAUST+SCAPE and tested only on SHREC19; does not ablate proper/fmap weights and does not test across datasets/seeds, explicitly acknowledged as limitation.",
+      "evidence": "Settings: 'We train our model on FAUST+SCAPE dataset and evaluate it on SHREC19 dataset' (p.8); Claim limitations: 'Ablation only on SHREC19 after FAUST+SCAPE training; does not ablate proper or fmap weights' (p.8); Table 4 limitations: 'Trained on FAUST+SCAPE, tested only on SHREC19' (p.8)",
+      "evidence_refs": [
+        "claim-3",
+        "table-4"
+      ]
+    },
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "statistical uncertainty",
+      "finding": "No uncertainty quantification for small incremental deltas between SW variants (LuniSW 4.9 -> LbiSW 4.8 -> Ours 4.7); without seeds, variance, or confidence intervals, 0.1-0.2 improvements cannot be distinguished from noise, while large gaps (LMSE 34.3 vs 4.7; w.o. adaptive 7.2 vs 4.7) also lack variance.",
+      "evidence": "Table 4 SHREC19: w. LMSE 34.3, w. LuniSW 4.9, w. LbiSW 4.8, w.o. adaptive refinement 7.2, Ours 4.7 (p.8); Results text: 'by using biSW, we can gain slightly better performance' and 'by employing importance sampling energy-based SW, we can even gain better performance' (p.8) with no variance reported; metric is mean geodesic errors (x100) lower better (p.6)",
+      "evidence_refs": [
+        "table-4",
+        "claim-3"
+      ]
+    },
+    {
+      "severity": "POTENTIAL_CONCERN",
+      "category": "baseline fairness",
+      "finding": "Causal necessity language ('necessary for best accuracy') overstates evidence: large MSE degradation supports that some OT alignment helps, but bidirectional vs uniform vs EBSW differences are 0.1-0.2 on single dataset without hyperparameter sweeps or ablation of Lfmap/Lproper weights, so incremental gains do not establish necessity of bidirectional/EBSW specifically.",
+      "evidence": "Table 4 gaps: LuniSW 4.9 to LbiSW 4.8 =0.1, LbiSW 4.8 to Ours 4.7=0.1 (p.8); Claim statement: 'Bidirectional SW/EBSW OT loss and entropic adaptive refinement are necessary for best accuracy' (p.8); Limitations note does not ablate proper or fmap weights",
+      "evidence_refs": [
+        "claim-3",
+        "table-4",
+        "eq-10",
+        "eq-11"
+      ]
+    },
+    {
+      "severity": "POTENTIAL_CONCERN",
+      "category": "controls",
+      "finding": "Ours vs w.o. adaptive refinement comparison (4.7 vs 7.2) is presented as isolating refinement, and p.6 states refinement is 'only employ entropic OT for refinement once during inference, thereby reducing computation and memory cost' orthogonal to training and 'differentiable Sinkhorn refinement per pair by minimizing Ltotal to update features'; however per-pair update protocol (whether training identical, how features are updated at inference by minimizing Ltotal) is underspecified, leaving potential confound between refinement effect and per-pair optimization.",
+      "evidence": "Eq.14 adaptive refinement via entropic OT: 'tildePi_xy=QX(QY...(QX(p^epsilon)))' with projection operator Q (p.6); Text: 'Thanks to differentiable property of Sinkhorn algorithm, we can refine each individual pair by minimizing Ltotal to update features accordingly' and 'we only employ entropic OT for refinement once during inference, thereby reducing computation and memory cost' (p.6); Table 4 fourth row 'not using adaptive refinement at end of training process' 7.2 vs Ours 4.7 (p.8)",
+      "evidence_refs": [
+        "eq-14",
+        "table-4"
+      ]
+    },
+    {
+      "severity": "POTENTIAL_CONCERN",
+      "category": "theory-vs-measured gaps",
+      "finding": "Theoretical properties claimed for Eq.10/11 (aligns feature distributions, encourages cycle consistency, shared slicing improves over uniform) are not directly measured; table numbers show only 0.1 improvement for bidirectional over uniform and for EBSW over biSW, which does not logically entail the stated alignment/cycle-consistency mechanism and contrasts with large 2.5-point refinement effect, suggesting refinement dominates reported best accuracy.",
+      "evidence": "Eq.10 text: 'loss minimizes discrepancy... converges toward zero when soft similarity approaches permutation, encourages cycle consistency' (p.5); Eq.11 text: 'Bidirectional EBSW with shared slicing distribution improves over uniform SW' and 'more expressive mechanism for selecting projection directions' (p.5); Table 4 incremental 4.9->4.8->4.7 vs refinement gap 7.2->4.7 (p.8)",
+      "evidence_refs": [
+        "eq-10",
+        "eq-11",
+        "table-4"
+      ]
+    },
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "evaluation protocol",
+      "finding": "Evaluation metric and split are documented (mean geodesic error x100, train FAUST+SCAPE / test SHREC19), but controls for identical feature extractor, epochs, and lambda weights across ablation rows are not documented, and section-level methods retrieval unavailable, so audit relies only on object evidence plus page excerpts.",
+      "evidence": "Metrics: 'we employ mean geodesic errors (x100)' (p.6); Settings: 'We train our model on FAUST+SCAPE and evaluate it on SHREC19' (p.8); Gaps note: 'section-level retrieval unavailable; audit uses object evidence plus page excerpts only'; no statement confirming identical extractor/epochs/lambdas across ablation rows",
+      "evidence_refs": [
+        "table-4",
+        "claim-3"
+      ]
+    }
+  ],
+  "cross_paper_findings": [
+    {
+      "comparability": "PARTIALLY_COMPARABLE",
+      "finding_ref": "f1",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL_CONSISTENT_IN_PRINCIPLE",
+      "detail": "f1 shows entropy-regularized OT energy with squared embedding distance via differentiable Sinkhorn optimization is effective for shape matching, which is conceptually consistent with claim that entropy-regularized OT helps. However solver differs fundamentally (Sinkhorn vs claimed bidirectional SW/EBSW sliced OT) and f1 does not test LOT vs MSE or refinement ablation, so it cannot confirm 4.7-7.2 degradation or drastic MSE drop, nor prove necessity of SW/EBSW specifically.",
+      "evidence": "Eq. 8: OT energy integrating squared embedding distance under pi minus entropy regularization enables differentiable Sinkhorn optimization"
+    },
+    {
+      "comparability": "NOT_DIRECTLY_COMPARABLE",
+      "finding_ref": "f2",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL_METHODOLOGICALLY_DISTINCT",
+      "detail": "f2 explicitly encodes OT ground cost as Gibbs density p_lambda = exp(-lambda * squared distance) for Sinkhorn input. Claimed bidirectional SW/EBSW does not use this Gibbs construction and slices distributions rather than evaluating pairwise exponential costs. Ground-cost definitions are inconsistent, blocking direct comparison; cannot verify whether bidirectional SW/EBSW truly implements Wasserstein OT vs contrastive sliced feature alignment, and provides no evidence for LOT vs MSE ablation.",
+      "evidence": "Eq. 10 defines p_lambda as exponential of negative scaled squared distance for Sinkhorn input"
+    },
+    {
+      "comparability": "PARTIALLY_COMPARABLE",
+      "finding_ref": "f3",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL_DOES_NOT_VALIDATE_ABLATION",
+      "detail": "f3 demonstrates an alternative OT ground cost using learned feature distance to compute initial soft correspondences pi (Eq.13) within same pipeline, showing OT cost can be swapped. This is relevant context for LOT vs LMSE ablation but does not correspond to MSE baseline: f3 retains OT optimization over feature distance, whereas MSE baseline is non-OT regression to correspondences. Therefore f3 illustrates alternative OT cost is viable but does not test elimination of OT or support claim that replacing LOT with MSE degrades drastically.",
+      "evidence": "Eq. 13: OT energy using learned feature distance to compute initial pi, showing alternative ground cost in same pipeline"
+    },
+    {
+      "comparability": "PARTIALLY_COMPARABLE",
+      "finding_ref": "f4",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL_CONSISTENT_CONSTRUCTION",
+      "detail": "f4 defines product-space embedding into R^{K+6} via intrinsic eigenfunctions plus extrinsic smoothed coordinates/normals whose Euclidean distance serves as OT ground cost. This is analogous in principle to treating feature distributions Fx,Fy as probability measures in Rd (Eq.9-11) where Euclidean distance defines cost. However f4 constructs per-point embedding space for pairwise transport, not pooled feature distributions; conceptual consistency of embedding-as-support-for-Euclidean-cost holds, but distributional formulation and dimensionality differ, so cannot directly validate bidirectional SW/EBSW or refinement efficacy.",
+      "evidence": "Eq. 3 embeds shape X into R^{K+6} using intrinsic eigenfunctions plus extrinsic smoothed coordinates and normals whose Euclidean distance becomes ground cost"
+    }
+  ],
+  "external_sources": [],
+  "external_queries": [],
+  "external_notes": [],
+  "unresolved_questions": [
+    "LOT substitution comparability not fully defined: Eq.10 defines LbiSW (bidirectional uniform slicing) and Eq.11 defines LbiEBSW (importance-sampled shared slicing) and Eq.13 defines Ltotal=lambda1 Lfmap+lambda2 LOT+lambda3 Lproper where LOT could be LbiSW or LbiEBSW, but Table 4 baselines LMSE and L",
+    "Critical hyperparameters for all LOT variants and refinement missing: lambda1-3 values, number of slicing directions for LuniSW/LbiSW/LbiEBSW, temperature tau in soft similarity Eq.9, and Sinkhorn epsilon/iterations for Eq.14 entropic OT not reported, preventing reproducibility and baseline fairness",
+    "No uncertainty quantification for small incremental deltas between SW variants (LuniSW 4.9 -> LbiSW 4.8 -> Ours 4.7); without seeds, variance, or confidence intervals, 0.1-0.2 improvements cannot be distinguished from noise, while large gaps (LMSE 34.3 vs 4.7; w.o. adaptive 7.2 vs 4.7) also lack var",
+    "Causal necessity language ('necessary for best accuracy') overstates evidence: large MSE degradation supports that some OT alignment helps, but bidirectional vs uniform vs EBSW differences are 0.1-0.2 on single dataset without hyperparameter sweeps or ablation of Lfmap/Lproper weights, so incrementa",
+    "Ours vs w.o. adaptive refinement comparison (4.7 vs 7.2) is presented as isolating refinement, and p.6 states refinement is 'only employ entropic OT for refinement once during inference, thereby reducing computation and memory cost' orthogonal to training and 'differentiable Sinkhorn refinement per ",
+    "Theoretical properties claimed for Eq.10/11 (aligns feature distributions, encourages cycle consistency, shared slicing improves over uniform) are not directly measured; table numbers show only 0.1 improvement for bidirectional over uniform and for EBSW over biSW, which does not logically entail the",
+    "Evaluation metric and split are documented (mean geodesic error x100, train FAUST+SCAPE / test SHREC19), but controls for identical feature extractor, epochs, and lambda weights across ablation rows are not documented, and section-level methods retrieval unavailable, so audit relies only on object e"
+  ],
+  "overall_assessment": "discrepancies identified",
+  "assessment_rationale": "at least one recomputation disagrees or an inconsistency is established",
+  "limitations": [
+    "Ablation only on SHREC19 after FAUST+SCAPE training; no evidence for generalization to FAUST, SCAPE, SMAL, DeformingThings4D",
+    "Does not ablate proper or fmap weights lambda1/lambda3 in Eq.13; isolates only LOT variant and refinement",
+    "Table 4 truncates biEBSW numeric row; Ours 4.7 inferred as biEBSW+refinement per text but not explicitly labeled in table body",
+    "Section-level retrieval unavailable; audit uses object evidence plus 4000-char page excerpts only; full training protocol and variance not in evidence",
+    "Uniform slicing limitation (Eq.10) and importance-sampling complexity (Eq.11) and quadratic memory of entropic OT (Eq.14) noted as caveats - efficacy vs cost tradeoff not quantified",
+    "Mean geodesic error x100 units implied; lower better assumed per field norm but not explicitly defined in excerpt; rounding to one decimal limits precision to ~0.05",
+    "section-level retrieval (methods/limitations/conclusions) unavailable; audit uses object evidence plus page excerpts only"
+  ],
+  "provenance": {
+    "claim_ref": "eot-maps:claim-3",
+    "object_refs": [
+      "claim-3",
+      "table-4",
+      "eq-10",
+      "eq-11",
+      "eq-14"
+    ],
+    "evidence_pages": [
+      5,
+      6,
+      8
+    ],
+    "evidence_objects": [
+      "claim-3",
+      "table-4",
+      "eq-10",
+      "eq-11",
+      "eq-14"
+    ],
+    "external_enabled": false,
+    "revisions": 0,
+    "human_reviewed": false
+  },
+  "model_telemetry": [
+    {
+      "timestamp": "2026-11-03T22:32:08.292030+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live2",
+      "node": "classify_claim",
+      "latency_ms": 11728,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2597,
+      "completion_tokens": 2955,
+      "total_tokens": 5552,
+      "request_id": "chatcmpl-18fd4b4315aa4e638f26ce3cbfb80675"
+    },
+    {
+      "timestamp": "2026-11-03T22:32:26.032100+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live2",
+      "node": "plan_audit_checks",
+      "latency_ms": 17667,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 5131,
+      "completion_tokens": 4957,
+      "total_tokens": 10088,
+      "request_id": "chatcmpl-a5e63fe47580442c824ef6c451124aea"
+    },
+    {
+      "timestamp": "2026-11-03T22:32:50.415041+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live2",
+      "node": "methodology_assessment",
+      "latency_ms": 24370,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 5008,
+      "completion_tokens": 6388,
+      "total_tokens": 11396,
+      "request_id": "chatcmpl-8d013a868c494580aad3fc144277050c"
+    },
+    {
+      "timestamp": "2026-11-03T22:33:00.891189+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live2",
+      "node": "compare_project_evidence",
+      "latency_ms": 10465,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 698,
+      "completion_tokens": 2771,
+      "total_tokens": 3469,
+      "request_id": "chatcmpl-3aab2f3f17bc487389c98f9d83ad76c8"
+    },
+    {
+      "timestamp": "2026-11-03T22:33:29.256008+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live2",
+      "node": "scientific_critic",
+      "latency_ms": 28350,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 5928,
+      "completion_tokens": 2936,
+      "total_tokens": 8864,
+      "request_id": "chatcmpl-e3918914901a4b868f10bf2b629c69ae"
+    }
+  ],
+  "created_at": "2026-11-03T22:33:29.276833+00:00"
+}

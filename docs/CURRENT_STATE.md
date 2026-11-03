@@ -286,6 +286,85 @@ clean
 Production build:
 passing (webpack builder — sandbox blocks Turbopack, as before)
 
+## Milestone 6.1 — Scientific Evidence Audit
+
+Working.
+
+The default "verify" action is now an EVIDENCE AUDIT: a
+researcher-selected claim is checked against its own paper record
+(recomputed numbers, methodology, project findings, optional bounded
+literature) without claiming reproduction. Computational testing
+(Milestone 6) stays a separate optional action and is never
+auto-substituted.
+
+New workflow (`prototype/audit_graph.py`, same LangGraph/SQLite/
+telemetry/review infrastructure as M5–M6, same Spark Open model):
+
+load_claim_and_project
+→ classify_claim (Spark Open, multi-label claim types)
+→ collect_internal_evidence (deterministic: claim + objects + page
+  excerpts; gaps reported, never invented)
+→ plan_audit_checks (Spark Open proposes structured checks)
+→ execute_numerical_checks (deterministic Python owns ALL arithmetic:
+  percentage improvement, error reduction, best method, ranking,
+  aggregate, ratio, difference, unit checks; value traceability to
+  cited table/cell context; paper-precision rounding tolerance;
+  untraceable checks are NOT EVALUATED)
+→ methodology_assessment (Spark Open: observed vs potential vs missing)
+→ compare_project_evidence (Spark Open + id validation: directly /
+  partially / not directly comparable / uncertain)
+→ external_evidence_gate (deterministic: skipped unless the researcher
+  enabled it AND the planner justifies it)
+→ [bounded_literature_search (OpenAlex: ≤2 queries, ≤10 records,
+  ≤3 papers, disk-cached, fail-soft) → assess_sources
+  (abstract-level labels, no full-text pretense)]
+→ scientific_critic (Spark Open) → decision_gate
+→ finalize | bounded_revision (max 1) | human_review (interrupt)
+→ evidence_report (deterministic overall mapping) → attach_to_project
+  (atomic, idempotent, separately attributed — findings never rewritten)
+
+Overall assessments (evidence-scoped, disjoint from M6 statuses):
+substantiated / partially substantiated / discrepancies identified /
+inconclusive on audited evidence / insufficient evidence.
+
+Live demo (EOT + Deep Shells project, 34 real Spark Open calls on
+`meta-models/muse-spark-open-1026`, ~229k tokens): claim-1 SOTA audit
+with live OpenAlex search (2 queries, 6 records, real 2026 source);
+claim-3 math/efficiency audits corpus-only. 6 audits attached (a1–a6);
+all current overalls are "discrepancies identified" driven by
+established methodology observations (e.g. single-protocol ablation,
+necessity language outrunning Table 4), with numerical checks passing
+after the rounding fix. Two live fail-closed human reviews (critic
+schema slips) resumed without repeating any Spark call — once via CLI,
+once via the UI review endpoint after an HTTP-started run; the final
+run took the clean SUPPORTED → finalize path after the critic prompt
+fix.
+
+UI: primary "Audit scientific claim" action on Reader claims (confirm
+dialog shows scope + external toggle default OFF with the 2/10/3
+budget → live audit timeline → review → full report: checks table,
+methodology, project comparison, external sources, unresolved
+questions, limitations, telemetry); "Verify computationally" kept as
+the distinct optional second action. Project view gained an Evidence
+audits section (live + staged).
+
+Backend tests:
+173 passing (31 new audit: classification, numerical ops incl.
+rounding/paper-precision, traceability, methodology/cross-paper
+schemas, external budget/rate-limit/abstract-labeling, interrupt/
+resume with zero repeated calls, idempotent attach, audit-vs-M6
+status disjointness, M1–M6 data preservation)
+
+Frontend tests:
+34 passing (6 new: assessment/check labels, comparability labels,
+external budget pins, audit timeline incl. waiting-review)
+
+TypeScript:
+clean
+
+Production build:
+passing (webpack builder)
+
 ## Next milestone
 
 TBD.

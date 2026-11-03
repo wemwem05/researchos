@@ -31,7 +31,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Literal, Optional, TypedDict
+from typing import Annotated, Any, Literal, Optional, TypedDict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -39,7 +39,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
 
 from analyze_paper import AnalysisResult
 from project import (
@@ -170,19 +170,33 @@ class ComparabilityCheck(BaseModel):
     note: str = ""
 
 
+def _none_to_empty_str(value: Any) -> Any:
+    return "" if value is None else value
+
+
+def _none_to_empty_list(value: Any) -> Any:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    return value
+
+
 class CriticConcern(BaseModel):
-    claim_ref: str = ""
-    question: str = ""
-    detail: str = ""
+    claim_ref: Annotated[str, BeforeValidator(_none_to_empty_str)] = ""
+    question: Annotated[str, BeforeValidator(_none_to_empty_str)] = ""
+    detail: Annotated[str, BeforeValidator(_none_to_empty_str)] = ""
     severity: Literal["blocking", "major", "minor"] = "major"
 
 
 class HumanQuestionDraft(BaseModel):
-    question: str = ""
-    investigator_position: str = ""
-    critic_concern: str = ""
-    affected_connection_indexes: list[int] = Field(default_factory=list)
-    options: list[str] = Field(
+    question: Annotated[str, BeforeValidator(_none_to_empty_str)] = ""
+    investigator_position: Annotated[str, BeforeValidator(_none_to_empty_str)] = ""
+    critic_concern: Annotated[str, BeforeValidator(_none_to_empty_str)] = ""
+    affected_connection_indexes: Annotated[list[int], BeforeValidator(_none_to_empty_list)] = (
+        Field(default_factory=list)
+    )
+    options: Annotated[list[str], BeforeValidator(_none_to_empty_list)] = Field(
         default_factory=lambda: [
             "Comparable — keep the connection",
             "Not comparable — drop the connection",
@@ -193,15 +207,16 @@ class HumanQuestionDraft(BaseModel):
 
 class CriticVerdict(BaseModel):
     verdict: CriticVerdictValue
-    summary: str = ""
+    summary: Annotated[str, BeforeValidator(_none_to_empty_str)] = ""
     checks: list[ComparabilityCheck] = Field(default_factory=list)
     concerns: list[CriticConcern] = Field(default_factory=list)
-    required_fixes: list[str] = Field(default_factory=list)
+    required_fixes: Annotated[list[str], BeforeValidator(_none_to_empty_list)] = Field(
+        default_factory=list)
     human_question: Optional[HumanQuestionDraft] = None
 
 
 class HumanReviewRequest(BaseModel):
-    kind: Literal["ambiguity", "revision_disagreement", "novelty_risk", "verification"] = "ambiguity"
+    kind: Literal["ambiguity", "revision_disagreement", "novelty_risk", "verification", "audit"] = "ambiguity"
     question: str
     why_stopped: str
     investigator_position: str

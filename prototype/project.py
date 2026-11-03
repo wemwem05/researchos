@@ -191,6 +191,37 @@ class VerificationEvidence(BaseModel):
     created_at: str = ""
 
 
+class ScientificAudit(BaseModel):
+    """Milestone 6.1: structured evidence-audit report attached to a claim.
+
+    Audit assessments are scientific (evidence-scoped) and deliberately
+    distinct from M6 computational statuses. Disagreements are stored as
+    separately attributed conclusions; audits never rewrite findings.
+    """
+
+    audit_id: str = ""
+    thread_id: str
+    project_id: str = ""
+    paper_id: str
+    claim_id: str
+    claim_text: str = ""
+    claim_type: list[str] = Field(default_factory=list)
+    audit_scope: str = ""
+    checks: list[dict] = Field(default_factory=list)
+    methodology_findings: list[dict] = Field(default_factory=list)
+    cross_paper_findings: list[dict] = Field(default_factory=list)
+    external_sources: list[dict] = Field(default_factory=list)
+    external_queries: list[str] = Field(default_factory=list)
+    external_notes: list[str] = Field(default_factory=list)
+    unresolved_questions: list[str] = Field(default_factory=list)
+    overall_assessment: str = ""
+    assessment_rationale: str = ""
+    limitations: list[str] = Field(default_factory=list)
+    provenance: dict = Field(default_factory=dict)
+    model_telemetry: list[dict] = Field(default_factory=list)
+    created_at: str = ""
+
+
 class Project(BaseModel):
     schema_version: str = "m4-1"
     research_question: str = Field(min_length=1)
@@ -201,6 +232,7 @@ class Project(BaseModel):
     open_questions: list[OpenQuestion] = Field(default_factory=list)
     novelty_risks: list[NoveltyRisk] = Field(default_factory=list)
     verifications: list[VerificationEvidence] = Field(default_factory=list)
+    audits: list[ScientificAudit] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def check_integrity(self) -> "Project":
@@ -238,6 +270,12 @@ class Project(BaseModel):
         for v in self.verifications:
             if v.paper_id not in paper_ids:
                 raise ValueError(f"verification {v.id} references unknown paper '{v.paper_id}'")
+        audit_ids = {a.audit_id for a in self.audits if a.audit_id}
+        if len(audit_ids) != len([a for a in self.audits if a.audit_id]):
+            raise ValueError("audit ids must be unique")
+        for a in self.audits:
+            if a.paper_id not in paper_ids:
+                raise ValueError(f"audit {a.audit_id} references unknown paper '{a.paper_id}'")
         return self
 
 

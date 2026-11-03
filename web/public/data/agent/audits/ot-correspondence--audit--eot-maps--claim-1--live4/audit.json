@@ -1,0 +1,357 @@
+{
+  "audit_id": "a4",
+  "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live4",
+  "project_id": "ot-correspondence",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-1",
+  "claim_text": "SOTA near-isometric shape correspondence: Experimentally testable claim that method outperforms prior axiomatic/supervised/unsupervised baselines on remeshed FAUST/SCAPE/SHREC19. Proposed unsupervised EOT+FM method achieves SOTA near-isometric matching (FAUST/SCAPE/SHREC19).",
+  "claim_type": [
+    "empirical_benchmark",
+    "novelty_sota",
+    "qualitative"
+  ],
+  "audit_scope": "Audit scope is limited to Table 1 near-isometric FAUST/SCAPE/SHREC19 mean geodesic error (x100) and Fig.2 texture-transfer qualitative evidence (p.7). SOTA assessed strictly as best mean geodesic error within the listed axiomatic/supervised/unsupervised baselines in Table 1 for the stated training regimes (Train on FAUST / SCAPE / FAUST+SCAPE) at publication date, not present-day SOTA. Does NOT cover: statistical significance/variance, reproducibility/re-training, hyper-parameter tuning, non-isometric SMAL/DT4D-H results, segmentation transfer, proof of optimality of EOT formulation, or verification that visual texture quality correlates with metric gains.",
+  "checks": [
+    {
+      "check_id": "",
+      "check_type": "best_method",
+      "description": "",
+      "status": "NOT_EVALUATED",
+      "evidence_refs": [
+        "table-1"
+      ],
+      "actual_computation_or_reasoning": "cited value(s) not found in source context: ['AFMap', 'SSLMSM', 'DeepShells', 'UDMSM']",
+      "limitations": "values untraceable to cited table/cell context"
+    },
+    {
+      "check_id": "",
+      "check_type": "ranking",
+      "description": "",
+      "status": "NOT_EVALUATED",
+      "evidence_refs": [
+        "table-1"
+      ],
+      "actual_computation_or_reasoning": "cited value(s) not found in source context: ['SSLMSM', 'AFMap', 'DeepShells', 'UDMSM']",
+      "limitations": "values untraceable to cited table/cell context"
+    },
+    {
+      "check_id": "",
+      "check_type": "percentage_improvement",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-1"
+      ],
+      "actual_computation_or_reasoning": "percentage_improvement(lower-is-better): expected=23.61 recomputed=23.611111. baseline=7.2 proposed=5.5",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "difference",
+      "description": "",
+      "status": "PASSED",
+      "evidence_refs": [
+        "table-1"
+      ],
+      "actual_computation_or_reasoning": "difference(a-b): expected=0.2 recomputed=0.2. ",
+      "limitations": ""
+    },
+    {
+      "check_id": "",
+      "check_type": "best_method",
+      "description": "",
+      "status": "NOT_EVALUATED",
+      "evidence_refs": [
+        "table-1"
+      ],
+      "actual_computation_or_reasoning": "cited value(s) not found in source context: ['AFMap', 'SSLMSM', 'DeepShells', 'UDMSM']",
+      "limitations": "values untraceable to cited table/cell context"
+    }
+  ],
+  "methodology_findings": [
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "evaluation_protocol",
+      "finding": "Train/test regime and remeshing comparability cannot be verified from evidence. Page excerpt does not define column-block training regimes (e.g., FAUST vs SCAPE vs FAUST+SCAPE training) or confirm all methods evaluated on identical remeshed FAUST/SCAPE/SHREC19 splits. No split, remeshing, or same-protocol statement in provided objects.",
+      "evidence": "Table 1 header shows 'FAUST SCAPE FAUST + SCAPE FAUST SCAPE SHREC'19 ...' with values but no regime definition; page_texts contains only 'Quantitative results on near-isometric shape matching' without split/remesh details; gaps explicitly state 'section-level retrieval (methods/limitations/conclusions) unavailable; audit uses object evidence plus page excerpts only'",
+      "evidence_refs": [
+        "table-1",
+        "claim-1",
+        "gaps"
+      ]
+    },
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "metric_comparability",
+      "finding": "Lower-is-better mean geodesic error \u00d7100 per Deep Shells protocol not confirmable. Evidence states 'Mean geodesic errors' and 'best and second-best result' coloring but does not state scaling (\u00d7100), normalization, geodesic-error computation, or that lower is better, so cross-method comparability per Deep Shells protocol cannot be fully verified.",
+      "evidence": "page_texts p.7: 'Table 1. Quantitative results on near-isometric shape matching. The color denotes the best and second -best result.' and 'Mean geodesic errors for FAUST, SCAPE, SHREC19 under three training regimes'; no \u00d7100 or protocol citation in excerpt",
+      "evidence_refs": [
+        "table-1",
+        "claim-1"
+      ]
+    },
+    {
+      "severity": "POTENTIAL_CONCERN",
+      "category": "baseline_fairness",
+      "finding": "Axiomatic methods (ZoomOut/BCICP/Smooth Shells) appear train-independent with sparse entries rather than penalized, but this is inferred from blanks (\u201c\\\") not an explicit caption/methods statement. Values shown: ZoomOut 6.1 /7.5, BCICP 6.1/11.0, Smooth Shells 2.5/4.7 with remaining cells empty, consistent with train-independence, but without methods text cannot confirm they were not disadvantaged on missing test sets.",
+      "evidence": "Axiomatic rows: ZoomOut [36] 6.1 \\\\ \\\\ \\\\ 7.5; BCICP [43] 6.1 \\\\ \\\\ \\\\ 11.0; Smooth Shells [17] 2.5 \\\\ \\\\ \\\\ 4.7 \u2014 vs dense entries for GeomFMaps, ULRSSM, Ours (9 values)",
+      "evidence_refs": [
+        "table-1"
+      ]
+    },
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "baseline_fairness",
+      "finding": "Baseline coverage, recency at publication date, and hyperparameter/seed control absent. No publication years, selection criteria, tuning protocol, seeds, variance, or whether baselines were re-run vs cited numbers provided in evidence, so fairness of SOTA comparison cannot be assessed.",
+      "evidence": "Evidence bundle lists methods (FMNet [33], GeomFMaps [15], TransMatch [57], SURFMNet [47], Deep Shells [18], AFMap [28], SSLMSM [11], UDMSM [10], ULRSSM [12]) with no hyperparameters, seeds, tuning, or re-implementation notes; gaps confirm methods/limitations sections unavailable",
+      "evidence_refs": [
+        "table-1",
+        "gaps"
+      ]
+    },
+    {
+      "severity": "OBSERVED_PROBLEM",
+      "category": "statistical_uncertainty",
+      "finding": "No variance, CIs, or significance tests reported; best/second-best coloring only. Paper reports mean geodesic error only, so small margins claimed as wins lack uncertainty quantification. Examples: 1.5 (Ours) vs 1.5 (UDMSM) tie /1.6 (ULRSSM), 3.4 vs 3.6, 1.6 vs 1.6 tie, and 4.7 vs 4.6 where Ours is second-best. Caption correctly limits to 'most settings' not 'all'.",
+      "evidence": "Table 1 caption: 'Mean geodesic error only; best/second-best coloring does not give variance or significance'; claim limitations: 'Not stated whether gains are statistically significant; limited to mean geodesic error'; Ours 1.5,3.4,5.5 /1.6,1.8,7.0 /1.6,2.2,4.7 vs ULRSSM 1.6,3.6,7.2 /1.9,1.9,7.6 /1.7,3.2,4.6 and UDMSM 1.5 tie",
+      "evidence_refs": [
+        "table-1",
+        "claim-1"
+      ]
+    },
+    {
+      "severity": "OBSERVED_PROBLEM",
+      "category": "scope_claim",
+      "finding": "Caption 'in most settings' is accurate vs 'all' \u2014 not universal SOTA. Evidence shows Ours is not best in all columns (e.g., final SHREC19 column Ours 4.7 vs ULRSSM 4.6; first-column tie 1.5 vs UDMSM 1.5). Scope is restricted to listed axiomatic/supervised/unsupervised baselines on these three datasets under mean geodesic error only and must not be extrapolated to other datasets/metrics.",
+      "evidence": "Evidence: Table 1 caption 'Our method outperforms various methods including axiomatic, supervised and unsupervised methods in most settings' and values showing Ours 4.7 second to ULRSSM 4.6; Ours 1.5 tied with UDMSM 1.5; limitations note 'limited to mean geodesic error'",
+      "evidence_refs": [
+        "table-1",
+        "claim-1"
+      ]
+    },
+    {
+      "severity": "OBSERVED_PROBLEM",
+      "category": "qualitative_evaluation",
+      "finding": "Figure 2 checker texture transfer is subjective qualitative evidence only: few SHREC19 examples, no quantitative texture distortion/IoU/metric, no blinded user study. Red arrows marking poor mappings indicate selected failures and potential cherry-picking; cannot quantify smoothness or superiority.",
+      "evidence": "Figure 2 text: 'Correspondence is visualized by texture transfer. The red arrow indicates poor mappings' ; object states 'Visual only; subjective and limited to few SHREC19 examples' ; caption claims 'better texture transfer' without metric",
+      "evidence_refs": [
+        "fig-2",
+        "table-1"
+      ]
+    },
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "causal_attribution",
+      "finding": "No ablations/controls in evidence linking EOT formulation to perceived smoothness. Cannot establish causal link between proposed unsupervised EOT+FM and qualitative smoothness without ablations or controlled comparisons; evidence bundle contains no ablation results.",
+      "evidence": "Evidence bundle includes only Table 1 and Fig.2; no ablation table, no controls isolating EOT component; project findings note EOT energies (Eq.8, Eq.10, Eq.13) but not their isolated effect on Table 1/Fig.2",
+      "evidence_refs": [
+        "fig-2",
+        "gaps"
+      ]
+    },
+    {
+      "severity": "MISSING_INFORMATION",
+      "category": "reproducibility",
+      "finding": "Reproducibility information absent from evidence: no code, data splits, preprocessing/remeshing details, hyperparameters, optimizer, seeds, compute, or variance reporting to enable verification of remeshed FAUST/SCAPE/SHREC19 results.",
+      "evidence": "No methods/limitations sections available per gaps; page_texts p.7 provides only table values and figure caption, no implementation details",
+      "evidence_refs": [
+        "gaps",
+        "table-1",
+        "fig-2"
+      ]
+    }
+  ],
+  "cross_paper_findings": [
+    {
+      "comparability": "NOT_DIRECTLY_COMPARABLE",
+      "finding_ref": "f1",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL",
+      "detail": "Finding f1 describes methodological OT formulation (entropy-regularized OT energy with squared product-embedding distance enabling Sinkhorn) without reporting mean geodesic errors on FAUST/SCAPE/SHREC19 for any baseline, nor remeshing/resampling protocol (5k vs 6890) or training loss details needed to audit SOTA outperform claim.",
+      "evidence": "Eq. 8: OT energy integrating squared embedding distance under pi minus entropy regularization enables differentiable Sinkhorn optimization"
+    },
+    {
+      "comparability": "NOT_DIRECTLY_COMPARABLE",
+      "finding_ref": "f2",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL",
+      "detail": "Finding f2 defines Gibbs density encoding of pairwise OT ground cost from negative scaled squared embedding distance. It contains no benchmark numbers, protocol comparison, or remeshing drift assessment against original Deep Shells/AFMap/ULRSSM/UDMSM papers/repos.",
+      "evidence": "Eq. 10 defines p_lambda as exponential of negative scaled squared distance for Sinkhorn input"
+    },
+    {
+      "comparability": "NOT_DIRECTLY_COMPARABLE",
+      "finding_ref": "f3",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL",
+      "detail": "Finding f3 describes alternative OT ground cost using learned feature distance for initial soft correspondences. It does not provide unsupervised training loss comparison or evaluation pipeline identity (remeshing/resampling) required to validate 'Ours' vs baselines SOTA claim.",
+      "evidence": "Eq. 13: OT energy using learned feature distance to compute initial pi, showing alternative ground cost in same pipeline"
+    },
+    {
+      "comparability": "NOT_DIRECTLY_COMPARABLE",
+      "finding_ref": "f4",
+      "paper_id": "deep-shells",
+      "relationship": "NEUTRAL",
+      "detail": "Finding f4 defines product-space embedding (intrinsic eigenfunctions + extrinsic coordinates/normals) where Euclidean distance serves as OT ground cost. It is purely a representation definition and provides no FAUST/SCAPE/SHREC19 mean geodesic errors or protocol/remeshing details to cross-check SOTA near-isometric matching claim.",
+      "evidence": "Eq. 3 embeds shape X into R^{K+6} using intrinsic eigenfunctions plus extrinsic smoothed coordinates and normals whose Euclidean distance becomes ground cost"
+    }
+  ],
+  "external_sources": [
+    {
+      "openalex_id": "https://openalex.org/W4402727906",
+      "doi": "https://doi.org/10.1109/cvpr52733.2024.00387",
+      "title": "Memory-Scalable and Simplified Functional Map Learning",
+      "authors": [
+        "Robin Magnet",
+        "Maks Ovsjanikov"
+      ],
+      "year": 2024,
+      "cited_by": 14,
+      "abstract": "Deep functional maps have emerged in recent years as a prominent learning-based framework for non-rigid shape matching problems. While early methods in this domain only focused on learning in the functional domain, the latest techniques have demonstrated that by promoting consistency between functional and pointwise maps leads to significant improvements in accuracy. Unfortunately, existing approaches rely heavily on the computation of large dense matrices arising from soft pointwise maps, which compromises their efficiency and scalability. To address this limitation, we introduce a novel memory-scalable and efficient functional map learning pipeline. By leveraging the specific structure of functional maps, we offer the possibility to achieve identical results without ever storing the pointwise map in memory. Furthermore, based on the same approach, we present a differentiable map refinement layer adapted from an existing axiomatic refinement algorithm. Unlike many functional map learning methods, which use this al-gorithm at a post-processing step, ours can be easily used at train time, enabling to enforce consistency between the refined and initial versions of the map. Our resulting approach is both simpler, more efficient and more numerically stable, by avoiding differentiation through a linear system, while achieving close to state-of-the-art results in challenging scenarios.",
+      "url": "https://openalex.org/W4402727906",
+      "evidence_level": "ABSTRACT_ONLY",
+      "evidence_label": "ABSTRACT-LEVEL EVIDENCE"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4386075795",
+      "doi": "https://doi.org/10.1109/cvpr52729.2023.02180",
+      "title": "G-MSM: Unsupervised Multi-Shape Matching with Graph-Based Affinity Priors",
+      "authors": [
+        "Marvin Eisenberger",
+        "Aysim Toker",
+        "Laura Leal-Taix\u00e9",
+        "Daniel Cremers"
+      ],
+      "year": 2023,
+      "cited_by": 7,
+      "abstract": "We present G-MSM (Graph-based Multi-Shape Matching), a novel unsupervised learning approach for non-rigid shape correspondence. Rather than treating a collection of input poses as an unordered set of samples, we explicitly model the underlying shape data manifold. To this end, we propose an adaptive multi-shape matching architecture that constructs an affinity graph on a given set of training shapes in a self-supervised manner. The key idea is to combine putative, pairwise correspondences by propagating maps along shortest paths in the underlying shape graph. During training, we enforce cycle-consistency between such optimal paths and the pairwise matches which enables our model to learn topology-aware shape priors. We explore different classes of shape graphs and recover specific settings, like template-based matching (star graph) or learnable ranking/sorting (TSP graph), as special cases in our framework. Finally, we demonstrate state-of-the-art performance on several recent shape correspondence benchmarks, including realworld 3D scan meshes with topological noise and challenging inter-class pairs.111Our implementation is available under the following link: https://github.com/marvin-eisenberger/gmsm-matching",
+      "url": "https://openalex.org/W4386075795",
+      "evidence_level": "ABSTRACT_ONLY",
+      "evidence_label": "ABSTRACT-LEVEL EVIDENCE"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7166727102",
+      "doi": "https://doi.org/10.48550/arxiv.2606.29167",
+      "title": "Geometry-Grounded Articulation and Test-Time Adaptation for Zero-Shot, Scalable Shape Matching in the Wild",
+      "authors": [
+        "Qilong Liu",
+        "Qinfeng Xiao",
+        "Chenyuan Yi",
+        "Yongsheng Lin",
+        "Liying Zhang",
+        "Kit-lun Yick"
+      ],
+      "year": 2026,
+      "cited_by": 0,
+      "abstract": "Dense correspondence on in-the-wild 3D scans must handle severe non-isometric deformation, partial observations, topology artifacts, irregular discretization, and extreme resolution. Together, these conditions make shape matching both a robustness and scalability problem. Existing methods typically handle only part of this regime and often require expensive spectral or dense feature processing, repeated pairwise optimization, or dataset-specific training. To address the above issues, we present GAMMA, a zero-shot framework based on Geometry-Grounded Articulation. For each scan, GAMMA renders multiple views and uses a pretrained estimator with a category-specific parametric model to produce one template estimate per view. Because these estimates share a fixed vertex ordering, confidence-weighted consensus fuses them into one canonical template and establishes sparse matches across scans. We refine these matches on the input geometry to recover accurate dense correspondences. All core matching steps run at inference time and require neither target-dataset correspondence training nor costly Laplace--Beltrami operator (LBO) computation on the input scans. Each fused template is cached, so additional pair queries reuse the canonicalization. GAMMA obtains average geodesic errors of 2.9 on TOPKIDS and 2.4 on remeshed SMAL, reducing error relative to URSSM by 67% and 60%, respectively. Complementary evaluations report lower aggregate errors than the evaluated baselines on BeCoS-processed partial subsets and demonstrate stable matching accuracy from decimated FAUST meshes to raw scans with 160k--200k vertices. These results demonstrate accurate correspondence across complementary settings and collection-level scalability after per-shape caching.",
+      "url": "https://openalex.org/W7166727102",
+      "evidence_level": "ABSTRACT_ONLY",
+      "evidence_label": "ABSTRACT-LEVEL EVIDENCE"
+    }
+  ],
+  "external_queries": [
+    "unsupervised functional map FAUST SCAPE SHREC19 mean geodesic error benchmark 2021 2023",
+    "entropic optimal transport shape correspondence remeshed FAUST evaluation protocol"
+  ],
+  "external_notes": [
+    "3 candidate(s) set aside by budget"
+  ],
+  "unresolved_questions": [
+    "Train/test regime and remeshing comparability cannot be verified from evidence. Page excerpt does not define column-block training regimes (e.g., FAUST vs SCAPE vs FAUST+SCAPE training) or confirm all methods evaluated on identical remeshed FAUST/SCAPE/SHREC19 splits. No split, remeshing, or same-pr",
+    "Lower-is-better mean geodesic error \u00d7100 per Deep Shells protocol not confirmable. Evidence states 'Mean geodesic errors' and 'best and second-best result' coloring but does not state scaling (\u00d7100), normalization, geodesic-error computation, or that lower is better, so cross-method comparability pe",
+    "Axiomatic methods (ZoomOut/BCICP/Smooth Shells) appear train-independent with sparse entries rather than penalized, but this is inferred from blanks (\u201c\\\") not an explicit caption/methods statement. Values shown: ZoomOut 6.1 /7.5, BCICP 6.1/11.0, Smooth Shells 2.5/4.7 with remaining cells empty, cons",
+    "Baseline coverage, recency at publication date, and hyperparameter/seed control absent. No publication years, selection criteria, tuning protocol, seeds, variance, or whether baselines were re-run vs cited numbers provided in evidence, so fairness of SOTA comparison cannot be assessed.",
+    "No ablations/controls in evidence linking EOT formulation to perceived smoothness. Cannot establish causal link between proposed unsupervised EOT+FM and qualitative smoothness without ablations or controlled comparisons; evidence bundle contains no ablation results.",
+    "Reproducibility information absent from evidence: no code, data splits, preprocessing/remeshing details, hyperparameters, optimizer, seeds, compute, or variance reporting to enable verification of remeshed FAUST/SCAPE/SHREC19 results."
+  ],
+  "overall_assessment": "discrepancies identified",
+  "assessment_rationale": "at least one recomputation disagrees or an inconsistency is established",
+  "limitations": [
+    "No variance, confidence intervals, or statistical significance tests; best/second-best coloring based on mean alone with margins as small as 0.1 can be noise",
+    "Limited to mean geodesic error; no accuracy-at-threshold curves, runtime, or robustness to remeshing/resolution reported in this bundle",
+    "Fig.2 qualitative texture transfer is visual-only, subjective, and restricted to few SHREC19 examples without quantitative perceptual metric or user study",
+    "Table 1 page excerpt truncated/garbled column headers; exact mapping of 9 columns to Train-on-FAUST/SCAPE/FAUST+SCAPE regimes inferred from pattern and requires full paper confirmation",
+    "section-level retrieval (methods/limitations/conclusions) unavailable; audit uses object evidence plus page excerpts only"
+  ],
+  "provenance": {
+    "claim_ref": "eot-maps:claim-1",
+    "object_refs": [
+      "claim-1",
+      "table-1",
+      "fig-2"
+    ],
+    "evidence_pages": [
+      7
+    ],
+    "evidence_objects": [
+      "claim-1",
+      "table-1",
+      "fig-2"
+    ],
+    "external_enabled": true,
+    "revisions": 0,
+    "human_reviewed": true
+  },
+  "model_telemetry": [
+    {
+      "timestamp": "2026-11-03T22:35:57.575634+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live4",
+      "node": "classify_claim",
+      "latency_ms": 8571,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2619,
+      "completion_tokens": 1913,
+      "total_tokens": 4532,
+      "request_id": "chatcmpl-a90ab180f68b4026a80c667449399106"
+    },
+    {
+      "timestamp": "2026-11-03T22:36:15.655058+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live4",
+      "node": "plan_audit_checks",
+      "latency_ms": 18040,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2582,
+      "completion_tokens": 5164,
+      "total_tokens": 7746,
+      "request_id": "chatcmpl-1f9e30fdb14149219408887966619733"
+    },
+    {
+      "timestamp": "2026-11-03T22:36:33.613297+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live4",
+      "node": "methodology_assessment",
+      "latency_ms": 17944,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2388,
+      "completion_tokens": 5012,
+      "total_tokens": 7400,
+      "request_id": "chatcmpl-95eb168de3f243acabe0757d93237c8d"
+    },
+    {
+      "timestamp": "2026-11-03T22:36:41.446323+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live4",
+      "node": "compare_project_evidence",
+      "latency_ms": 7828,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 670,
+      "completion_tokens": 2187,
+      "total_tokens": 2857,
+      "request_id": "chatcmpl-5f0aced00cbb4abe93d7c5c2a5bf3128"
+    }
+  ],
+  "created_at": "2026-11-03T22:37:27.802541+00:00"
+}

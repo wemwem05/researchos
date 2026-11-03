@@ -124,6 +124,22 @@ const NODES = new Set([
   "evidence_report",
   "attach_to_project",
   "apply_verify_decision",
+  // Milestone 6.1 audit nodes
+  "load_claim_and_project",
+  "classify_claim",
+  "collect_internal_evidence",
+  "plan_audit_checks",
+  "execute_numerical_checks",
+  "methodology_assessment",
+  "compare_project_evidence",
+  "bounded_literature_search",
+  "assess_sources",
+  "scientific_critic",
+  "scientific_critic_rereview",
+  "audit_decision_gate",
+  "bounded_revision",
+  "apply_audit_decision",
+  "evidence_report",
 ]);
 
 function transitionDetail(record: AgentRunRecord, node: string): string {
@@ -158,6 +174,7 @@ function reviewStep(record: AgentRunRecord, emptyDetail: string): TimelineStep {
 /** Researcher-facing timeline derived from node transitions + run status. */
 export function timelineSteps(record: AgentRunRecord): TimelineStep[] {
   if (record.kind === "verify") return verifyTimelineSteps(record);
+  if (record.kind === "audit") return auditTimelineSteps(record);
   const done = (id: string, label: string, detail = ""): TimelineStep => ({
     id,
     label,
@@ -253,6 +270,77 @@ export function verifyTimelineSteps(record: AgentRunRecord): TimelineStep[] {
   }
 
   return [plan, code, exec, review, outcome];
+}
+
+/** Milestone 6.1: timeline for evidence-audit runs. */
+export function auditTimelineSteps(record: AgentRunRecord): TimelineStep[] {
+  const done = (id: string, label: string, detail = ""): TimelineStep => ({
+    id,
+    label,
+    state: "done",
+    detail,
+  });
+  const finished = ["completed", "discarded", "failed"].includes(record.status);
+  const pending = (id: string, label: string, detail = ""): TimelineStep => ({
+    id,
+    label,
+    state: finished ? "skipped" : "active",
+    detail,
+  });
+
+  const classify: TimelineStep = hasNode(record, "classify_claim")
+    ? done("classify", "Claim classification", transitionDetail(record, "classify_claim"))
+    : pending("classify", "Claim classification");
+
+  const checks: TimelineStep = hasNode(record, "execute_numerical_checks")
+    ? done(
+        "checks",
+        "Numerical checks",
+        transitionDetail(record, "execute_numerical_checks") ||
+          transitionDetail(record, "plan_audit_checks")
+      )
+    : hasNode(record, "plan_audit_checks")
+      ? { id: "checks", label: "Numerical checks", state: "active", detail: "Planned — executing" }
+      : pending("checks", "Numerical checks");
+
+  const method: TimelineStep = hasNode(record, "methodology_assessment")
+    ? done("methodology", "Methodology audit", transitionDetail(record, "methodology_assessment"))
+    : pending("methodology", "Methodology audit");
+
+  const crossDetail = [
+    transitionDetail(record, "compare_project_evidence"),
+    transitionDetail(record, "assess_sources"),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const cross: TimelineStep =
+    hasNode(record, "compare_project_evidence", "bounded_literature_search", "assess_sources")
+      ? done("cross_paper", "Cross-paper & external", crossDetail)
+      : pending("cross_paper", "Cross-paper & external");
+
+  const critic: TimelineStep = hasNode(record, "scientific_critic", "scientific_critic_rereview")
+    ? done(
+        "critic",
+        "Scientific critic",
+        transitionDetail(record, "scientific_critic_rereview") ||
+          transitionDetail(record, "scientific_critic")
+      )
+    : pending("critic", "Scientific critic");
+
+  const review = reviewStep(record, "No ambiguity — not needed");
+
+  let outcome: TimelineStep;
+  if (record.status === "completed") {
+    outcome = done("outcome", "Audit attached", transitionDetail(record, "attach_to_project"));
+  } else if (record.status === "discarded") {
+    outcome = done("outcome", "Run discarded", "Researcher decision; project untouched");
+  } else if (record.status === "failed") {
+    outcome = { id: "outcome", label: "Run failed", state: "done", detail: record.error ?? "" };
+  } else {
+    outcome = { id: "outcome", label: "Evidence report", state: "active", detail: "" };
+  }
+
+  return [classify, checks, method, cross, critic, review, outcome];
 }
 
 export function isKnownNode(node: string): boolean {

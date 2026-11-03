@@ -19,6 +19,8 @@ import {
   fetchLiveVerifications,
   type VerificationEvidenceView,
 } from "../lib/verification";
+import AuditEvidence from "../components/AuditEvidence";
+import { fetchLiveAudits, type ScientificAuditView } from "../lib/audit";
 import type { Connection, ConnectionType, ProjectData } from "../lib/project";
 import {
   CORPUS_SCOPE_PREFIX,
@@ -69,6 +71,7 @@ export default function ProjectPage() {
   const [agentSummary, setAgentSummary] = useState<AgentTelemetrySummary | null>(null);
   const [syntheticDemo, setSyntheticDemo] = useState<AgentRunRecord | null>(null);
   const [verifications, setVerifications] = useState<VerificationEvidenceView[] | null>(null);
+  const [audits, setAudits] = useState<ScientificAuditView[] | null>(null);
   const [liveAgent, setLiveAgent] = useState(false);
   const [agentTick, setAgentTick] = useState(0);
 
@@ -141,6 +144,15 @@ export default function ProjectPage() {
             .then((r) => (r.ok ? r.json() : null))
             .catch(() => null)) as VerificationEvidenceView[] | null;
           if (!cancelled && staged) setVerifications(staged);
+        }
+        if (live) {
+          const list = await fetchLiveAudits().catch(() => null);
+          if (!cancelled && list) setAudits(list);
+        } else {
+          const staged = (await fetch("/data/agent/audits.json")
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)) as ScientificAuditView[] | null;
+          if (!cancelled && staged) setAudits(staged);
         }
       } catch {
         // no agent data staged: sections stay hidden, M4 view unchanged
@@ -228,6 +240,14 @@ export default function ProjectPage() {
           <div className="mt-8">
             <SyntheticWalkthrough demo={syntheticDemo} />
           </div>
+        )}
+
+        {audits && audits.length > 0 && (
+          <Section title={`Evidence audits (${audits.length})`}>
+            {audits.map((a) => (
+              <AuditEvidence key={a.audit_id} audit={a} />
+            ))}
+          </Section>
         )}
 
         {verifications && verifications.length > 0 && (

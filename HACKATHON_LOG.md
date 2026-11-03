@@ -381,3 +381,66 @@ routes, staged artifacts, and live API/file endpoints.
 stricter than Monte-Carlo noise allows (drove the honest not_supported);
 shared repair budget covers codegen + exec (per spec); project.json
 stays single-writer; in-browser visual check left to the demo.
+
+## Milestone 6.1 — Scientific Evidence Audit (2026-11-04)
+
+**Goal:** verify claims even when reproduction is impractical: audit the
+paper's own record (recomputed numbers, methodology, project findings,
+optional bounded literature) without claiming to have rerun the work.
+Default "verify" becomes EVIDENCE AUDIT; M6 Modal testing stays a
+separate optional action, never auto-substituted.
+
+**Built (backend):** `prototype/openalex.py` (bounded OpenAlex client:
+≤2 queries/≤10 records/≤3 papers, disk cache, fail-soft, abstract-only
+labels, `FakeOpenAlex` double); `prototype/audit_graph.py` (LangGraph
+audit workflow on the M5/M6 checkpoint/telemetry/review infrastructure:
+classify → collect → plan → deterministic numerical checks → methodology
+→ cross-paper → external gate → critic → finalize/revise/review →
+report → attach); `ScientificAudit` project model (atomic, idempotent
+attach, separately attributed conclusions); `audit-claim` CLI;
+`audits/start` + `audits` server endpoints (refs only); staging into
+`web/public/data/agent/audits(.json)`. Spark Open
+(`meta-models/muse-spark-open-1026` via Baseten) reasons; Python owns
+all arithmetic with value traceability and paper-precision rounding
+tolerance. Overall assessments are evidence-scoped and disjoint from
+M6 statuses. Methodology: `docs/EVIDENCE_AUDIT.md`.
+
+**Live demo (EOT claim-1 SOTA + claim-3 math/efficiency):** 34 real
+Spark calls (~229k tokens, all Baseten `...-1026`); live OpenAlex
+search returned a real 2026 source; 6 audits attached (a1–a6).
+Numerical checks pass post-rounding-fix; overalls read "discrepancies
+identified" from established methodology observations
+(single-protocol ablation, necessity language outrunning Table 4).
+Two live fail-closed HITL resumes (critic schema slips) repeated zero
+Spark calls — one via CLI, one fully through the UI endpoints
+(HTTP start → interrupt → HTTP review → completed a5). Final run:
+clean SUPPORTED → finalize.
+
+**Bugs found live and fixed (each with regression tests):** strict
+1e-9 tolerance flagged paper-precision rounding as discrepancies →
+rounding half-unit tolerance; planner string-instead-of-list fields →
+lenient validators + explicit schema rules in the prompt; critic
+`human_question.question=null` → null-normalizing validators on the
+shared M5 verdict models (backward compatible); critic emitting
+bare-string checks/concerns → shape spec added to the audit critic
+prompt (mirrors M5); failed Spark nodes now route to END via
+conditional edges instead of falling through.
+
+**Built (frontend):** primary "Audit scientific claim" on Reader
+claims (confirm with scope + external toggle default OFF showing the
+2/10/3 budget → live audit timeline → review → full report), optional
+"Verify computationally" kept distinct; Project "Evidence audits"
+section (live + staged); audit timeline steps in the shared Agent Run
+UI (no new incompatible system).
+
+**Verification:** 173/173 backend (31 new); 34/34 frontend (6 new);
+`tsc` clean; `next build` green (webpack); staged audits
+shape-validated; agent-server audit start/review loop proven live;
+`/` + `/project` serve 200 from the production build.
+
+**Caveats:** section-level retrieval unavailable (object evidence +
+page excerpts only); lexical value tracing can NOT_EVALUATE a
+correctly phrased-differently number; overalls inherit planner
+coverage; sandbox HTTP proxy blocked Reader-route smoke from the
+shell (in-browser visual check left to the demo); M1–M6 preserved
+(8 findings, 3 connections, 3 verifications intact).

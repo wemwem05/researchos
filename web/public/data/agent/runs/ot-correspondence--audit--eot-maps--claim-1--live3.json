@@ -1,0 +1,89 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live3",
+  "project_id": "ot-correspondence",
+  "kind": "audit",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-1",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "failed",
+  "synthetic": false,
+  "created_at": "2026-11-03T22:33:52.942082+00:00",
+  "updated_at": "2026-11-03T22:34:41.943317+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "load_claim_and_project",
+      "at": "2026-11-03T22:33:52.961954+00:00",
+      "detail": "claim-1"
+    },
+    {
+      "node": "classify_claim",
+      "at": "2026-11-03T22:34:05.532288+00:00",
+      "detail": "empirical_benchmark,novelty_sota"
+    },
+    {
+      "node": "collect_internal_evidence",
+      "at": "2026-11-03T22:34:05.596148+00:00",
+      "detail": "3 objects, 1 pages, 1 gaps"
+    },
+    {
+      "node": "failed",
+      "at": "2026-11-03T22:34:41.942428+00:00",
+      "detail": "Spark Open (plan_audit_checks) returned invalid structured output after 1 repair attempt: 1 validation error for AuditPlan\nmethodology_focus\n  Input should be a valid array [type=list_type, input_value='Metric mean geodesic err...polate to present SOTA.', input_type=str]\n    For further information "
+    }
+  ],
+  "decisions": [
+    "external literature search ENABLED by researcher (default is off)"
+  ],
+  "validation_failures": [],
+  "revision_path": [],
+  "human_review_request": null,
+  "human_review_response": null,
+  "final_status": "failed",
+  "error": "Spark Open (plan_audit_checks) returned invalid structured output after 1 repair attempt: 1 validation error for AuditPlan\nmethodology_focus\n  Input should be a valid array [type=list_type, input_value='Metric mean geodesic err...polate to present SOTA.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/list_type",
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T22:34:05.528197+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live3",
+      "node": "classify_claim",
+      "latency_ms": 12565,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2619,
+      "completion_tokens": 3293,
+      "total_tokens": 5912,
+      "request_id": "chatcmpl-4b9b3511bbea4d60966913144f1da9e8"
+    },
+    {
+      "timestamp": "2026-11-03T22:34:41.938349+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-1--live3",
+      "node": "plan_audit_checks",
+      "latency_ms": 36341,
+      "success": false,
+      "error": "invalid output: 1 validation error for AuditPlan\nmethodology_focus\n  Input should be a valid array [type=list_type, input_value='Metric mean geodesic err...polate to present SOTA.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/list_type",
+      "retry_count": 1,
+      "prompt_tokens": 5048,
+      "completion_tokens": 2163,
+      "total_tokens": 7211,
+      "request_id": "chatcmpl-d9520f9fa2974f93ad2ff2a54bc4da5b"
+    }
+  ]
+}

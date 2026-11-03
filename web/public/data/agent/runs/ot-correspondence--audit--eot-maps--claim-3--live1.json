@@ -1,0 +1,176 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live1",
+  "project_id": "ot-correspondence",
+  "kind": "audit",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-3",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "completed",
+  "synthetic": false,
+  "created_at": "2026-11-03T22:29:01.215165+00:00",
+  "updated_at": "2026-11-03T22:30:13.967000+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "load_claim_and_project",
+      "at": "2026-11-03T22:29:01.234355+00:00",
+      "detail": "claim-3"
+    },
+    {
+      "node": "classify_claim",
+      "at": "2026-11-03T22:29:10.479393+00:00",
+      "detail": "numerical,empirical_benchmark,causal"
+    },
+    {
+      "node": "collect_internal_evidence",
+      "at": "2026-11-03T22:29:10.537886+00:00",
+      "detail": "5 objects, 3 pages, 1 gaps"
+    },
+    {
+      "node": "plan_audit_checks",
+      "at": "2026-11-03T22:29:27.665120+00:00",
+      "detail": "7 numerical checks, external=no"
+    },
+    {
+      "node": "execute_numerical_checks",
+      "at": "2026-11-03T22:29:27.671526+00:00",
+      "detail": "7 checks: {'PASSED': 4, 'DISCREPANCY': 3}"
+    },
+    {
+      "node": "methodology_assessment",
+      "at": "2026-11-03T22:29:46.062420+00:00",
+      "detail": "10 findings"
+    },
+    {
+      "node": "compare_project_evidence",
+      "at": "2026-11-03T22:29:56.973912+00:00",
+      "detail": "4 comparisons"
+    },
+    {
+      "node": "scientific_critic",
+      "at": "2026-11-03T22:30:13.945785+00:00",
+      "detail": "verdict=SUPPORTED"
+    },
+    {
+      "node": "audit_decision_gate",
+      "at": "2026-11-03T22:30:13.952283+00:00",
+      "detail": "verdict=SUPPORTED -> finalize"
+    },
+    {
+      "node": "finalize",
+      "at": "2026-11-03T22:30:13.955856+00:00",
+      "detail": "audit accepted"
+    },
+    {
+      "node": "evidence_report",
+      "at": "2026-11-03T22:30:13.960047+00:00",
+      "detail": "overall=discrepancies identified"
+    },
+    {
+      "node": "attach_to_project",
+      "at": "2026-11-03T22:30:13.966301+00:00",
+      "detail": "attached a2 overall=discrepancies identified"
+    }
+  ],
+  "decisions": [
+    "audit decision: SUPPORTED -> finalize",
+    "audit report: overall=discrepancies identified",
+    "audit complete: discrepancies identified"
+  ],
+  "validation_failures": [],
+  "revision_path": [],
+  "human_review_request": null,
+  "human_review_response": null,
+  "final_status": "completed",
+  "error": null,
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T22:29:10.475620+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live1",
+      "node": "classify_claim",
+      "latency_ms": 9240,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2597,
+      "completion_tokens": 2206,
+      "total_tokens": 4803,
+      "request_id": "chatcmpl-7d3e4db27012431c95ca38dd133a4251"
+    },
+    {
+      "timestamp": "2026-11-03T22:29:27.660832+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live1",
+      "node": "plan_audit_checks",
+      "latency_ms": 17122,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 5131,
+      "completion_tokens": 4614,
+      "total_tokens": 9745,
+      "request_id": "chatcmpl-3035c6606ed04f39a26edf93de9570e9"
+    },
+    {
+      "timestamp": "2026-11-03T22:29:46.058280+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live1",
+      "node": "methodology_assessment",
+      "latency_ms": 18385,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 5177,
+      "completion_tokens": 5011,
+      "total_tokens": 10188,
+      "request_id": "chatcmpl-c369eeb769854313bebd1cad10a84795"
+    },
+    {
+      "timestamp": "2026-11-03T22:29:56.966875+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live1",
+      "node": "compare_project_evidence",
+      "latency_ms": 10900,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 674,
+      "completion_tokens": 3411,
+      "total_tokens": 4085,
+      "request_id": "chatcmpl-bd7d7bbb393a49cb8272fd98c509dd5f"
+    },
+    {
+      "timestamp": "2026-11-03T22:30:13.939342+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--audit--eot-maps--claim-3--live1",
+      "node": "scientific_critic",
+      "latency_ms": 16960,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 5441,
+      "completion_tokens": 1446,
+      "total_tokens": 6887,
+      "request_id": "chatcmpl-69caab954c1146aba97c4b3a278cf98d"
+    }
+  ]
+}

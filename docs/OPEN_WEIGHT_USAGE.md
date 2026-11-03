@@ -1,4 +1,4 @@
-# Open-Weight Model Usage (Milestones 5–6)
+# Open-Weight Model Usage (Milestones 5–6.1)
 
 ## Identity
 
@@ -54,8 +54,24 @@ verification (`prototype/verify_graph.py`). Spark Open acts as:
   statuses. A deterministic clamp re-checks the verdict: successful
   execution alone can never yield "supported".
 
+Milestone 6.1 adds a third workflow on the same model — scientific
+evidence audit (`prototype/audit_graph.py`). Spark Open acts as:
+
+- **Claim classifier** — multi-label claim types that select
+  claim-specific checks.
+- **Audit planner** — proposes structured numerical checks with named
+  values, expected results, tolerances, and evidence refs. It proposes
+  only: deterministic Python executes every computation.
+- **Methodologist** — assumptions, controls, comparability, confounders,
+  uncertainty, each graded observed / potential / missing.
+- **Cross-paper comparator** — project findings compared with explicit
+  comparability grades, validated against known ids.
+- **Audit critic** — skeptical re-inspection of the whole audit, with
+  the same SUPPORTED / REVISION_REQUIRED / AMBIGUOUS_REQUIRES_HUMAN
+  verdicts and one bounded revision.
+
 PDF perception still uses hosted Muse (below); all agentic reasoning in
-Milestones 5–6 uses Spark Open.
+Milestones 5–6.1 uses Spark Open.
 
 ## What still uses hosted Muse, and why
 
@@ -91,6 +107,11 @@ agentic reasoning layer is what moved to the open-weight model.
    plus per-thread `evidence.json`, `experiment.py`, `results.csv`,
    `scaling.png`, and logs show a Spark-planned, Modal-executed benchmark
    with measured numbers and an honest (non-"supported") verdict.
+7. **Inspect a real audit**: `web/public/data/agent/audits.json` plus
+   per-thread `audit.json` show Spark-classified, Spark-planned,
+   Python-recomputed audits with methodology/cross-paper/external
+   sections and evidence-scoped verdicts. Audit vs computational
+   statuses are deliberately different vocabularies.
 
 ## Where telemetry is stored
 
@@ -102,6 +123,9 @@ agentic reasoning layer is what moved to the open-weight model.
   (durable interrupt/resume across process restarts).
 - `<project>/agent/verifications/<thread>/` — per-attempt code, CSV, plot,
   stdout/stderr, env record, and `evidence.json` for each verification.
+- `<project>/agent/audits/<thread>/audit.json` — the attached audit
+  report; `<project>/agent/openalex_cache/` — cached external records
+  (searches never repeat after resume).
 
 API keys are never written to any of these files (covered by test).
 Modal credentials stay on the host (env or `~/.modal.toml`) and are never

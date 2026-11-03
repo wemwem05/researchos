@@ -1,0 +1,89 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-correspondence--verify--eot-maps--claim-1--c0dfff28",
+  "project_id": "ot-correspondence",
+  "kind": "verify",
+  "paper_id": "eot-maps",
+  "claim_id": "claim-1",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "awaiting_human",
+  "synthetic": false,
+  "created_at": "2026-11-03T21:43:11.361831+00:00",
+  "updated_at": "2026-11-03T21:43:18.370007+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/localized_output.json",
+  "transitions": [
+    {
+      "node": "select_claim",
+      "at": "2026-11-03T21:43:11.576003+00:00",
+      "detail": "claim-1"
+    },
+    {
+      "node": "classify_testability",
+      "at": "2026-11-03T21:43:18.360648+00:00",
+      "detail": "testable=False needs_data=True"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T21:43:18.369923+00:00",
+      "detail": "unavailable_data"
+    }
+  ],
+  "decisions": [
+    "human review requested (verification/unavailable_data): This claim may need data that is unavailable in the sandbox. Abort, or proceed with synthetic data and record the limitation?"
+  ],
+  "validation_failures": [],
+  "revision_path": [],
+  "human_review_request": {
+    "kind": "verification",
+    "question": "This claim may need data that is unavailable in the sandbox. Abort, or proceed with synthetic data and record the limitation?",
+    "why_stopped": "Requires remeshed FAUST (100 scans), SCAPE (71), SHREC19 (44) human meshes with dense geodesic correspondence labels and published baseline results (Deep Shells, GeoFMaps, AFMap, ULRSSM etc.), plus DiffusionNet feature extractor training and entropic OT refinement inference (Eq 14) - all unavailable as synthetic download-free CPU data and exceeding 10-min limit.",
+    "investigator_position": "Proceed on synthetic data; record the limitation explicitly.",
+    "critic_concern": "Results may not transfer to the paper's real setting.",
+    "evidence_a": "SOTA near-isometric shape correspondence: Experimentally testable claim that method outperforms prior axiomatic/supervised/unsupervised baselines on remeshed FAUST/SCAPE/SHREC19. Proposed unsupervised EOT+FM method achieves SOTA near-isometric matching (FAUST/SCAPE/SHREC19).",
+    "evidence_b": "Requires remeshed FAUST (100 scans), SCAPE (71), SHREC19 (44) human meshes with dense geodesic correspondence labels and published baseline results (Deep Shells, GeoFMaps, AFMap, ULRSSM etc.), plus DiffusionNet feature extractor training and entropic OT refinement inference (Eq 14) - all unavailable as synthetic download-free CPU data and exceeding 10-min limit.",
+    "finding_refs": [],
+    "object_refs": [
+      "claim-1",
+      "table-1",
+      "fig-2"
+    ],
+    "affected_connection_indexes": [],
+    "options": [
+      "Abort verification",
+      "Proceed anyway (record limitation)"
+    ],
+    "allow_free_text": true
+  },
+  "human_review_response": null,
+  "final_status": "",
+  "error": null,
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T21:43:18.356980+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-correspondence--verify--eot-maps--claim-1--c0dfff28",
+      "node": "classify_testability",
+      "latency_ms": 6780,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": 2692,
+      "completion_tokens": 1500,
+      "total_tokens": 4192,
+      "request_id": "chatcmpl-86b6af5b296444fcb503971f670e07cf"
+    }
+  ]
+}

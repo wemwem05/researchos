@@ -214,6 +214,35 @@ Evidence (code + hash, env, params/seeds, measurements, plot, logs,
 telemetry, interpretation, limitations) attaches to the originating
 paper and shows in the Project view's Verification section.
 
+## Milestone 6.1: Scientific Evidence Audit
+
+The default claim check is an audit, not a reproduction
+(`prototype/audit_graph.py`, same Spark Open model and LangGraph/
+checkpoint/telemetry architecture as Milestones 5–6):
+
+```bash
+source .venv/bin/activate
+python prototype/agent.py audit-claim \
+  --project-dir prototype/projects/ot-correspondence \
+  --paper-id eot-maps --claim-id claim-1 --external
+# external literature is optional and OFF unless --external is passed
+python prototype/agent.py review --project-dir prototype/projects/ot-correspondence \
+  --thread-id <id> --choice "Accept audit as-is"
+python prototype/agent.py stage-web --project-dir prototype/projects/ot-correspondence --web-dir web
+```
+
+Spark Open classifies the claim, plans checks, and assesses
+methodology/cross-paper/critic concerns; deterministic Python executes
+every numerical recomputation (with value traceability and
+paper-precision tolerance). External literature is bounded (≤2
+queries, ≤10 records, ≤3 OpenAlex papers, abstract-level labels).
+Verdicts are evidence-scoped (substantiated / partially substantiated
+/ discrepancies identified / inconclusive / insufficient evidence) —
+a different vocabulary from computational statuses, on purpose.
+Methodology and limitations: `docs/EVIDENCE_AUDIT.md`. The Reader's
+primary claim action is now "Audit scientific claim"; "Verify
+computationally" remains as the distinct optional test.
+
 ## Layout
 
 - `prototype/analyze_paper.py` — Milestone 1: CLI, prompt, API calls,
@@ -233,13 +262,23 @@ paper and shows in the Project view's Verification section.
   network-blocked, pinned image, `FakeModal` double)
 - `prototype/verify_graph.py` — Milestone 6: verification subgraph
   (classify/plan/code/execute/validate/interpret/repair/evidence/attach)
+- `prototype/openalex.py` — Milestone 6.1: bounded OpenAlex client
+  (query/record/paper caps, disk cache, `FakeOpenAlex` double)
+- `prototype/audit_graph.py` — Milestone 6.1: evidence-audit subgraph
+  (classify/collect/plan/checks/methodology/cross-paper/external/
+  critic/revision/HITL/report/attach)
+- `docs/EVIDENCE_AUDIT.md` — Milestone 6.1: audit methodology,
+  status semantics, limitations, and how audits differ from
+  reproduction
 - `prototype/test_analyze_paper.py`, `prototype/test_localize_objects.py`,
   `prototype/test_inventory.py`, `prototype/test_project.py`,
-  `prototype/test_agent_graph.py`, `prototype/test_verify_graph.py` —
+  `prototype/test_agent_graph.py`, `prototype/test_verify_graph.py`,
+  `prototype/test_audit_graph.py` —
   offline tests (no API key):
   `.venv/bin/python -m unittest discover -s prototype -p "test_*.py"`
 - `web/app/lib/relevance.test.ts`, `web/app/lib/project.test.ts`,
-  `web/app/lib/agent.test.ts`, `web/app/lib/verification.test.ts` —
+  `web/app/lib/agent.test.ts`, `web/app/lib/verification.test.ts`,
+  `web/app/lib/audit.test.ts` —
   frontend unit tests (vitest): `cd web && npm test`
 - `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
   `pymupdf`, `pillow`, `langgraph`, `langgraph-checkpoint-sqlite`, `modal`
