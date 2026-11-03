@@ -1,0 +1,301 @@
+{
+  "schema_version": "m4-1",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "papers": [
+    {
+      "paper_id": "deep-shells",
+      "title": "Deep Shells: Unsupervised Shape Correspondence with Optimal Transport",
+      "filename": "NeurIPS-2020-deep-shells-unsupervised-shape-correspondence-with-optimal-transport-Paper.pdf",
+      "added_order": 1,
+      "n_objects": 23,
+      "n_localized": 20,
+      "pdf_path": "samples/NeurIPS-2020-deep-shells-unsupervised-shape-correspondence-with-optimal-transport-Paper.pdf",
+      "localized_path": "prototype/deep_shells_localized.json",
+      "web_pdf": null,
+      "web_data": null
+    },
+    {
+      "paper_id": "eot-maps",
+      "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+      "filename": "eot_shape_correspondence.pdf",
+      "added_order": 2,
+      "n_objects": 25,
+      "n_localized": 22,
+      "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+      "localized_path": "prototype/localized_output.json",
+      "web_pdf": null,
+      "web_data": null
+    }
+  ],
+  "findings": [
+    {
+      "id": "f1",
+      "paper_id": "deep-shells",
+      "statement": "Entropy-regularized OT energy integrating squared product-embedding distance enables differentiable Sinkhorn-based shape matching.",
+      "evidence": "Eq. 8: OT energy integrating squared embedding distance under pi minus entropy regularization enables differentiable Sinkhorn optimization",
+      "page": null,
+      "object_ids": [
+        "eq-8"
+      ],
+      "confidence": 0.85
+    },
+    {
+      "id": "f2",
+      "paper_id": "deep-shells",
+      "statement": "Pairwise OT ground cost is explicitly encoded as Gibbs density from negative scaled squared embedding distance.",
+      "evidence": "Eq. 10 defines p_lambda as exponential of negative scaled squared distance for Sinkhorn input",
+      "page": null,
+      "object_ids": [
+        "eq-10"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "id": "f3",
+      "paper_id": "deep-shells",
+      "statement": "A second OT energy using learned feature distance computes initial soft correspondences, exemplifying an alternative ground cost.",
+      "evidence": "Eq. 13: OT energy using learned feature distance to compute initial pi, showing alternative ground cost in same pipeline",
+      "page": null,
+      "object_ids": [
+        "eq-13"
+      ],
+      "confidence": 0.8
+    },
+    {
+      "id": "f4",
+      "paper_id": "deep-shells",
+      "statement": "Product-space embedding of intrinsic eigenfunctions and extrinsic coordinates/normals defines the space where Euclidean distance serves as OT ground cost.",
+      "evidence": "Eq. 3 embeds shape X into R^{K+6} using intrinsic eigenfunctions plus extrinsic smoothed coordinates and normals whose Euclidean distance becomes ground cost",
+      "page": null,
+      "object_ids": [
+        "eq-3"
+      ],
+      "confidence": 0.75
+    },
+    {
+      "id": "f5",
+      "paper_id": "eot-maps",
+      "statement": "Sliced Wasserstein distance defined as expectation of 1D Wasserstein distances over random projections provides an O(n log n) time, O(n) memory valid OT metric alternative to O(m^3 log m) Wasserstein and O(m^2) entropic OT.",
+      "evidence": "Equation 4 defines sliced Wasserstein as expectation over projections with O(n log n)/O(n) valid metric; Equations 2-3 define baseline cubic Wasserstein and quadratic-memory non-metric entropic OT",
+      "page": null,
+      "object_ids": [
+        "eq-4",
+        "eq-2",
+        "eq-3"
+      ],
+      "confidence": 0.95
+    },
+    {
+      "id": "f6",
+      "paper_id": "eot-maps",
+      "statement": "Energy-based sliced Wasserstein weights slicing directions by an energy function, providing a more discriminative sliced OT variant than uniform slicing.",
+      "evidence": "Equation 6 defines energy-based sliced Wasserstein expectation under energy-weighted slicing distribution as more discriminative variant; Equation 7 gives importance-sampling estimator",
+      "page": null,
+      "object_ids": [
+        "eq-6",
+        "eq-7"
+      ],
+      "confidence": 0.92
+    },
+    {
+      "id": "f7",
+      "paper_id": "eot-maps",
+      "statement": "Bidirectional sliced Wasserstein loss aligns Fx vs permuted Fy in both directions for cycle consistency, and its energy-based variant uses a shared slicing distribution with importance weights.",
+      "evidence": "Equation 10 defines bidirectional SW discrepancy between Fx vs permuted Fy and vice versa; Equation 11 defines bidirectional EBSW with shared slicing distribution",
+      "page": null,
+      "object_ids": [
+        "eq-10",
+        "eq-11",
+        "eq-5"
+      ],
+      "confidence": 0.94
+    },
+    {
+      "id": "f8",
+      "paper_id": "eot-maps",
+      "statement": "Adaptive test-time refinement via iterated Sinkhorn projections yields an entropic OT plan to improve final point maps, but is restricted to a single inference step due to quadratic memory cost.",
+      "evidence": "Equation 14 defines iterated Sinkhorn refinement to obtain entropic OT plan with claim of improvement but inference-only use; Equation 3 notes entropic OT still O(m^2) memory and not a valid metric",
+      "page": null,
+      "object_ids": [
+        "eq-14",
+        "eq-3"
+      ],
+      "confidence": 0.9
+    },
+    {
+      "id": "f9",
+      "paper_id": "eot-maps",
+      "statement": "Ablation on SHREC19 (trained on FAUST+SCAPE) shows replacing BiSW/EBSW with MSE drastically degrades accuracy and removing entropic adaptive refinement increases mean geodesic error from 4.7 to 7.2, directly attributing gains to alternative OT costs.",
+      "evidence": "Table 4 ablation over OT loss variants (MSE vs BiSW/EBSW) and adaptive refinement; claim-3 states replacing LOT with MSE degrades drastically and removing refinement degrades 4.7 to 7.2",
+      "page": null,
+      "object_ids": [
+        "table-4",
+        "claim-3"
+      ],
+      "confidence": 0.88
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from_ref": "f5",
+      "to_ref": "f1",
+      "type": "extends",
+      "reason": "f1 established entropy-regularized OT with Sinkhorn (Eq.8) as differentiable matching energy; new[0] proposes sliced Wasserstein as O(n log n) valid-metric alternative to the O(m^2) non-metric entropic OT noted in eq-3",
+      "confidence": 0.88
+    },
+    {
+      "id": "c2",
+      "from_ref": "f7",
+      "to_ref": "f3",
+      "type": "extends",
+      "reason": "f3 showed alternative ground cost via learned feature distance OT energy (Eq.13 deep-shells); new[2] extends this to bidirectional sliced/energy-based Wasserstein losses on feature distributions with shared slicing distribution",
+      "confidence": 0.85
+    },
+    {
+      "id": "c3",
+      "from_ref": "f8",
+      "to_ref": "f1",
+      "type": "uses_same_method",
+      "reason": "Both use entropic-regularized OT with KL constraint and Sinkhorn solver; new paper reuses it specifically as iterated Sinkhorn refinement at inference due to quadratic memory",
+      "confidence": 0.9
+    },
+    {
+      "id": "c4",
+      "from_ref": "f7",
+      "to_ref": "f4",
+      "type": "uses_different_assumption",
+      "reason": "f4 defines ground cost as Euclidean distance in product-space embedding R^{K+6} (eigenfunctions+extrinsic); new[2] assumes ground cost is expectation over 1D Wasserstein distances of projected feature distributions, not Euclidean embedding distance",
+      "confidence": 0.86
+    },
+    {
+      "id": "c5",
+      "from_ref": "f9",
+      "to_ref": "f7",
+      "type": "supports",
+      "reason": "Table 4 / claim-3 ablation showing BiSW/EBSW outperform MSE validates that bidirectional sliced OT losses improve correspondence",
+      "confidence": 0.9
+    }
+  ],
+  "contributions": [
+    {
+      "paper_id": "deep-shells",
+      "what_it_adds": "Establishes entropy-regularized OT formulation with squared product-embedding ground cost encoded as Gibbs density, plus a second OT energy using learned-feature distance, providing baseline OT costs against which alternatives can be tested.",
+      "stance_toward_prior": "orthogonal - first paper in project with no prior findings to support or challenge; establishes foundational OT cost formulation for shape correspondence.",
+      "overlap_with_direction": "Partial overlap: paper defines the core squared embedding-distance OT cost and instantiates one alternative ground cost (learned feature distance for initialization in Eq-13 vs geometric embedding distance in Eq-8), but does not systematically compare whether alternative costs improve correspondence.",
+      "new_open_questions": []
+    },
+    {
+      "paper_id": "eot-maps",
+      "what_it_adds": "Introduces efficient valid-metric alternative OT costs (uniform sliced Wasserstein and energy-weighted EBSW with Monte Carlo/importance-sampling estimators), implements them as bidirectional feature-alignment losses plus inference-only entropic Sinkhorn refinement, and provides first causal ablation isolating OT cost choice (BiSW/EBSW vs MSE) on SHREC19 and SOTA results on near-isometric (FAUST/SCAPE/SHREC19) and non-isometric (SMAL/DT4D-H) benchmarks.",
+      "stance_toward_prior": "Extends and qualifies prior deep-shells entropy-regularized OT framework (f1-f4): confirms alternative ground costs improve matching but replaces training-time entropic OT with linearithmic sliced metrics due to O(m^2) memory and non-metric limitations, relegating entropic OT to post-hoc refinement.",
+      "overlap_with_direction": "Direct and central - the paper is explicitly designed to test whether alternative OT costs improve non-rigid correspondence via SW/EBSW vs MSE and refinement ablations, directly answering the research question.",
+      "new_open_questions": [
+        "Whether discriminative gain of EBSW over uniform SW persists beyond single SHREC19 ablation (FAUST+SCAPE training) and on non-isometric SMAL/DT4D-H",
+        "Whether O(n log n) theoretical efficiency translates to measured training/inference speedups given L Monte Carlo projections vs Sinkhorn quadratic cost",
+        "How to disentangle OT cost improvement from joint FM solver, proper losses and DiffusionNet backbone in total unsupervised loss Eq.13"
+      ]
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "q1",
+      "text": "Do alternative OT ground costs beyond squared embedding distance and learned-feature initialization distance improve correspondence quality rather than just alignment tightness?",
+      "raised_by": "deep-shells",
+      "finding_refs": [
+        "f1",
+        "f3"
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "How do entropy regularization and Gibbs scaling affect correspondence accuracy under different ground costs?",
+      "raised_by": "deep-shells",
+      "finding_refs": [
+        "f1",
+        "f2"
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "Can learned-feature OT cost replace geometric embedding OT cost throughout alignment, not just for initialization?",
+      "raised_by": "deep-shells",
+      "finding_refs": [
+        "f3"
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Does the 4.7 to 7.2 degradation without adaptive refinement and the MSE vs BiSW/EBSW gap generalize beyond SHREC19 to SMAL and DT4D-H non-isometric sets?",
+      "raised_by": "eot-maps",
+      "finding_refs": [
+        "f9",
+        "f8"
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "What is the sensitivity of correspondence accuracy to number of Monte Carlo projections L and importance-sampling stability for bidirectional EBSW with shared distribution?",
+      "raised_by": "eot-maps",
+      "finding_refs": [
+        "f6",
+        "f7"
+      ]
+    },
+    {
+      "id": "q6",
+      "text": "Can sliced OT losses alone achieve gains without the functional map solver and proper loss weighting in Eq.13, isolating the OT cost effect from the full pipeline?",
+      "raised_by": "eot-maps",
+      "finding_refs": [
+        "f7",
+        "f1"
+      ]
+    }
+  ],
+  "novelty_risks": [
+    {
+      "id": "n1",
+      "direction": "Compare alternative OT ground costs (geometric embedding distance vs learned feature distance) to improve non-rigid correspondence",
+      "overlapping_finding_refs": [
+        "f1",
+        "f3"
+      ],
+      "note": "Paper already defines both costs and uses them in the same pipeline (matching vs initialization), so claiming this comparison as entirely novel would overlap.",
+      "raised_by": "deep-shells"
+    },
+    {
+      "id": "n2",
+      "direction": "Introduce entropy-regularized OT with Gibbs pairwise cost for unsupervised shape matching",
+      "overlapping_finding_refs": [
+        "f1",
+        "f2"
+      ],
+      "note": "Core formulation already established in this paper, so re-proposing it risks duplication.",
+      "raised_by": "deep-shells"
+    },
+    {
+      "id": "n3",
+      "direction": "Proposing alternative OT costs for non-rigid shape correspondence using sliced or entropy-regularized variants",
+      "overlapping_finding_refs": [
+        "f1",
+        "f3",
+        "f5",
+        "f7",
+        "f9"
+      ],
+      "note": "Deep-shells already established entropy-regularized OT and learned-feature alternative ground cost (f1-f3), and eot-maps now covers efficient valid-metric slice of alternatives (SW/EBSW + entropic refinement) with direct ablation Table 4 MSE vs BiSW/EBSW, reducing novelty of further OT variant without new theoretical efficiency or metric property.",
+      "raised_by": "eot-maps"
+    },
+    {
+      "id": "n4",
+      "direction": "Claiming SOTA improvement on FAUST/SCAPE/SHREC19 via joint FM+OT+proper loss pipeline",
+      "overlapping_finding_refs": [
+        "f9",
+        "f1",
+        "f4"
+      ],
+      "note": "SOTA claims on FAUST/SCAPE/SHREC19 and SMAL/DT4D-H conflate alternative OT costs with FM solver, DiffusionNet features, and proper losses (eq-13); only isolated OT-cost ablation is Table 4 limited to SHREC19 after FAUST+SCAPE training, risking overlap for future OT-cost-only claims.",
+      "raised_by": "eot-maps"
+    }
+  ]
+}

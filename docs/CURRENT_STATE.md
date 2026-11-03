@@ -165,6 +165,64 @@ clean
 Production build:
 passing
 
+## Milestone 5 — Persistent Muse Spark Open Research Agent Graph
+
+Working.
+
+The add-paper step is now a LangGraph workflow powered by Muse Spark Open
+(`meta-models/muse-spark-open-1026`) through Baseten:
+
+load_project_context
+→ investigator (Spark Open: findings, connections, methods, novelty, what changed)
+→ deterministic validation (ids, types, bounds, corpus-scoped wording; fail closed)
+→ critic (Spark Open: SUPPORTED / REVISION_REQUIRED / AMBIGUOUS_REQUIRES_HUMAN)
+→ decision gate
+→ finalize | one bounded revise_once | human_review via interrupt()
+→ apply_final_decision
+→ update_project_state (single mutation point, reuses Milestone 4 apply_delta)
+
+Persistence:
+
+- SQLite checkpoints per project (`agent/checkpoints.sqlite`)
+- one thread per investigation run; survives process/server restart and
+  delayed human review without re-running investigator/critic
+- file-backed run records (`agent/runs/`) with transitions, decisions,
+  validation failures, revision path, human request/response, final status
+- per-call telemetry (`agent/telemetry.jsonl`): provider, exact model,
+  node, latency, success, retries, tokens, request id — never secrets
+
+Human review triggers only on consequential ambiguity (or critic disagreement
+after the single revision). The interrupt node has no model side effects; a
+deterministic prepare step checkpoints the request first.
+
+Live demo (Deep Shells → EOT, real Spark Open calls): investigator proposed
+5 grounded findings + 5 connections; critic verified with 5 passed
+comparability checks and 3 minor concerns, verdict SUPPORTED; clean accept,
+no human review, no fabricated contradiction. The interrupt/resume path is
+additionally exercised by an explicitly labeled synthetic fixture
+(`synthetic_demo.py`, canned responses, never merged into real projects).
+
+Frontend `/project` gains: Agent Run timeline, Researcher Review card with
+response options + free text (live resume via the stdlib agent server, staged
+fallback otherwise), AI Research Agent model/provenance section, and a
+labeled synthetic walkthrough. Reader routes unchanged.
+
+PDF perception still uses hosted Muse; only investigator/critic/revision use
+Spark Open. See `docs/OPEN_WEIGHT_USAGE.md`.
+
+Backend tests:
+112 passing (27 new: validation gates, revision bound, interrupt, restart
+resume with zero model-call re-runs, telemetry, key hygiene, M4 compat)
+
+Frontend tests:
+23 passing (9 new)
+
+TypeScript:
+clean
+
+Production build:
+passing (webpack builder — sandbox blocks Turbopack, as before)
+
 ## Next milestone
 
-TBD.
+TBD (Modal execution is explicitly out of scope for Milestone 5).

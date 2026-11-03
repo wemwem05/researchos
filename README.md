@@ -157,6 +157,35 @@ questions, risks) and `/read/[paperId]` (any paper in the existing Reader);
 Paper PDFs are local-only fixtures and are never committed (see `.gitignore`).
 Only model-generated JSON is committed.
 
+## Milestone 5: Persistent Muse Spark Open Research Agent Graph
+
+The add-paper step is a LangGraph workflow
+(`prototype/agent_graph.py`) powered by Muse Spark Open through Baseten
+(exact model `meta-models/muse-spark-open-1026`, key via `BASETEN_API_KEY`;
+see `docs/OPEN_WEIGHT_USAGE.md`):
+
+```bash
+source .venv/bin/activate
+python prototype/agent.py verify   # one real Baseten call (no fallback model)
+python prototype/agent.py investigate \
+  --project-dir prototype/projects/ot-correspondence \
+  --paper-id new-paper --pdf samples/<paper>.pdf \
+  --analysis prototype/<analysis>.json --localized prototype/<localized>.json
+python prototype/agent.py status --project-dir prototype/projects/ot-correspondence
+# if the run waits on human review (genuine ambiguity only):
+python prototype/agent.py review --project-dir prototype/projects/ot-correspondence \
+  --thread-id <id> --choice "Not comparable — drop the connection"
+python prototype/agent.py stage-web --project-dir prototype/projects/ot-correspondence --web-dir web
+# optional: live HITL resume from the Project view:
+python prototype/agent.py serve --project-dir prototype/projects/ot-correspondence --port 8765
+```
+
+Investigator → deterministic validation → Critic → finalize / one bounded
+revision / human review (`interrupt()`) → single project mutation.
+Checkpoints are SQLite per project, so a run survives process restarts and
+delayed reviews without re-running completed model calls. PDF perception
+still uses hosted Muse; only investigator/critic/revision use Spark Open.
+
 ## Layout
 
 - `prototype/analyze_paper.py` — Milestone 1: CLI, prompt, API calls,
@@ -164,14 +193,23 @@ Only model-generated JSON is committed.
 - `prototype/localize_objects.py` — Milestone 2: page rendering, visual
   localization, debug overlays
 - `prototype/project.py` — Milestone 4: project memory CLI + models
+- `prototype/spark_open.py` — Milestone 5: Baseten Spark Open client (exact
+  model ID, telemetry, no fallback)
+- `prototype/agent_graph.py` — Milestone 5: LangGraph investigator/critic/
+  revision/HITL workflow, SQLite checkpoints, run records, validation gates
+- `prototype/agent.py` — Milestone 5: agent CLI (investigate/status/review/
+  stage-web/serve/verify)
+- `prototype/agent_server.py` — Milestone 5: stdlib API for live HITL resume
+- `prototype/synthetic_demo.py` — Milestone 5: labeled synthetic HITL fixture
 - `prototype/test_analyze_paper.py`, `prototype/test_localize_objects.py`,
-  `prototype/test_inventory.py`, `prototype/test_project.py` — offline tests
-  (no API key):
+  `prototype/test_inventory.py`, `prototype/test_project.py`,
+  `prototype/test_agent_graph.py` — offline tests (no API key):
   `.venv/bin/python -m unittest discover -s prototype -p "test_*.py"`
-- `web/app/lib/relevance.test.ts`, `web/app/lib/project.test.ts` — frontend
-  unit tests (vitest): `cd web && npm test`
+- `web/app/lib/relevance.test.ts`, `web/app/lib/project.test.ts`,
+  `web/app/lib/agent.test.ts` — frontend unit tests (vitest):
+  `cd web && npm test`
 - `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
-  `pymupdf`, `pillow`
+  `pymupdf`, `pillow`, `langgraph`, `langgraph-checkpoint-sqlite`
 - `web/` — Milestone 3 Next.js reader (`app/`, `public/paper.pdf`,
   `public/data/localized_output.json`)
 - `samples/` — sample paper PDF

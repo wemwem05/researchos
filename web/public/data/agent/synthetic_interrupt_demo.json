@@ -1,0 +1,125 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "synthetic-hitl-demo--awaiting",
+  "project_id": "synthetic-hitl-demo",
+  "paper_id": "syn-b",
+  "research_question": "[SYNTHETIC DEMO — not scientific evidence] synthetic question?",
+  "status": "awaiting_human",
+  "synthetic": true,
+  "created_at": "2026-11-03T16:33:04.088272+00:00",
+  "updated_at": "2026-11-03T16:33:04.111609+00:00",
+  "paper": {
+    "paper_id": "syn-b",
+    "title": "[SYNTHETIC DEMO — not scientific evidence] imaginary paper SYN-B",
+    "filename": "synthetic.pdf",
+    "added_order": 2,
+    "n_objects": 4,
+    "n_localized": 0,
+    "pdf_path": null,
+    "localized_path": null,
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/projects/synthetic-hitl-demo/agent/synthetic_analysis.json",
+  "transitions": [
+    {
+      "node": "load_project_context",
+      "at": "2026-11-03T16:33:04.106374+00:00",
+      "detail": "1 prior findings, paper 'syn-b'"
+    },
+    {
+      "node": "investigator",
+      "at": "2026-11-03T16:33:04.107909+00:00",
+      "detail": "1 findings, 1 connections"
+    },
+    {
+      "node": "validate",
+      "at": "2026-11-03T16:33:04.108687+00:00",
+      "detail": "all deterministic gates passed"
+    },
+    {
+      "node": "critic",
+      "at": "2026-11-03T16:33:04.109687+00:00",
+      "detail": "verdict=AMBIGUOUS_REQUIRES_HUMAN"
+    },
+    {
+      "node": "decision_gate",
+      "at": "2026-11-03T16:33:04.110368+00:00",
+      "detail": "verdict=AMBIGUOUS_REQUIRES_HUMAN revisions_used=0 -> ambiguous"
+    },
+    {
+      "node": "human_review_requested",
+      "at": "2026-11-03T16:33:04.111571+00:00",
+      "detail": "ambiguity"
+    }
+  ],
+  "decisions": [
+    "decision_gate: AMBIGUOUS_REQUIRES_HUMAN -> ambiguous",
+    "human review requested (ambiguity): [SYNTHETIC DEMO — not scientific evidence] Paper SYN-A reports 81% while paper SYN-B reports 92%. However, the papers use different dataset splits. Should these findings be treated as directly compara"
+  ],
+  "validation_failures": [],
+  "revision_path": [
+    "investigator",
+    "critic:AMBIGUOUS_REQUIRES_HUMAN"
+  ],
+  "human_review_request": {
+    "kind": "ambiguity",
+    "question": "[SYNTHETIC DEMO — not scientific evidence] Paper SYN-A reports 81% while paper SYN-B reports 92%. However, the papers use different dataset splits. Should these findings be treated as directly comparable?",
+    "why_stopped": "The scientific critic judged this proposal ambiguous; researcher judgment is required.",
+    "investigator_position": "Comparable: both report accuracy.",
+    "critic_concern": "Different splits may make comparison indefensible.",
+    "evidence_a": "- [f1] (syn-a): [SYNTHETIC DEMO — not scientific evidence] SYN-A reports 81% accuracy with cost P. [evidence: Table 1, p.1 (synthetic)]",
+    "evidence_b": "- [new[0]]: [SYNTHETIC DEMO — not scientific evidence] SYN-B reports 92% accuracy with cost Q. [evidence: Table 1, p.1 (synthetic)]\n- connection new[0] --contradicts--> f1: [SYNTHETIC DEMO — not scientific evidence] SYN-B reports 92% where SYN-A reported 81%.",
+    "finding_refs": [
+      "new[0]",
+      "f1"
+    ],
+    "object_refs": [
+      "syn-tab-1"
+    ],
+    "affected_connection_indexes": [
+      0
+    ],
+    "options": [
+      "Comparable — keep the connection",
+      "Not comparable — drop the connection",
+      "Keep unresolved"
+    ],
+    "allow_free_text": true
+  },
+  "human_review_response": null,
+  "final_status": "",
+  "error": null,
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T00:00:00+00:00",
+      "provider": "synthetic-demo",
+      "model": "synthetic-demo-canned-responses",
+      "thread_id": "synthetic-hitl-demo--awaiting",
+      "node": "investigator",
+      "latency_ms": 0,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": null,
+      "completion_tokens": null,
+      "total_tokens": null,
+      "request_id": null
+    },
+    {
+      "timestamp": "2026-11-03T00:00:00+00:00",
+      "provider": "synthetic-demo",
+      "model": "synthetic-demo-canned-responses",
+      "thread_id": "synthetic-hitl-demo--awaiting",
+      "node": "critic",
+      "latency_ms": 0,
+      "success": true,
+      "error": null,
+      "retry_count": 0,
+      "prompt_tokens": null,
+      "completion_tokens": null,
+      "total_tokens": null,
+      "request_id": null
+    }
+  ]
+}

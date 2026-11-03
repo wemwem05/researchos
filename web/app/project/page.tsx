@@ -2,6 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  AGENT_API_BASE,
+  probeAgentApi,
+  type AgentRunRecord,
+  type AgentTelemetrySummary,
+} from "../lib/agent";
+import {
+  AgentRunSection,
+  ModelUsageSection,
+  ReviewCard,
+  SyntheticWalkthrough,
+} from "../components/AgentPanel";
 import type { Connection, ConnectionType, ProjectData } from "../lib/project";
 import {
   CORPUS_SCOPE_PREFIX,
@@ -48,6 +60,11 @@ function RefChip({ label, href }: { label: string; href?: string }) {
 export default function ProjectPage() {
   const [project, setProject] = useState<ProjectData | null>(null);
   const [missing, setMissing] = useState(false);
+  const [agentRun, setAgentRun] = useState<AgentRunRecord | null>(null);
+  const [agentSummary, setAgentSummary] = useState<AgentTelemetrySummary | null>(null);
+  const [syntheticDemo, setSyntheticDemo] = useState<AgentRunRecord | null>(null);
+  const [liveAgent, setLiveAgent] = useState(false);
+  const [agentTick, setAgentTick] = useState(0);
 
   useEffect(() => {
     fetch("/data/project.json")
@@ -58,6 +75,59 @@ export default function ProjectPage() {
       .then(setProject)
       .catch(() => setMissing(true));
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAgent() {
+      const live = await probeAgentApi().catch(() => false);
+      if (cancelled) return;
+      setLiveAgent(live);
+      try {
+        if (live) {
+          const runsBody = (await fetch(`${AGENT_API_BASE}/api/agent/runs`).then((r) =>
+            r.json()
+          )) as { runs: { thread_id: string }[] };
+          const list = runsBody.runs ?? [];
+          if (list.length > 0) {
+            const detail = (await fetch(
+              `${AGENT_API_BASE}/api/agent/runs/${list[list.length - 1].thread_id}`
+            ).then((r) => r.json())) as AgentRunRecord;
+            if (!cancelled) setAgentRun(detail);
+          }
+          const tel = (await fetch(`${AGENT_API_BASE}/api/agent/telemetry`).then((r) =>
+            r.json()
+          )) as { summary: AgentTelemetrySummary };
+          if (!cancelled) setAgentSummary(tel.summary);
+        } else {
+          const latest = (await fetch("/data/agent/latest.json")
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)) as AgentRunRecord | null;
+          if (!cancelled && latest) setAgentRun(latest);
+          const summary = (await fetch("/data/agent/summary.json")
+            .then((r) => (r.ok ? r.json() : null))
+            .catch(() => null)) as AgentTelemetrySummary | null;
+          if (!cancelled && summary) setAgentSummary(summary);
+        }
+        const demo = (await fetch("/data/agent/synthetic_interrupt_demo.json")
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)) as AgentRunRecord | null;
+        if (!cancelled && demo) setSyntheticDemo(demo);
+      } catch {
+        // no agent data staged: sections stay hidden, M4 view unchanged
+      }
+    }
+    loadAgent();
+    return () => {
+      cancelled = true;
+    };
+  }, [agentTick]);
+
+  useEffect(() => {
+    if (!liveAgent || !agentRun) return;
+    if (agentRun.status !== "running" && agentRun.status !== "awaiting_human") return;
+    const id = setTimeout(() => setAgentTick((x) => x + 1), 5000);
+    return () => clearTimeout(id);
+  }, [liveAgent, agentRun]);
 
   const grouped = useMemo(
     () => (project ? groupConnectionsByType(project.connections) : new Map<ConnectionType, Connection[]>()),
@@ -106,6 +176,29 @@ export default function ProjectPage() {
             open questions · {project.novelty_risks.length} novelty risks
           </p>
         </div>
+
+        {agentRun && agentRun.status === "awaiting_human" && (
+          <div className="mt-6">
+            <ReviewCard
+              run={agentRun}
+              live={liveAgent}
+              onSubmitted={() => setAgentTick((x) => x + 1)}
+            />
+          </div>
+        )}
+
+        {(agentRun || agentSummary) && (
+          <Section title="Research agent">
+            <AgentRunSection run={agentRun} />
+            <ModelUsageSection summary={agentSummary} />
+          </Section>
+        )}
+
+        {syntheticDemo && (
+          <div className="mt-8">
+            <SyntheticWalkthrough demo={syntheticDemo} />
+          </div>
+        )}
 
         <Section title={`Papers (${project.papers.length})`}>
           {project.papers.map((p) => (

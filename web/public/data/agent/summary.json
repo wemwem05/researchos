@@ -1,0 +1,13 @@
+{
+  "model": "meta-models/muse-spark-open-1026",
+  "provider": "Baseten",
+  "calls": 2,
+  "successful_calls": 2,
+  "failed_calls": 0,
+  "avg_latency_ms": 45342,
+  "calls_by_node": {
+    "investigator": 1,
+    "critic": 1
+  },
+  "latest_at": "2026-11-03T16:19:00.424534+00:00"
+}

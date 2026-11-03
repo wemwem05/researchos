@@ -1,0 +1,112 @@
+{
+  "schema_version": "m5-1",
+  "thread_id": "ot-agent-demo--eot-maps--live1",
+  "project_id": "ot-agent-demo",
+  "paper_id": "eot-maps",
+  "research_question": "Can alternative optimal transport costs improve non-rigid shape correspondence?",
+  "status": "completed",
+  "synthetic": false,
+  "created_at": "2026-11-03T16:17:29.702918+00:00",
+  "updated_at": "2026-11-03T16:19:00.457745+00:00",
+  "paper": {
+    "paper_id": "eot-maps",
+    "title": "Integrating Efficient Optimal Transport and Functional Maps For Unsupervised Shape Correspondence Learning",
+    "filename": "eot_shape_correspondence.pdf",
+    "added_order": 2,
+    "n_objects": 25,
+    "n_localized": 22,
+    "pdf_path": "samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf",
+    "localized_path": "prototype/localized_output.json",
+    "web_pdf": null,
+    "web_data": null
+  },
+  "analysis_path": "prototype/output.json",
+  "transitions": [
+    {
+      "node": "load_project_context",
+      "at": "2026-11-03T16:17:29.719464+00:00",
+      "detail": "4 prior findings, paper 'eot-maps'"
+    },
+    {
+      "node": "investigator",
+      "at": "2026-11-03T16:18:32.113590+00:00",
+      "detail": "5 findings, 5 connections"
+    },
+    {
+      "node": "validate",
+      "at": "2026-11-03T16:18:32.125408+00:00",
+      "detail": "all deterministic gates passed"
+    },
+    {
+      "node": "critic",
+      "at": "2026-11-03T16:19:00.430438+00:00",
+      "detail": "verdict=SUPPORTED"
+    },
+    {
+      "node": "decision_gate",
+      "at": "2026-11-03T16:19:00.441469+00:00",
+      "detail": "verdict=SUPPORTED revisions_used=0 -> clean"
+    },
+    {
+      "node": "finalize",
+      "at": "2026-11-03T16:19:00.443801+00:00",
+      "detail": "clean accept"
+    },
+    {
+      "node": "apply_final_decision",
+      "at": "2026-11-03T16:19:00.446417+00:00",
+      "detail": "clean path"
+    },
+    {
+      "node": "update_project_state",
+      "at": "2026-11-03T16:19:00.457710+00:00",
+      "detail": "paper 'eot-maps' added"
+    }
+  ],
+  "decisions": [
+    "decision_gate: SUPPORTED -> clean",
+    "finalize: critic SUPPORTED, no revision, no human review",
+    "project updated: +5 findings, +5 connections"
+  ],
+  "validation_failures": [],
+  "revision_path": [
+    "investigator",
+    "critic:SUPPORTED"
+  ],
+  "human_review_request": null,
+  "human_review_response": null,
+  "final_status": "completed",
+  "error": null,
+  "telemetry": [
+    {
+      "timestamp": "2026-11-03T16:18:32.106526+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-agent-demo--eot-maps--live1",
+      "node": "investigator",
+      "latency_ms": 62386,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 7018,
+      "completion_tokens": 3319,
+      "total_tokens": 10337,
+      "request_id": "chatcmpl-3912f18f9ad949c488ea88e293992194"
+    },
+    {
+      "timestamp": "2026-11-03T16:19:00.424534+00:00",
+      "provider": "Baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "thread_id": "ot-agent-demo--eot-maps--live1",
+      "node": "critic",
+      "latency_ms": 28298,
+      "success": true,
+      "error": null,
+      "retry_count": 1,
+      "prompt_tokens": 6414,
+      "completion_tokens": 1479,
+      "total_tokens": 7893,
+      "request_id": "chatcmpl-d01668c355ed4ead867c78c25d4c409c"
+    }
+  ]
+}

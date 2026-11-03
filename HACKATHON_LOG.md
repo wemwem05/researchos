@@ -253,3 +253,73 @@ Modal, experiment execution, graph visualization, deployment infra.
 integrity, not truth); adding a paper never revises earlier papers' deltas;
 project.json is single-writer (no concurrency); in-browser visual check left
 to the demo.
+
+## Milestone 5 — Persistent Muse Spark Open Research Agent Graph (2026-11-03)
+
+**Goal:** research is not a linear chain — pursue an objective across
+reasoning steps that challenge their own conclusions, branch on evidence,
+pause for genuine human judgment, persist, and resume without repeating
+expensive work.
+
+**Built (backend, all new; M1–M4 code untouched):**
+
+- `prototype/spark_open.py` — Baseten client pinning exactly
+  `meta-models/muse-spark-open-1026` (OpenAI-compatible, `BASETEN_API_KEY`
+  only, generous token budget for the reasoning model, latency/usage/
+  request-id telemetry, one bounded schema-repair attempt). No fallback to
+  any other model: failures raise `SparkOpenError` carrying failure
+  telemetry. Verified with a real call before building the graph.
+- `prototype/agent_graph.py` — LangGraph topology: load_project_context →
+  investigator (Spark) → validate → critic (Spark) → decision_gate →
+  finalize | revise_once (Spark, max 1) | prepare_review + human_review
+  (interrupt) → apply_final_decision → update_project_state (single
+  mutation point reusing M4 `ProjectDelta`/`apply_delta`). Refinements:
+  validate-fail ends failed without mutation; finalize converges on
+  apply_final_decision; prepare_review checkpoints the request so the
+  interrupt node has zero pre-interrupt side effects.
+- Deterministic gates (unknown paper/finding/object ids, connection enum,
+  ≤5 findings, confidence bounds, evidence presence, page integrity,
+  corpus-scoped novelty denylist, duplicate ids, malformed state) with one
+  bounded repair; anything invalid fails closed.
+- SQLite checkpoints per project + file run records (transitions,
+  decisions, validation failures, revision path, human request/response)
+  + `telemetry.jsonl`. One thread per investigation run.
+- `prototype/agent.py` CLI (investigate/status/review/stage-web/serve/
+  verify) + `prototype/agent_server.py` (stdlib-only API for live HITL
+  resume from the UI; resume path uses a model-call guard, no key needed).
+- `prototype/synthetic_demo.py` — explicitly labeled canned HITL fixture
+  (imaginary SYN-A/SYN-B, `[SYNTHETIC DEMO]` banner, provider
+  `synthetic-demo`); never touches real project output.
+
+**Live run (demo project = M4 project truncated to Deep Shells, EOT
+re-interpreted through the graph; original project untouched):**
+investigator 62.4s / 10,337 tokens (1 schema repair) → 5 grounded findings
++ 5 connections; deterministic validation clean; critic 28.3s / 7,893
+tokens (1 schema repair) → 5 passed comparability checks, 3 minor
+concerns, verdict SUPPORTED; clean accept, no revision, no human review —
+no contradiction fabricated. Run record + telemetry staged under
+`web/public/data/agent/`.
+
+**HITL proof:** unit tests interrupt + resume after simulated restart with a
+refusing model double (zero re-calls); real CLI `review` resumed the
+synthetic run across processes (connection dropped per researcher choice);
+live API server POST `/review` verified end to end.
+
+**Built (frontend, `web/`):** `/project` gains an Agent Run timeline, a
+Researcher Review card (question, why-stopped, both positions, evidence,
+options, free text, live resume or CLI fallback), an AI Research Agent
+provenance section (exact model id, provider, roles, calls/latency), and a
+labeled synthetic walkthrough. Static-first (staged JSON), live when the
+agent server runs. Reader routes unchanged.
+
+**Verification:** 112/112 backend tests (27 new); 23/23 frontend tests
+(9 new); `tsc` clean; `next build` green (webpack — sandbox blocks
+Turbopack, as before); production smoke 200 on `/`, `/project`, both
+readers, all fixtures.
+
+**Explicitly out of scope:** Modal execution (Milestone 6), Glimmer,
+literature search, vector DB, auth, Supabase, React Flow, deployment infra.
+
+**Caveats:** both live Spark calls needed one schema repair (JSON shape
+drift, fixed in-budget); project.json stays single-writer; in-browser
+visual check left to the demo.

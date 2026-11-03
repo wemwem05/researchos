@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2026-11-03T16:18:32.106526+00:00",
+    "provider": "Baseten",
+    "model": "meta-models/muse-spark-open-1026",
+    "thread_id": "ot-agent-demo--eot-maps--live1",
+    "node": "investigator",
+    "latency_ms": 62386,
+    "success": true,
+    "error": null,
+    "retry_count": 1,
+    "prompt_tokens": 7018,
+    "completion_tokens": 3319,
+    "total_tokens": 10337,
+    "request_id": "chatcmpl-3912f18f9ad949c488ea88e293992194"
+  },
+  {
+    "timestamp": "2026-11-03T16:19:00.424534+00:00",
+    "provider": "Baseten",
+    "model": "meta-models/muse-spark-open-1026",
+    "thread_id": "ot-agent-demo--eot-maps--live1",
+    "node": "critic",
+    "latency_ms": 28298,
+    "success": true,
+    "error": null,
+    "retry_count": 1,
+    "prompt_tokens": 6414,
+    "completion_tokens": 1479,
+    "total_tokens": 7893,
+    "request_id": "chatcmpl-d01668c355ed4ead867c78c25d4c409c"
+  }
+]
