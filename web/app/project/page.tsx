@@ -198,12 +198,20 @@ export default function ProjectPage() {
           <h1 className="text-lg font-bold tracking-tight text-neutral-900">ResearchOS</h1>
           <span className="text-xs text-neutral-500">research project</span>
         </div>
-        <Link
-          href="/"
-          className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600 hover:border-neutral-500 hover:text-neutral-900"
-        >
-          Reader
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/"
+            className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600 hover:border-neutral-500 hover:text-neutral-900"
+          >
+            Projects
+          </Link>
+          <Link
+            href="/read/eot-maps"
+            className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600 hover:border-neutral-500 hover:text-neutral-900"
+          >
+            Reader
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-5 pb-16">

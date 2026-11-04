@@ -1394,6 +1394,8 @@ def a_attach(state: AuditState, config: RunnableConfig) -> dict[str, Any]:
     else:
         taken = {a.audit_id for a in project.audits}
         report["audit_id"] = _next_audit_id(taken)
+        # M7: retain the originating question version for provenance.
+        report.setdefault("question_version", project.question_version or 1)
         project.audits.append(ScientificAudit.model_validate(report))
         save_project(ctx.project_dir, project)
         tdir = audit_thread_dir(ctx.project_dir, state["thread_id"])

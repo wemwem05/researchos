@@ -73,8 +73,11 @@ def _resolve(p: str) -> Path:
 
 
 def _paper_entry(args: argparse.Namespace, analysis: AnalysisResult, order: int) -> PaperEntry:
+    loc_file = Path(args.localized)
+    if not loc_file.is_absolute() and not loc_file.is_file():
+        loc_file = _repo_root() / args.localized
     n_localized = sum(
-        1 for o in json.loads(Path(args.localized).read_text())["localizations"] if o["bbox"]
+        1 for o in json.loads(loc_file.read_text())["localizations"] if o["bbox"]
     )
     return PaperEntry(
         paper_id=args.paper_id,
@@ -85,6 +88,9 @@ def _paper_entry(args: argparse.Namespace, analysis: AnalysisResult, order: int)
         n_localized=n_localized,
         pdf_path=_rel(args.pdf),
         localized_path=_rel(args.localized),
+        # M7 extras (workspace pipeline passes these; CLI leaves defaults).
+        sha256=getattr(args, "sha256", "") or "",
+        question_version=getattr(args, "question_version", 0) or 1,
     )
 
 
@@ -595,6 +601,20 @@ def cmd_serve(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_serve_all(args: argparse.Namespace) -> int:
+    from workspace_server import serve
+
+    root = Path(args.projects_root)
+    if not root.is_absolute():
+        root = _repo_root() / args.projects_root
+    server = serve(root, int(args.port))
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    return 0
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="ResearchOS Milestone 5: agent graph CLI.")
     sub = p.add_subparsers(dest="command", required=True)
@@ -640,6 +660,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     pserve = sub.add_parser("serve", help="Serve the agent API for live HITL resume.")
     pserve.add_argument("--project-dir", required=True)
     pserve.add_argument("--port", default="8765")
+
+    pserve_all = sub.add_parser("serve-all", help="Serve the multi-project workspace API (Milestone 7).")
+    pserve_all.add_argument("--projects-root", default="prototype/projects")
+    pserve_all.add_argument("--port", default="8765")
     return p.parse_args(argv)
 
 
@@ -661,6 +685,8 @@ def main() -> int:
         return cmd_verify(args)
     if args.command == "serve":
         return cmd_serve(args)
+    if args.command == "serve-all":
+        return cmd_serve_all(args)
     raise AssertionError(f"unknown command {args.command}")
 
 

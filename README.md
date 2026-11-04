@@ -243,6 +243,34 @@ Methodology and limitations: `docs/EVIDENCE_AUDIT.md`. The Reader's
 primary claim action is now "Audit scientific claim"; "Verify
 computationally" remains as the distinct optional test.
 
+## Milestone 7: Real Research Workspace
+
+Multi-project application layer around the preserved M1–M6.1 intelligence.
+Create projects, edit the research question (versioned), upload PDFs from the
+browser, watch real pipeline jobs, and read papers in the live Reader — the
+backend is authoritative and everything persists across restarts:
+
+```bash
+./dev.sh
+# backend  http://127.0.0.1:8765/api/health
+# frontend http://localhost:3000
+```
+
+`./dev.sh` starts the workspace backend (`agent.py serve-all`) and Next.js
+together with clean Ctrl-C shutdown, reusing a healthy backend instead of
+starting a duplicate. Separate commands stay available for debugging (see the
+script header). Uploads validate size/pages/PDF integrity, dedupe by content
+hash, reuse verified document caches, and run the full
+analyze → relevance → localize → investigate pipeline as durable SQLite jobs
+with honest stage progress — never fake percentages. Question edits snapshot
+old conclusions into versioned history, re-score relevance only, and rebuild
+findings through the real agent graph after explicit confirmation. Legacy
+routes (`/project`, `/read/[paperId]`, `/api/agent/*`) keep working against
+the staged demo fixtures and default project.
+
+Architecture: `docs/WORKSPACE_ARCHITECTURE.md`. Local single-user use only:
+production would need auth, hosted storage, and job isolation.
+
 ## Layout
 
 - `prototype/analyze_paper.py` — Milestone 1: CLI, prompt, API calls,
@@ -267,18 +295,27 @@ computationally" remains as the distinct optional test.
 - `prototype/audit_graph.py` — Milestone 6.1: evidence-audit subgraph
   (classify/collect/plan/checks/methodology/cross-paper/external/
   critic/revision/HITL/report/attach)
+- `prototype/workspace.py` — Milestone 7: project registry, safe paths,
+  per-project locks, question versioning
+- `prototype/jobs.py` — Milestone 7: SQLite job store (lifecycle, retries,
+  idempotency, restart recovery)
+- `prototype/paper_pipeline.py` — Milestone 7: upload → validate → inventory
+  → analyze → relevance → localize → investigate → persist (reuses M1–M5)
+- `prototype/workspace_server.py` — Milestone 7: multi-project API + job
+  dispatcher (legacy `/api/agent/*` preserved)
+- `dev.sh` — Milestone 7: unified backend + frontend startup
 - `docs/EVIDENCE_AUDIT.md` — Milestone 6.1: audit methodology,
   status semantics, limitations, and how audits differ from
   reproduction
 - `prototype/test_analyze_paper.py`, `prototype/test_localize_objects.py`,
   `prototype/test_inventory.py`, `prototype/test_project.py`,
   `prototype/test_agent_graph.py`, `prototype/test_verify_graph.py`,
-  `prototype/test_audit_graph.py` —
+  `prototype/test_audit_graph.py`, `prototype/test_workspace.py` —
   offline tests (no API key):
   `.venv/bin/python -m unittest discover -s prototype -p "test_*.py"`
 - `web/app/lib/relevance.test.ts`, `web/app/lib/project.test.ts`,
   `web/app/lib/agent.test.ts`, `web/app/lib/verification.test.ts`,
-  `web/app/lib/audit.test.ts` —
+  `web/app/lib/audit.test.ts`, `web/app/lib/workspace.test.ts` —
   frontend unit tests (vitest): `cd web && npm test`
 - `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
   `pymupdf`, `pillow`, `langgraph`, `langgraph-checkpoint-sqlite`, `modal`

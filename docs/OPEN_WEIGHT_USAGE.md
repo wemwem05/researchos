@@ -73,6 +73,15 @@ evidence audit (`prototype/audit_graph.py`). Spark Open acts as:
 PDF perception still uses hosted Muse (below); all agentic reasoning in
 Milestones 5–6.1 uses Spark Open.
 
+Milestone 7 changes no model assignments: uploads analyze via the Meta Model
+API, while every agentic decision (per-paper investigation/criticism during
+ingest and question-rebuilds, audits, verifications) runs on the same
+`meta-models/muse-spark-open-1026` through the same client, now invoked in a
+project-scoped way with per-project telemetry. The M7 acceptance project
+recorded 17 Spark calls (~132k tokens), all on the exact hackathon model id —
+see `prototype/projects/transport-geometry-investigation/agent/telemetry.jsonl`
+(local, git-ignored).
+
 ## What still uses hosted Muse, and why
 
 PDF perception is unchanged and still uses `muse-spark-1.3` via the Meta

@@ -444,3 +444,166 @@ correctly phrased-differently number; overalls inherit planner
 coverage; sandbox HTTP proxy blocked Reader-route smoke from the
 shell (in-browser visual check left to the demo); M1–M6 preserved
 (8 findings, 3 connections, 3 verifications intact).
+
+## Milestone 7 — Real Research Workspace (2026-11-04)
+
+**Goal:** turn ResearchOS from a static demo into a usable application: a new
+researcher creates projects, edits the research question, uploads PDFs, and
+reads them in the live Reader — all through the browser against the real
+M1–M6.1 backend. No JSON editing, no CLI.
+
+**Built (backend, all new; M1–M6.1 reused, not rewritten):**
+
+- `prototype/workspace.py` — project registry under `prototype/projects/`
+  (stable ids, titles, questions, timestamps, versions), safe path resolution
+  (traversal/symlink rejection), per-project single-writer locks, question
+  preview + archival change semantics.
+- `prototype/jobs.py` — SQLite job store (`workspace.sqlite`): QUEUED/
+  RUNNING/COMPLETED/FAILED/CANCELLED, real stage tracking, idempotency keys,
+  bounded attempts, retry/cancel, restart reconciliation.
+- `prototype/paper_pipeline.py` — upload → validate (size/pages/magic/parse/
+  encryption) → inventory → analysis → relevance → localization → Spark
+  investigation → atomic persist. Reuses `inventory`, `analyze_paper`,
+  `localize_objects` helpers + shared `loc_cache.json`, and
+  `agent.cmd_investigate`; content-hash dedupe plus verified same-bytes
+  document-cache reuse (provenance recorded); per-paper stage files make
+  retries resume without repeating expensive stages. Model clients injectable
+  (`PipelineDeps`) for deterministic tests.
+- `prototype/workspace_server.py` — multi-project API (enveloped JSON) +
+  single-dispatcher job runner: projects CRUD, multipart upload, paper
+  file/data bytes, jobs, question preview/confirm, rebuild continuation, and
+  project-scoped runs/reviews/telemetry/audits/verifications. Localhost bind,
+  explicit CORS allowlist, no client-supplied paths. Legacy `/api/agent/*`
+  routes keep exact M5/M6/M6.1 shapes against `ot-correspondence`. Start
+  endpoints validate refs first, then probe Baseten/Modal and fail with an
+  honest 503 instead of a silent 202.
+- `agent.py serve-all` — workspace server CLI. `dev.sh` (+ `npm run dev:all`)
+  starts backend + frontend together with clean shutdown and
+  duplicate-backend reuse.
+
+**Question versioning:** paper-native state (PDFs, inventory, boxes) is
+preserved; relevance re-scores only; old conclusions snapshot into versioned
+history (never shown as current); findings rebuild through the real agent
+graph after preview + confirmation; audits/verifications/runs keep
+originating versions. Rebuilds paused by review continue via `POST /rebuild`.
+
+**Built (frontend):** `/` is now the Projects dashboard (create/open, classic
+demo links); `/projects/<id>` is the live project page (question editing,
+multi-PDF upload, job progress + retry, findings, history, reviews, audits,
+verifications); `/projects/<id>/read/<paperId>` is the live Reader fed by the
+API with project-scoped audit/verify actions. `Reader`/`ResearchLens`/
+claim components accept optional live/project props; legacy `/project` and
+`/read/[paperId]` behavior is unchanged.
+
+**Live acceptance ("Transport Geometry Investigation", real API + real
+models):** project created via API; EOT uploaded (25 objects, 22/22 boxes, 5
+live findings); Deep Shells uploaded (9 findings, 4 connections total);
+question changed to sliced-vs-entropic efficiency/stability (PDFs/boxes
+byte-identical, both papers re-scored live for the new question — EOT 3 high /
+6 related / 16 context, Deep Shells 4 / 3 / 16 — v1's 9 findings archived,
+v2 rebuilt to 10 findings + 6 connections after one fail-closed review
+answered via API); one live corpus-only audit attached ("discrepancies
+identified"); verification action confirmed available with an honest
+Modal-unavailable 503 (no credentials here); restart recovery proven
+(requeued 1, persisted 2/10/6/1). 17 Spark Open calls, all on
+`meta-models/muse-spark-open-1026` (~132k tokens). Demo project bytes
+identical before/after (sha `0e2368b0…`).
+
+**Bugs found live and fixed (each with regression tests):** investigator +
+critic JSON shape drift (`from`/`to`, `question`, bare strings — the Baseten
+path has no schema enforcement, so exact shape specs went into both prompts,
+text only); jobs misreported awaiting-review runs as complete (exit 0 covers
+both — attachment now decides, plus the rebuild endpoint); `apply_delta`
+silently dropped verifications/audits on add-paper (now preserved, new
+conclusions stamped); empty idempotency keys collided (partial unique
+index); multipart parser ate significant trailing bytes (exact framing).
+
+**Verification:** 211/211 backend tests (38 new); 39/39 frontend tests (5
+new); `tsc` clean; `next build` green (webpack — sandbox blocks Turbopack, as
+before); live Reader data/file endpoints return 25/23 objects, 22/20 boxes,
+and byte-identical PDFs for both acceptance papers; demo project intact
+(2 papers, 8 findings, 3 connections, 3 verifications, 7 audits).
+
+**Explicitly out of scope:** auth, hosted storage, multi-worker dispatch,
+rate/budget limits, internet paper discovery, accounts, billing,
+collaboration, graph visualization, Milestone 8.
+
+**Caveats:** sandbox forbids port binding, so the acceptance drove the real
+server stack in-process (identical handler bytes; `./dev.sh` reproduces over
+TCP on a normal machine) and no live browser check was possible; in-browser
+visual check left to the demo. Investigator/critic schema drift is mitigated
+by shape specs + fail-closed review, not eliminated — a third consecutive
+drift would exhaust the job's retry budget and surface honestly. Modal
+execution remains unproven in this environment (no credentials).
+
+### Milestone 7 follow-up: duplicate history keys + non-paper uploads (2026-11-04)
+
+Two issues reported from live use, both fixed with regression tests:
+
+- **Duplicate React keys in Question history.** `apply_question_change`
+  appended an archived v1 record next to the empty initial v1 record, so two
+  children shared `key={h.version}`. The backend now keeps exactly one record
+  per version (updates the existing record in place; legacy projects without
+  one still get an appended archive), and the frontend dedupes by version
+  (snapshot wins) with composite keys — existing duplicated data displays
+  correctly without a migration.
+- **Non-paper upload burned 3 model calls, then dumped a raw ValidationError.**
+  A 6-page Russian student report (no labeled equations/figures/tables —
+  deterministic checklist legitimately empty) failed stage-1 coverage on all
+  three API-shape attempts. Fixes: (1) `InvalidAnalysisContent` distinguishes
+  answered-but-invalid content from transport failures, so the fallback chain
+  aborts after 1 call instead of 3 (transport fallback preserved); (2) when
+  the empty checklist and the model agree, the job fails honestly as
+  non-retryable ("doesn't appear to be a scientific paper… remove it and
+  upload a scientific PDF"); model misses on labeled papers stay retryable;
+  (3) `PipelineError.retryable` persists on the job and the UI shows "Retry
+  won't help" instead of a Retry button; (4) new `DELETE
+  /api/projects/<id>/papers/<pid>` removes staged/failed papers (attached
+  papers protected, processing papers refused) with a Remove button in the
+  project view.
+
+**Verification:** 219/219 backend (8 new), 40/40 frontend (1 new), `tsc`
+clean, `next build` green (webpack).
+
+### dev.sh shutdown fix (2026-11-04)
+
+Ctrl-C killed the `npm` wrapper but orphaned the Next.js child holding port
+3000, so the next `./dev.sh` died with `EADDRINUSE`. `dev.sh` now runs each
+service in its own process group (`set -m`) and shuts down whole trees
+(TERM with KILL escalation, zombie-aware so clean exits stay fast), kills a
+lingering port holder as a fallback, and fails early with an actionable
+message (holder PID + `kill` command) when a port is already busy. Group-kill
+and escalation proven with stand-in process trees (`bash -n` clean; live
+`./dev.sh` exercising left to a normal machine since this sandbox forbids
+binding).
+
+Follow-up fix the same day: the new port guard silently killed the script on
+a *free* port — `lsof` exits 1 when nothing listens, and `set -o pipefail` +
+`set -e` turned `HOLDER="$(port_listener …)"` into a silent exit right after
+the backend-reuse message (exactly the reported transcript). `port_listener`
+now always succeeds (empty = free) and `is_dead` got the same hardening;
+both paths proven under identical shell flags with a stubbed `lsof`.
+
+Stale-backend follow-up the same day: Remove failed with a bare "Failed to
+fetch" because the reused backend predated the DELETE route *and* its CORS
+entry, so the preflight blocked the request before it was sent. Fixes: (1)
+`/api/health` now reports `SERVER_VERSION` (`"7.2"`) and `dev.sh` refuses to
+reuse a version-mismatched backend, printing the holder PID and exact `kill`
+command instead; a test pins `dev.sh`'s expectation to the server constant.
+(2) OPTIONS now returns a proper empty 204 (no body). (3) The Remove client
+translates network failure into "restart the backend" guidance. Unblocks via
+`kill $(lsof -ti tcp:8765 -sTCP:LISTEN)` + `./dev.sh`. 222/222 backend,
+40/40 frontend, `tsc` clean, `next build` green.
+
+Removal follow-up the same day: the first Remove of the failed `report`
+paper *succeeded* (dir gone), but the FAILED job row resurrected its card,
+so a second Remove 404'd with "unknown paper 'report'". Fixes: (1)
+`paper_status` no longer emits unattached papers whose dir is gone unless a
+job is active — removed papers stay removed (history lives in the jobs
+list); (2) DELETE is idempotent (`already_gone: true` on re-delete, so
+stale UI/double-clicks are harmless); (3) DELETE refuses papers with a
+pending human review (would orphan the resume); (4) retrying a removed
+paper's job refuses early with "re-upload to try again"; (5) retry-action
+errors now surface in the UI instead of an unhandled rejection. Server
+version bumped to 7.3 (+ `dev.sh` expectation). 224/224 backend, 40/40
+frontend, `tsc` clean, `next build` green.

@@ -18,7 +18,15 @@ import AuditEvidence from "./AuditEvidence";
 
 type Phase = "idle" | "confirm" | "starting" | "running" | "done";
 
-export default function AuditClaim({ paperId, claim }: { paperId: string; claim: SciObject }) {
+export default function AuditClaim({
+  paperId,
+  claim,
+  projectId = null,
+}: {
+  paperId: string;
+  claim: SciObject;
+  projectId?: string | null;
+}) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [live, setLive] = useState<boolean | null>(null);
   const [external, setExternal] = useState(false);
@@ -28,40 +36,56 @@ export default function AuditClaim({ paperId, claim }: { paperId: string; claim:
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
+  const runUrl = (tid: string) =>
+    projectId
+      ? `${AGENT_API_BASE}/api/projects/${projectId}/runs/${tid}`
+      : `${AGENT_API_BASE}/api/agent/runs/${tid}`;
+
   useEffect(() => {
     let cancelled = false;
-    probeAgentApi()
-      .then((ok) => {
-        if (!cancelled) setLive(ok);
-      })
-      .catch(() => {
+    async function probe() {
+      try {
+        if (projectId) {
+          const r = await fetch(`${AGENT_API_BASE}/api/projects/${projectId}`);
+          if (!cancelled) setLive(r.ok);
+        } else {
+          const ok = await probeAgentApi();
+          if (!cancelled) setLive(ok);
+        }
+      } catch {
         if (!cancelled) setLive(false);
-      });
+      }
+    }
+    probe();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [projectId]);
 
   const refresh = useCallback(async () => {
     if (!threadId) return;
     try {
-      const res = await fetch(`${AGENT_API_BASE}/api/agent/runs/${threadId}`);
+      const res = await fetch(runUrl(threadId));
       // The background run may not have created its record yet; keep
       // polling instead of rendering the 404 body as a run.
       if (res.status === 404) return;
       if (!res.ok) throw new Error(`Run status ${res.status}`);
-      const detail = (await res.json()) as AgentRunRecord;
+      const raw = (await res.json()) as AgentRunRecord | { ok: boolean; data: AgentRunRecord };
+      const detail = "data" in raw && (raw as { data: AgentRunRecord }).data
+        ? (raw as { data: AgentRunRecord }).data
+        : (raw as AgentRunRecord);
       if (!Array.isArray(detail.transitions)) return;
       setRun(detail);
       if (detail.status === "completed") {
-        const list = await fetchLiveAudits().catch(() => []);
+        const list = await fetchLiveAudits(projectId).catch(() => []);
         setAudit(list.find((a) => a.thread_id === threadId) ?? null);
         setPhase("done");
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Refresh failed");
     }
-  }, [threadId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadId, projectId]);
 
   useEffect(() => {
     if (phase !== "running" || !threadId) return;
@@ -76,7 +100,7 @@ export default function AuditClaim({ paperId, claim }: { paperId: string; claim:
     setPhase("starting");
     setError(null);
     try {
-      const { thread_id } = await startAudit(paperId, claim.id, external);
+      const { thread_id } = await startAudit(paperId, claim.id, external, projectId);
       setThreadId(thread_id);
       setPhase("running");
     } catch (e) {
@@ -162,7 +186,16 @@ export default function AuditClaim({ paperId, claim }: { paperId: string; claim:
       {!run && <p className="text-xs text-neutral-500">Starting audit run…</p>}
       <AgentRunSection run={run} />
       {run && run.status === "awaiting_human" && (
-        <ReviewCard run={run} live={true} onSubmitted={refresh} />
+        <ReviewCard
+          run={run}
+          live={true}
+          onSubmitted={refresh}
+          reviewUrl={
+            projectId
+              ? `${AGENT_API_BASE}/api/projects/${projectId}/runs/${run.thread_id}/review`
+              : undefined
+          }
+        />
       )}
       {run && run.status === "failed" && (
         <p className="text-xs text-red-700">Audit failed: {run.error}</p>
@@ -175,8 +208,9 @@ export default function AuditClaim({ paperId, claim }: { paperId: string; claim:
           <AuditEvidence audit={audit} />
         ) : (
           <p className="text-xs text-neutral-500">
-            Run completed. The report will appear in the project view after stage-web.{" "}
-            <a className="underline" href="/project">
+            Run completed. The report will appear in the project view
+            {projectId ? "." : " after stage-web."}{" "}
+            <a className="underline" href={projectId ? `/projects/${projectId}` : "/project"}>
               Open project
             </a>
           </p>

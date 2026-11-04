@@ -291,5 +291,84 @@ class TestHelpers(unittest.TestCase):
         self.assertIn("eq1", s)
 
 
+class _FakeResponses:
+    def __init__(self, script):
+        self.script = script
+        self.calls = 0
+
+    def create(self, **kwargs):
+        self.calls += 1
+        action = self.script[min(self.calls - 1, len(self.script) - 1)]
+        if isinstance(action, Exception):
+            raise action
+        response = type("R", (), {})()
+        response.output_text = action
+        return response
+
+
+class _FakeChatCompletions:
+    def __init__(self, script):
+        self.script = script
+        self.calls = 0
+
+    def create(self, **kwargs):
+        self.calls += 1
+        action = self.script[min(self.calls - 1, len(self.script) - 1)]
+        if isinstance(action, Exception):
+            raise action
+        msg = type("M", (), {"content": action})()
+        choice = type("C", (), {"message": msg})()
+        return type("R", (), {"choices": [choice]})()
+
+
+class _FakeClient:
+    def __init__(self, responses_script, chat_script):
+        self.responses = _FakeResponses(responses_script)
+        self.chat = type("Chat", (), {})()
+        self.chat.completions = _FakeChatCompletions(chat_script)
+
+
+def _claims_only_draft():
+    fix = valid_draft_fixture()
+    claim = next(o for o in fix["objects"] if o["type"] == "claim")
+    # Four claims: passes min-length, fails the all-types coverage rule.
+    fix["objects"] = [{**claim, "id": f"c{i}"} for i in range(4)]
+    return json.dumps(fix)
+
+
+class TestFallbackChains(unittest.TestCase):
+    def test_stage1_fails_fast_on_invalid_content(self):
+        # Invalid content on attempt 1 must NOT burn attempts 2 and 3.
+        client = _FakeClient([_claims_only_draft()], [json.dumps(valid_draft_fixture())])
+        with self.assertRaises(ap.InvalidAnalysisContent) as ctx:
+            ap.analyze_pdf(client, "m", b"%PDF-fake", "paper.pdf", "")
+        self.assertIn("equation", str(ctx.exception))
+        self.assertEqual(client.responses.calls, 1)
+        self.assertEqual(client.chat.completions.calls, 0)
+
+    def test_stage1_still_falls_back_on_transport_errors(self):
+        client = _FakeClient([RuntimeError("shape rejected")],
+                             [json.dumps(valid_draft_fixture())])
+        draft = ap.analyze_pdf(client, "m", b"%PDF-fake", "paper.pdf", "")
+        self.assertEqual(draft.paper_title, "Test Paper")
+        self.assertEqual(client.responses.calls, 1)
+        self.assertEqual(client.chat.completions.calls, 1)
+
+    def test_stage1_transport_exhaustion_still_raises(self):
+        client = _FakeClient([RuntimeError("nope")], [RuntimeError("nope")])
+        with self.assertRaises(RuntimeError):
+            ap.analyze_pdf(client, "m", b"%PDF-fake", "paper.pdf", "")
+
+    def test_stage2_fails_fast_on_invalid_content(self):
+        draft = ap.AnalysisDraft.model_validate(valid_draft_fixture())
+        # Schema-invalid payload (missing score + out-of-range confidence).
+        bad = json.dumps({"scores": [{"id": "eq1", "research_relevance": "r",
+                                      "research_relevance_reason": "w"}]})
+        client = _FakeClient([], [bad, json.dumps(relevance_fixture())])
+        with self.assertRaises(ap.InvalidAnalysisContent):
+            ap.score_relevance(client, "m", "Q?", draft)
+        self.assertEqual(client.chat.completions.calls, 1)
+
+
 if __name__ == "__main__":
     unittest.main()

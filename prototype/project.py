@@ -97,6 +97,10 @@ class PaperEntry(BaseModel):
     localized_path: Optional[str] = None
     web_pdf: Optional[str] = None  # public URL path once staged, e.g. /papers/x.pdf
     web_data: Optional[str] = None
+    # Milestone 7: content hash (dedupe) + question version the stored
+    # relevance scores were computed against (staleness detection).
+    sha256: str = ""
+    question_version: int = Field(default=1, ge=1)
 
 
 class Finding(BaseModel):
@@ -107,6 +111,9 @@ class Finding(BaseModel):
     page: Optional[int] = None
     object_ids: list[str] = Field(default_factory=list)
     confidence: float = Field(ge=0.0, le=1.0)
+    # Milestone 7: which research-question version this conclusion belongs to.
+    question_version: int = Field(default=1, ge=1)
+    status: Literal["current", "historical"] = "current"
 
 
 class Connection(BaseModel):
@@ -116,6 +123,9 @@ class Connection(BaseModel):
     type: ConnectionType
     reason: str = Field(min_length=1)
     confidence: float = Field(ge=0.0, le=1.0)
+    # Milestone 7: which research-question version this conclusion belongs to.
+    question_version: int = Field(default=1, ge=1)
+    status: Literal["current", "historical"] = "current"
 
 
 class OpenQuestion(BaseModel):
@@ -123,6 +133,9 @@ class OpenQuestion(BaseModel):
     text: str = Field(min_length=1)
     raised_by: str  # paper_id
     finding_refs: list[str] = Field(default_factory=list)
+    # Milestone 7: which research-question version this conclusion belongs to.
+    question_version: int = Field(default=1, ge=1)
+    status: Literal["current", "historical"] = "current"
 
 
 class NoveltyRisk(BaseModel):
@@ -135,6 +148,27 @@ class NoveltyRisk(BaseModel):
     overlapping_finding_refs: list[str] = Field(min_length=1)
     note: str = Field(min_length=1)
     raised_by: str  # paper_id
+    # Milestone 7: which research-question version this conclusion belongs to.
+    question_version: int = Field(default=1, ge=1)
+    status: Literal["current", "historical"] = "current"
+
+
+class QuestionVersionRecord(BaseModel):
+    """Milestone 7: one entry of the research-question history.
+
+    When the question changes, the previous question-dependent conclusions
+    move into the superseded record's snapshot (never deleted); the live
+    arrays hold only conclusions for the current question version.
+    """
+
+    version: int = Field(ge=1)
+    question: str = Field(min_length=1)
+    created_at: str = ""
+    status: Literal["current", "superseded"] = "superseded"
+    findings: list[Finding] = Field(default_factory=list)
+    connections: list[Connection] = Field(default_factory=list)
+    open_questions: list[OpenQuestion] = Field(default_factory=list)
+    novelty_risks: list[NoveltyRisk] = Field(default_factory=list)
 
 
 class PaperContribution(BaseModel):
@@ -189,6 +223,8 @@ class VerificationEvidence(BaseModel):
     modal: dict = Field(default_factory=dict)
     telemetry: list[dict] = Field(default_factory=list)
     created_at: str = ""
+    # Milestone 7: originating question version (0 = legacy/unknown).
+    question_version: int = Field(default=0, ge=0)
 
 
 class ScientificAudit(BaseModel):
@@ -220,6 +256,8 @@ class ScientificAudit(BaseModel):
     provenance: dict = Field(default_factory=dict)
     model_telemetry: list[dict] = Field(default_factory=list)
     created_at: str = ""
+    # Milestone 7: originating question version (0 = legacy/unknown).
+    question_version: int = Field(default=0, ge=0)
 
 
 class Project(BaseModel):
@@ -233,6 +271,13 @@ class Project(BaseModel):
     novelty_risks: list[NoveltyRisk] = Field(default_factory=list)
     verifications: list[VerificationEvidence] = Field(default_factory=list)
     audits: list[ScientificAudit] = Field(default_factory=list)
+    # Milestone 7: workspace metadata. All optional so M4-M6.1 files load
+    # unchanged; only live arrays above hold CURRENT-version conclusions.
+    title: str = ""
+    question_version: int = Field(default=1, ge=1)
+    created_at: str = ""
+    updated_at: str = ""
+    question_history: list[QuestionVersionRecord] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def check_integrity(self) -> "Project":
@@ -371,6 +416,7 @@ def apply_delta(
 
     taken_f = {f.id for f in project.findings}
     new_ids = [_next_id("f", taken_f) for _ in delta.findings]
+    qv = project.question_version or 1
     findings = [
         Finding(
             id=fid,
@@ -380,6 +426,8 @@ def apply_delta(
             page=nf.page,
             object_ids=nf.object_ids,
             confidence=nf.confidence,
+            question_version=qv,
+            status="current",
         )
         for fid, nf in zip(new_ids, delta.findings)
     ]
@@ -397,6 +445,8 @@ def apply_delta(
             type=nc.type,
             reason=nc.reason,
             confidence=nc.confidence,
+            question_version=qv,
+            status="current",
         )
         for nc in delta.connections
     ]
@@ -410,6 +460,8 @@ def apply_delta(
             finding_refs=[
                 _resolve_new_refs(r, new_ids, "open question") for r in nq.finding_refs
             ],
+            question_version=qv,
+            status="current",
         )
         for nq in delta.open_questions
     ]
@@ -425,6 +477,8 @@ def apply_delta(
             ],
             note=nr.note,
             raised_by=paper.paper_id,
+            question_version=qv,
+            status="current",
         )
         for nr in delta.novelty_risks
     ]
@@ -440,6 +494,15 @@ def apply_delta(
         contributions=[*project.contributions, contribution],
         open_questions=[*project.open_questions, *questions],
         novelty_risks=[*project.novelty_risks, *risks],
+        # Everything below must be preserved, never reset by an add-paper.
+        # (M7 fix: verifications/audits used to be silently dropped here.)
+        verifications=project.verifications,
+        audits=project.audits,
+        title=project.title,
+        question_version=project.question_version,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
+        question_history=project.question_history,
     )
     return merged  # Project validator re-checks every reference
 

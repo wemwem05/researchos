@@ -365,6 +365,88 @@ clean
 Production build:
 passing (webpack builder)
 
+## Milestone 7 — Real Research Workspace
+
+Working.
+
+ResearchOS is now a usable multi-project application instead of a static demo.
+A new researcher opens the workspace and — without editing JSON or running
+CLI commands — creates a project, sets the research question, uploads PDFs,
+watches real pipeline jobs, reads papers in the live Reader, audits claims,
+and resumes human reviews. Everything persists across restarts.
+
+Backend (`prototype/workspace.py`, `jobs.py`, `paper_pipeline.py`,
+`workspace_server.py`, all new; M1–M6.1 modules reused, not rewritten):
+
+- Projects under `prototype/projects/<id>/` with stable ids, titles,
+  questions, timestamps, and question versions; scientific state stays
+  file-backed (`project.json`, atomic writes, per-project locks), jobs in
+  SQLite (`workspace.sqlite`).
+- Validated multi-project API (enveloped JSON) for projects, papers, PDF
+  upload (multipart; size/page/magic/parse checks, content-hash dedupe, safe
+  server-generated paths), jobs (retry/cancel), question preview/confirm,
+  rebuild continuation, and project-scoped runs/reviews/telemetry/audits/
+  verifications. Legacy `/api/agent/*` routes keep exact M5/M6/M6.1 shapes
+  against the default project. Localhost-only bind, explicit CORS allowlist.
+- Uploads run the real pipeline (inventory → analysis → relevance →
+  localization → Spark Open investigation → persist) as durable jobs with
+  honest stage progress, idempotent retries, and restart recovery. Verified
+  same-bytes document caches are reused with recorded provenance; relevance
+  is always fresh for the project's question.
+- Question changes snapshot old conclusions into versioned history (never
+  shown as current), preserve PDFs/inventory/boxes/audits/runs, re-score
+  relevance only, and rebuild findings through the real agent graph after an
+  explicit preview + confirmation. Rebuilds paused by human review continue
+  via `POST /rebuild`.
+
+Frontend (`/` dashboard, `/projects/<id>`, `/projects/<id>/read/<paperId>`,
+all new; legacy `/project` and `/read/<paperId>` unchanged in behavior):
+
+- Projects home with create/open, live project page (question editing with
+  preview/confirm, multi-PDF upload with progress, jobs with retry,
+  findings/connections/questions/risks, question history, agent runs with
+  review, audits, verifications), and a live Reader fed by the API with
+  project-scoped audit/verify actions. New projects render natural empty
+  states; nothing leaks across projects.
+
+Startup: `./dev.sh` (or `npm run dev:all` from `web/`) runs backend +
+frontend together with clean shutdown and duplicate-backend reuse.
+
+Live acceptance ("Transport Geometry Investigation", real API + real models,
+17 Spark Open calls on `meta-models/muse-spark-open-1026`, ~132k tokens):
+EOT + Deep Shells ingested through the upload API (verified cache reuse +
+live relevance + live investigation → 9 findings, 4 connections), question
+changed to sliced-vs-entropic efficiency/stability (PDFs/boxes byte-identical,
+relevance refreshed, v1 archived, v2 rebuilt to 10 findings + 6 connections
+after one fail-closed review), one live corpus-only audit attached
+("discrepancies identified"), verification action confirmed available with an
+honest Modal-unavailable 503 (no credentials in this environment), and
+restart recovery proven. The demo project's bytes are unchanged.
+
+Bugs found live and fixed (each with regression tests): investigator/critic
+JSON shape drift (no server-side schema enforcement — exact shape specs added
+to both prompts, prompt text only); jobs misreported awaiting-review runs as
+fully complete (return code 0 covers both — attachment now decides, plus a
+rebuild-continuation endpoint); `apply_delta` silently dropped
+verifications/audits on add-paper (now preserved); empty idempotency keys
+collided on the unique index (now partial); the multipart parser ate
+significant trailing bytes (now exact framing).
+
+Backend tests:
+219 passing (46 new: registry, jobs, pipeline, upload validation, question
+versioning, rebuild continuation, HTTP contracts, isolation, legacy compat,
+content fail-fast, non-paper handling, staged-paper removal)
+
+Frontend tests:
+40 passing (6 new: stage labels, job states, scoped URLs, byte formatting,
+history dedupe)
+
+TypeScript:
+clean
+
+Production build:
+passing (webpack builder — sandbox blocks Turbopack, as before)
+
 ## Next milestone
 
 TBD.

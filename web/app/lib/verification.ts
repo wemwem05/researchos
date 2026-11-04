@@ -117,21 +117,34 @@ export function formatBytes(b: number | null): string {
 /** Start verification from the UI. Refs only — the server validates them. */
 export async function startVerification(
   paperId: string,
-  claimId: string
+  claimId: string,
+  projectId?: string | null
 ): Promise<{ thread_id: string }> {
-  const r = await fetch(`${AGENT_API_BASE}/api/agent/verifications/start`, {
+  const url = projectId
+    ? `${AGENT_API_BASE}/api/projects/${projectId}/verifications/start`
+    : `${AGENT_API_BASE}/api/agent/verifications/start`;
+  const r = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ paper_id: paperId, claim_id: claimId }),
   });
   const body = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(body.error || r.statusText);
-  return body as { thread_id: string };
+  const payload = body.ok === true ? body.data : body;
+  return payload as { thread_id: string };
 }
 
-export async function fetchLiveVerifications(): Promise<VerificationEvidenceView[]> {
-  const r = await fetch(`${AGENT_API_BASE}/api/agent/verifications`);
+export async function fetchLiveVerifications(
+  projectId?: string | null
+): Promise<VerificationEvidenceView[]> {
+  const url = projectId
+    ? `${AGENT_API_BASE}/api/projects/${projectId}/verifications`
+    : `${AGENT_API_BASE}/api/agent/verifications`;
+  const r = await fetch(url);
   if (!r.ok) throw new Error(r.statusText);
-  const body = (await r.json()) as { verifications: VerificationEvidenceView[] };
-  return body.verifications ?? [];
+  const body = (await r.json()) as
+    | { verifications: VerificationEvidenceView[] }
+    | { ok: boolean; data: { verifications: VerificationEvidenceView[] } };
+  if ("data" in body && body.data) return body.data.verifications ?? [];
+  return (body as { verifications: VerificationEvidenceView[] }).verifications ?? [];
 }

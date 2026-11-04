@@ -25,10 +25,14 @@ interface Props {
   dataUrl: string;
   initialSelectedId?: string | null;
   paperId?: string | null;
+  /** Milestone 7 live mode: analysis passed directly (no fixture fetch). */
+  liveData?: LocalizedData | null;
+  projectId?: string | null;
+  projectHref?: string;
 }
 
-export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, paperId = null }: Props) {
-  const [data, setData] = useState<LocalizedData | null>(null);
+export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, paperId = null, liveData = null, projectId = null, projectHref = "/project" }: Props) {
+  const [data, setData] = useState<LocalizedData | null>(liveData);
   const [loadError, setLoadError] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [mode, setMode] = useState<LensMode>("focus");
@@ -36,6 +40,10 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
   const pageRefs = useRef(new Map<number, HTMLDivElement | null>());
 
   useEffect(() => {
+    if (liveData) {
+      setData(liveData);
+      return;
+    }
     fetch(dataUrl)
       .then((r) => {
         if (!r.ok) throw new Error("fixture missing");
@@ -43,7 +51,7 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
       })
       .then(setData)
       .catch(() => setLoadError(true));
-  }, [dataUrl]);
+  }, [dataUrl, liveData]);
 
   const registerPageRef = useCallback((pageNumber: number, el: HTMLDivElement | null) => {
     pageRefs.current.set(pageNumber, el);
@@ -141,10 +149,16 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
           </h1>
           <span className="text-xs text-neutral-500">research-aware paper reader</span>
           <Link
-            href="/project"
+            href={projectHref}
             className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600 hover:border-neutral-500 hover:text-neutral-900"
           >
             Project
+          </Link>
+          <Link
+            href="/"
+            className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600 hover:border-neutral-500 hover:text-neutral-900"
+          >
+            Projects
           </Link>
         </div>
         <div className="max-w-[55%] truncate font-serif text-sm italic text-neutral-600">
@@ -220,6 +234,7 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
             highCount={highCount}
             onSelectRelated={jumpTo}
             paperId={paperId}
+            projectId={projectId}
           />
         </aside>
       </main>

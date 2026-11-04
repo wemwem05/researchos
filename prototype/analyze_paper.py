@@ -42,7 +42,7 @@ from typing import Literal, Optional
 
 from dotenv import load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, ValidationError, model_validator
 
 from inventory import discover_labels, format_checklist
 from relevance import RelevanceLevel, level_for_score
@@ -317,6 +317,33 @@ def sanity_check(result: AnalysisDraft | AnalysisResult) -> None:
         raise ValueError(f"sanity check failed: missing object types: {missing}")
 
 
+class InvalidAnalysisContent(ValueError):
+    """The model answered successfully but its content failed validation.
+
+    Distinct from transport failures: retrying a different API shape will
+    regenerate the same content, so the fallback chain aborts immediately
+    instead of burning further model calls.
+    """
+
+
+def _validate_draft(text: str) -> AnalysisDraft:
+    """Validate a stage-1 payload, mapping content failures distinctly."""
+    try:
+        result = AnalysisDraft.model_validate_json(extract_json(text))
+        sanity_check(result)
+    except (ValidationError, ValueError) as e:
+        raise InvalidAnalysisContent(str(e)) from e
+    return result
+
+
+def _validate_relevance(text: str) -> RelevanceList:
+    """Validate a stage-2 payload, mapping content failures distinctly."""
+    try:
+        return RelevanceList.model_validate_json(extract_json(text))
+    except (ValidationError, ValueError) as e:
+        raise InvalidAnalysisContent(str(e)) from e
+
+
 def try_responses_api(
     client: OpenAI, model: str, pdf_b64_url: str, filename: str, checklist: str
 ) -> AnalysisDraft:
@@ -339,9 +366,7 @@ def try_responses_api(
         ],
         text={"format": responses_json_schema_format()},
     )
-    result = AnalysisDraft.model_validate_json(extract_json(resp.output_text))
-    sanity_check(result)
-    return result
+    return _validate_draft(resp.output_text)
 
 
 def try_chat_api(
@@ -372,9 +397,7 @@ def try_chat_api(
         kwargs["response_format"] = chat_json_schema_format()
     resp = client.chat.completions.create(**kwargs)
     content = resp.choices[0].message.content or ""
-    result = AnalysisDraft.model_validate_json(extract_json(content))
-    sanity_check(result)
-    return result
+    return _validate_draft(content)
 
 
 def analyze_pdf(
@@ -397,6 +420,10 @@ def analyze_pdf(
         try:
             print(f"[attempt] stage 1 {name} ...", file=sys.stderr)
             return fn()
+        except InvalidAnalysisContent:
+            # The model answered but its content is invalid — another API
+            # shape would regenerate the same content. Abort, don't burn calls.
+            raise
         except Exception as e:  # noqa: BLE001 - prototype: fall through to next attempt
             errors.append(f"{name}: {type(e).__name__}: {e}")
             print(f"[attempt] stage 1 {name} failed: {e}", file=sys.stderr)
@@ -422,7 +449,10 @@ def score_relevance(
             print(f"[attempt] stage 2 {name} ...", file=sys.stderr)
             resp = client.chat.completions.create(model=model, messages=messages, **kwargs)
             content = resp.choices[0].message.content or ""
-            return RelevanceList.model_validate_json(extract_json(content))
+            return _validate_relevance(content)
+        except InvalidAnalysisContent:
+            # Same content-regeneration argument as stage 1: abort the chain.
+            raise
         except Exception as e:  # noqa: BLE001 - prototype: fall through to next attempt
             errors.append(f"{name}: {type(e).__name__}: {e}")
             print(f"[attempt] stage 2 {name} failed: {e}", file=sys.stderr)

@@ -90,10 +90,12 @@ export function ReviewCard({
   run,
   live,
   onSubmitted,
+  reviewUrl,
 }: {
   run: AgentRunRecord;
   live: boolean;
   onSubmitted: () => void;
+  reviewUrl?: string;
 }) {
   const req = run.human_review_request;
   const [choice, setChoice] = useState<string | null>(null);
@@ -107,7 +109,9 @@ export function ReviewCard({
     setBusy(true);
     setError(null);
     try {
-      const r = await fetch(`${AGENT_API_BASE}/api/agent/runs/${run.thread_id}/review`, {
+      const url =
+        reviewUrl ?? `${AGENT_API_BASE}/api/agent/runs/${run.thread_id}/review`;
+      const r = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ choice, free_text: freeText }),

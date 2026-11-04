@@ -154,21 +154,34 @@ export const EXTERNAL_SEARCH_BUDGET = {
 export async function startAudit(
   paperId: string,
   claimId: string,
-  external: boolean
+  external: boolean,
+  projectId?: string | null
 ): Promise<{ thread_id: string }> {
-  const r = await fetch(`${AGENT_API_BASE}/api/agent/audits/start`, {
+  const url = projectId
+    ? `${AGENT_API_BASE}/api/projects/${projectId}/audits/start`
+    : `${AGENT_API_BASE}/api/agent/audits/start`;
+  const r = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ paper_id: paperId, claim_id: claimId, external }),
   });
   const body = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(body.error || r.statusText);
-  return body as { thread_id: string };
+  const payload = body.ok === true ? body.data : body;
+  return payload as { thread_id: string };
 }
 
-export async function fetchLiveAudits(): Promise<ScientificAuditView[]> {
-  const r = await fetch(`${AGENT_API_BASE}/api/agent/audits`);
+export async function fetchLiveAudits(
+  projectId?: string | null
+): Promise<ScientificAuditView[]> {
+  const url = projectId
+    ? `${AGENT_API_BASE}/api/projects/${projectId}/audits`
+    : `${AGENT_API_BASE}/api/agent/audits`;
+  const r = await fetch(url);
   if (!r.ok) throw new Error(r.statusText);
-  const body = (await r.json()) as { audits: ScientificAuditView[] };
-  return body.audits ?? [];
+  const body = (await r.json()) as
+    | { audits: ScientificAuditView[] }
+    | { ok: boolean; data: { audits: ScientificAuditView[] } };
+  if ("data" in body && body.data) return body.data.audits ?? [];
+  return (body as { audits: ScientificAuditView[] }).audits ?? [];
 }

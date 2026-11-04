@@ -13,6 +13,7 @@ interface Props {
   highCount: number;
   onSelectRelated: (objectId: string) => void;
   paperId?: string | null;
+  projectId?: string | null;
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -49,7 +50,7 @@ const LEVEL_BADGE: Record<SciObject["research_relevance_level"], string> = {
   context: "bg-neutral-200 text-neutral-700",
 };
 
-export default function ResearchLens({ data, selected, localizedCount, highCount, onSelectRelated, paperId = null }: Props) {
+export default function ResearchLens({ data, selected, localizedCount, highCount, onSelectRelated, paperId = null, projectId = null }: Props) {
   const { analysis } = data;
 
   if (!selected) {
@@ -237,12 +238,12 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
             Scientific verification
           </h3>
           <div className="mt-2 flex flex-col items-start gap-2">
-            <AuditClaim paperId={paperId} claim={selected} />
+            <AuditClaim paperId={paperId} claim={selected} projectId={projectId} />
             <div className="w-full border-t border-neutral-100 pt-2">
               <p className="mb-1 text-[11px] leading-relaxed text-neutral-500">
                 Optional: run a computational test of this claim in an isolated sandbox.
               </p>
-              <VerifyClaim paperId={paperId} claim={selected} />
+              <VerifyClaim paperId={paperId} claim={selected} projectId={projectId} />
             </div>
           </div>
         </section>

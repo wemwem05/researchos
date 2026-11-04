@@ -1334,6 +1334,8 @@ def v_attach(state: VerificationState, config: RunnableConfig) -> dict[str, Any]
     else:
         taken = {v.id for v in project.verifications}
         evidence["id"] = _next_verify_id(taken)
+        # M7: retain the originating question version for provenance.
+        evidence.setdefault("question_version", project.question_version or 1)
         item = VerificationEvidence.model_validate(evidence)
         project.verifications.append(item)
         save_project(ctx.project_dir, project)  # atomic write (tmp + replace)

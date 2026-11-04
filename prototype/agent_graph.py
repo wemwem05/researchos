@@ -572,6 +572,21 @@ never researched globally; you have only seen these papers.
 from prior findings (datasets, splits, metrics, backbones, assumptions).
 7. what_changed: what this paper changes in the project's understanding.
 
+Exact JSON shape — use these key names verbatim (no renaming, no bare \
+strings where objects are shown):
+{"findings": [{"statement": str, "evidence": str, "page": int_or_null, \
+"object_ids": [str], "confidence": number_0_to_1}], \
+"connections": [{"from_ref": "f1"|"paper:<id>"|"new[i]", \
+"to_ref": "f1"|"paper:<id>"|"new[i]", "type": "supports"|"contradicts"| \
+"extends"|"overlaps_with"|"uses_same_method"|"uses_different_assumption"| \
+"leaves_open", "reason": str, "confidence": number_0_to_1}], \
+"contribution": {"what_it_adds": str, "stance_toward_prior": str, \
+"overlap_with_direction": str, "new_open_questions": [str]}, \
+"open_questions": [{"text": str, "finding_refs": ["f1"|"new[i]"]}], \
+"novelty_risks": [{"direction": str, \
+"overlapping_finding_refs": ["f1"|"new[i]"], "note": str}], \
+"methodological_differences": [str], "what_changed": str}
+
 Grounding rules: never invent evidence, pages, numbers, or results. If the \
 brief lacks support, omit the claim. Return JSON only, no commentary."""
 
@@ -602,7 +617,18 @@ Be genuinely skeptical but fair: do NOT reject statements artificially merely \
 to create agent activity. Minor nits are SUPPORTED with minor concerns. Use \
 REVISION_REQUIRED only when the available evidence can fix the problem, and \
 AMBIGUOUS_REQUIRES_HUMAN only for consequential ambiguity a researcher must \
-resolve. Return JSON only, no commentary."""
+resolve.
+
+Exact JSON shape — use these key names verbatim:
+{"verdict": "SUPPORTED"|"REVISION_REQUIRED"|"AMBIGUOUS_REQUIRES_HUMAN", \
+"summary": str, "checks": [{"name": str, "passed": bool, "note": str}], \
+"concerns": [{"claim_ref": str, "question": str, "detail": str, \
+"severity": "blocking"|"major"|"minor"}], "required_fixes": [str], \
+"human_question": {"question": str, "investigator_position": str, \
+"critic_concern": str, "affected_connection_indexes": [int], \
+"options": [str]}|null}
+
+Return JSON only, no commentary."""
 
 REVISE_SYSTEM_PROMPT = """You are the ResearchOS investigator issuing a corrected proposal. You receive \
 your original proposal, the critic's required fixes and concerns, and the \
