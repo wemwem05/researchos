@@ -35,6 +35,7 @@ import {
   ReviewCard,
 } from "../../components/AgentPanel";
 import AuditEvidence from "../../components/AuditEvidence";
+import DiscoverySection from "../../components/DiscoverySection";
 import VerificationEvidence from "../../components/VerificationEvidence";
 import type { ScientificAuditView } from "../../lib/audit";
 import type { VerificationEvidenceView } from "../../lib/verification";
@@ -113,7 +114,11 @@ function JobRow({
           <span className="ml-2 text-[13px] font-medium text-neutral-900">
             {job.job_type === "ingest_paper"
               ? `Adding paper ${job.paper_id}`
-              : "Recomputing for new question"}
+              : job.job_type === "discover_papers"
+                ? "Discovering literature"
+                : job.job_type === "import_discovery"
+                  ? "Importing discovered papers"
+                  : "Recomputing for new question"}
           </span>
           <p className="mt-0.5 text-xs text-neutral-600">
             {active ? (
@@ -243,7 +248,9 @@ export default function LiveProjectPage() {
   const status = view?.paper_status ?? {};
 
   const activeJobs = jobs.filter(isJobActive);
-  const rescoreActive = activeJobs.some((j) => j.job_type !== "ingest_paper");
+  const rescoreActive = activeJobs.some(
+    (j) => j.job_type === "rescore_question" || j.job_type === "rebuild_findings"
+  );
   const runActive =
     agentRun && (agentRun.status === "running" || agentRun.status === "awaiting_human");
 
@@ -677,6 +684,12 @@ export default function LiveProjectPage() {
               </div>
             ))}
         </Section>
+
+        <DiscoverySection
+          projectId={projectId}
+          questionVersion={project.question_version ?? 1}
+          onProjectChanged={refresh}
+        />
 
         {(activeJobs.length > 0 || failedJobs.length > 0) && (
           <Section title="Processing">

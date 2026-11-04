@@ -271,6 +271,21 @@ the staged demo fixtures and default project.
 Architecture: `docs/WORKSPACE_ARCHITECTURE.md`. Local single-user use only:
 production would need auth, hosted storage, and job isolation.
 
+## Milestone 8: Autonomous Literature Discovery
+
+From any project — even with zero papers — **Discover papers** starts a
+bounded agentic run: Spark Open (`meta-models/muse-spark-open-1026`,
+Baseten, no fallback) plans a search strategy, queries OpenAlex, and
+evaluates candidates against the live project (findings, methods, open
+questions, novelty risks); a critic gates the recommendations. The
+researcher approves what to read; approved papers download through an
+SSRF-guarded fetcher and ingest via the existing M7 pipeline, updating
+findings and connections. Nothing is added without approval; relevance
+is always labeled by evidence level (metadata / abstract / full text),
+and novelty claims stay corpus-scoped.
+
+Details: `docs/LITERATURE_DISCOVERY.md`.
+
 ## Layout
 
 - `prototype/analyze_paper.py` — Milestone 1: CLI, prompt, API calls,
@@ -304,18 +319,29 @@ production would need auth, hosted storage, and job isolation.
 - `prototype/workspace_server.py` — Milestone 7: multi-project API + job
   dispatcher (legacy `/api/agent/*` preserved)
 - `dev.sh` — Milestone 7: unified backend + frontend startup
+- `prototype/discovery_models.py` — Milestone 8: candidate/run models,
+  ID normalization, deterministic dedup, novelty clamp
+- `prototype/discovery_graph.py` — Milestone 8: discovery LangGraph
+  (plan/retrieve/dedupe/shortlist/evaluate/reflect/critic/revise/
+  prepare/persist) on the shared SQLite checkpointer
+- `prototype/acquisition.py` — Milestone 8: SSRF-guarded full-text fetch
+  (redirect/host/size/MIME/magic guards, proxy-aware)
+- `docs/LITERATURE_DISCOVERY.md` — Milestone 8: providers, graph,
+  budgets, grounding, approval, import, limitations
 - `docs/EVIDENCE_AUDIT.md` — Milestone 6.1: audit methodology,
   status semantics, limitations, and how audits differ from
   reproduction
 - `prototype/test_analyze_paper.py`, `prototype/test_localize_objects.py`,
   `prototype/test_inventory.py`, `prototype/test_project.py`,
   `prototype/test_agent_graph.py`, `prototype/test_verify_graph.py`,
-  `prototype/test_audit_graph.py`, `prototype/test_workspace.py` —
+  `prototype/test_audit_graph.py`, `prototype/test_workspace.py`,
+  `prototype/test_discovery.py` —
   offline tests (no API key):
   `.venv/bin/python -m unittest discover -s prototype -p "test_*.py"`
 - `web/app/lib/relevance.test.ts`, `web/app/lib/project.test.ts`,
   `web/app/lib/agent.test.ts`, `web/app/lib/verification.test.ts`,
-  `web/app/lib/audit.test.ts`, `web/app/lib/workspace.test.ts` —
+  `web/app/lib/audit.test.ts`, `web/app/lib/workspace.test.ts`,
+  `web/app/lib/discovery.test.ts` —
   frontend unit tests (vitest): `cd web && npm test`
 - `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
   `pymupdf`, `pillow`, `langgraph`, `langgraph-checkpoint-sqlite`, `modal`

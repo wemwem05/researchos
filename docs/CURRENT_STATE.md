@@ -447,6 +447,101 @@ clean
 Production build:
 passing (webpack builder — sandbox blocks Turbopack, as before)
 
+## Milestone 8 — Autonomous Literature Discovery
+
+Working.
+
+From any project — even with zero papers — **Discover papers** starts a
+bounded agentic run over OpenAlex. Spark Open
+(`meta-models/muse-spark-open-1026`, Baseten, no fallback) plans the
+search strategy, evaluates shortlisted papers against live project state
+(findings, methods, open questions, novelty risks), reflects on whether
+one more round is worthwhile, and passes a critic gate (≤1 bounded
+revision). Python owns everything deterministic: ID normalization,
+deduplication, shortlisting, ranking, budget enforcement, novelty-clamp.
+The researcher approves or dismisses per paper or in bulk; approved
+papers download through an SSRF-guarded fetcher and ingest through the
+unchanged M7 pipeline, updating findings and connections. Nothing is
+added without approval.
+
+Backend (`prototype/discovery_models.py`, `discovery_graph.py`,
+`acquisition.py`, all new; `openalex.py` extended; M1–M7 reused):
+
+- Dedicated LangGraph workflow (plan → retrieve → dedupe → shortlist →
+  evaluate → reflect → critic → revise? → prepare → persist) on the
+  shared SQLite checkpointer with `discover-*` threads and `RunRecord`
+  kind `discover`; no `interrupt()` — approval is post-completion API.
+- Budgets: 2 rounds · ≤3 queries/round · ≤50 records · ≤8 shortlisted ·
+  ≤5 recommended · ≤2 expansions · ≤3 deep inspections · ≤8 Spark calls
+  (researcher may lower, hard caps enforced).
+- Dedup against project + prior runs + in-run via DOI/OpenAlex/arXiv
+  (version-insensitive) with exact-title fallback (year/author, or
+  title-only for metadata-bare uploads); preprint/published pairs merge,
+  similar titles never merge.
+- Evidence levels (`metadata_only` → `title_and_abstract` →
+  `full_text_available` → `full_text_analyzed`); `pdf_url` only from
+  real OpenAlex PDF fields, never landing pages. Novelty overclaims are
+  rewritten deterministically to the coverage-limited fallback.
+- Acquisition: http/https, default ports, per-hop redirect validation,
+  global-routable DNS (literals always checked, proxied egress defers to
+  the proxy), size/MIME/magic guards, no cookies or paywall bypass.
+- Two job types (`discover_papers`, `import_discovery`) on the M7
+  dispatcher with per-item terminal states; retries use fresh threads;
+  imports self-heal after human review; `apply_delta` preserves
+  `discoveries` (same bug class M7 fixed for audits).
+- Runs stamp the originating question version; mid-search changes and
+  later edits mark them stale (never silently current).
+
+Frontend (`Discover papers` section on the project page, new):
+
+- Focus input, explicit budget line, live progress, run selector with
+  stale badges, filters (All / Highly relevant / Possible novelty
+  overlap / Open access / Already in project), expandable candidate
+  cards with verdict/evidence/novelty badges, five grounded reasons,
+  abstract, identifiers, query provenance, per-paper Approve / Dismiss /
+  Open source / Import, bulk selection, import results, and a
+  search-provenance disclosure. Imported papers link into the Reader.
+
+Live acceptance (safe copy of `ot-correspondence`, real Spark +
+OpenAlex + Meta APIs): the agent chose 6 queries over 2 adaptive rounds
+(direct/method/novelty-overlap, then Gromov-Wasserstein/unbalanced/
+ground-cost-ablation in response to round 1) → 50 retrieved, 1
+duplicate, 8 shortlisted, 5 recommended (147 s, 5 Spark calls,
+~69k tokens), critic SUPPORTED with no revision. Approved dc32
+("Partial transport for point-cloud registration", Springer OA 1.9 MB)
+imported end-to-end: 61 objects, 34 localized, +5 grounded findings
+(f9–f13), +7 cross-paper connections (8→13 findings, 3→10 connections).
+Honest negatives demonstrated: a 43 MB arXiv PDF rejected by the size
+cap, MDPI bot-filter/HTML interstitial rejected as non-PDF, mid-run
+expansion ids using candidate labels dropped with logged notes. Restart
+persistence, Reader files, and import provenance verified in a fresh
+process. The original demo project's bytes are unchanged.
+
+Bugs found live and fixed (each with regression tests): graph usage
+accounting lost at checkpoint boundaries (nodes now return `usage`
+explicitly); `SqliteSaver.from_conn_string` used as a value instead of
+a context manager; `DiscoveryFailure` raised but never defined;
+evidence-level case mismatch corrupting reloads
+(`update_candidate_status` now re-validates before saving);
+project-title-only dedup gap (exact-title rule for metadata-bare
+papers); import claiming success while awaiting review (review-aware
+finalization + self-heal); all-50 persistence bloat (shortlist +
+evaluated + surfaced matches only); proxy-unaware DNS guard
+(proxy-aware with always-on literal checks).
+
+Backend tests:
+295 passing (71 new: models, dedup, budgets, graph runs, acquisition
+guards, server start/decide/import/retry/restart/self-heal)
+
+Frontend tests:
+50 passing (10 new: filters, sorting, labels, source links, staleness)
+
+TypeScript:
+clean
+
+Production build:
+passing (webpack builder — sandbox blocks Turbopack, as before)
+
 ## Next milestone
 
 TBD.

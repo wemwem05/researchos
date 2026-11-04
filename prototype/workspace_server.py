@@ -35,6 +35,11 @@ New API (JSON envelope {"ok": true, "data": ...} / {"ok": false, "error": ...}):
   GET    /api/projects/<id>/verifications/<t>/files/<n>
   GET    /api/projects/<id>/audits
   POST   /api/projects/<id>/audits/start
+  GET    /api/projects/<id>/discoveries
+  POST   /api/projects/<id>/discoveries/start   {focus?, budget?, request_key?}
+  GET    /api/projects/<id>/discoveries/<run>
+  POST   /api/projects/<id>/discoveries/<run>/decide   {decisions: [...]}
+  POST   /api/projects/<id>/discoveries/<run>/import   {candidate_ids: [...]}
 
 Legacy M5/M6/M6.1 routes (/api/agent/...) keep their exact shapes and map to
 the default project (ot-correspondence). No arbitrary filesystem paths are
@@ -51,12 +56,15 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 import threading
 import time
 import traceback
+from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Any
 from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -72,7 +80,7 @@ DEFAULT_PORT = 8765
 # API revision served in /api/health. dev.sh refuses to reuse a backend whose
 # version differs (stale code fails cryptically, e.g. CORS-blocked methods).
 # Bump on ANY route/shape/CORS change, and keep dev.sh in sync.
-SERVER_VERSION = "7.3"
+SERVER_VERSION = "8.0"
 
 # Explicit CORS allowlist for local development (never "*").
 ALLOWED_ORIGINS = {
@@ -85,12 +93,63 @@ MAX_JSON_BODY = 1024 * 1024  # 1 MB; uploads use the PDF limit instead
 # Injected pipeline clients (tests set fakes; production leaves None = real).
 PIPELINE_DEPS: PipelineDeps | None = None
 
+
+@dataclass
+class DiscoveryDeps:
+    """Injected discovery clients. None = real (Spark Open via Baseten,
+    live OpenAlex, real PDF fetch). Tests inject fakes."""
+
+    spark: Any = None
+    openalex: Any = None
+    fetch_pdf: Any = None
+
+
+DISCOVERY_DEPS: DiscoveryDeps | None = None
+
 _dispatcher_stop = threading.Event()
 _dispatcher_thread: threading.Thread | None = None
 
 
 def deps() -> PipelineDeps:
     return PIPELINE_DEPS or PipelineDeps()
+
+
+def discovery_deps() -> DiscoveryDeps:
+    return DISCOVERY_DEPS or DiscoveryDeps()
+
+
+# Hard ceilings for researcher-supplied discovery budgets (spec defaults
+# are lower; researchers may lower budgets but never exceed these).
+DISCOVERY_BUDGET_CAPS = {
+    "max_rounds": 3,
+    "max_queries_per_round": 5,
+    "max_records": 100,
+    "max_shortlist": 12,
+    "max_recommendations": 8,
+    "max_expansions": 4,
+    "max_deep_inspections": 5,
+}
+
+MAX_DISCOVERY_FOCUS = 500
+REQUEST_KEY_RE = re.compile(r"^[A-Za-z0-9-]{1,64}$")
+
+
+def validated_discovery_budget(raw: Any) -> dict[str, int]:
+    """Validate a researcher budget override; unknown keys reject."""
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise ValueError("budget must be an object")
+    out: dict[str, int] = {}
+    for key, value in raw.items():
+        if key not in DISCOVERY_BUDGET_CAPS:
+            raise ValueError(f"unknown budget key '{key}'")
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError(f"budget '{key}' must be an integer")
+        if value < 1:
+            raise ValueError(f"budget '{key}' must be >= 1")
+        out[key] = min(value, DISCOVERY_BUDGET_CAPS[key])
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -545,6 +604,297 @@ def _rebuild_paths(project_dir: Path, paper_id: str, snap: dict) -> tuple[int, s
     return 0, str(pdf_path.resolve()), str(analysis_out.resolve()), str(loc_path.resolve())
 
 
+def run_discovery_job(job: dict) -> None:
+    """Milestone 8: run the agentic literature-discovery graph once.
+
+    Each attempt uses its own thread id (retries never resume a failed
+    graph mid-state); only the successful attempt persists a DiscoveryRun.
+    """
+    from discovery_graph import run_discovery
+    from discovery_models import DiscoveryBudget, DiscoveryFailure
+    from project import load_project
+    from workspace import resolve_project_dir
+
+    project_id = job["project_id"]
+    job_id = job["job_id"]
+    params = job.get("params") or {}
+    focus = str(params.get("focus", "") or "")
+    attempt = int(job.get("attempts", 1) or 1)
+    suffix = "" if attempt <= 1 else f"-r{attempt}"
+    thread_id = f"discover-{job_id}{suffix}"
+    budget = DiscoveryBudget(**(params.get("budget") or {}))
+    project_dir = resolve_project_dir(PROJECTS_ROOT, project_id)
+
+    def progress(stage: str, detail: str = "") -> None:
+        jobs_mod.update_job(PROJECTS_ROOT, job_id, stage=stage,
+                            stage_detail=detail)
+        if _job_cancelled(job_id):
+            raise PipelineError("cancelled by researcher")
+
+    progress("searching", "Planning search strategy")
+    d = discovery_deps()
+    try:
+        run_discovery(project_dir, thread_id, focus=focus, budget=budget,
+                      spark=d.spark, openalex=d.openalex)
+    except DiscoveryFailure as e:
+        raise PipelineError(f"literature discovery failed: {e}",
+                            retryable=True) from e
+    progress("finalizing", "Saving recommendations")
+    project = load_project(project_dir)
+    run = next((r for r in (project.discoveries or [])
+                if r.run_id == thread_id), None)
+    counts = dict(run.counts) if run is not None else {}
+    jobs_mod.update_job(
+        PROJECTS_ROOT, job_id, state="COMPLETED", stage="ready",
+        stage_detail=(f"Discovery complete: {counts.get('recommended', 0)} "
+                      "recommended"),
+        result={"run_id": thread_id, "thread_id": thread_id, "counts": counts},
+        run_ids=[thread_id])
+
+
+def _import_paper_id(run_id: str, candidate_id: str) -> str:
+    """Deterministic server-generated paper slug per (run, candidate)."""
+    slug = re.sub(r"[^a-z0-9]+", "-", run_id.lower()).strip("-")
+    slug = slug.replace("discover-job-", "") or slug
+    return f"disc-{slug[-6:]}-{candidate_id.lower()}"
+
+
+def _record_import_provenance(project_dir: Path, paper_id: str, run_id: str,
+                              candidate_id: str, cand: Any) -> None:
+    """Reverse link paper -> discovery record (feeds future project dedup
+    with stable identifiers). Best-effort: the candidate record already
+    holds paper_id, so a failure here never fails the import."""
+    import tempfile as _tempfile
+
+    from workspace import paper_dir
+
+    pipe = paper_dir(project_dir, paper_id) / "pipeline.json"
+    try:
+        doc = json.loads(pipe.read_text(encoding="utf-8")) \
+            if pipe.is_file() else {}
+    except (OSError, ValueError):
+        doc = {}
+    if not isinstance(doc, dict):
+        doc = {}
+    doc["discovered_from"] = {
+        "run_id": run_id, "candidate_id": candidate_id,
+        "doi": getattr(cand, "doi", ""), "openalex_id": getattr(cand, "openalex_id", ""),
+        "arxiv_id": getattr(cand, "arxiv_id", ""), "title": getattr(cand, "title", ""),
+    }
+    try:
+        pipe.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = _tempfile.mkstemp(dir=str(pipe.parent), prefix="pipeline-",
+                                    suffix=".json")
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(doc, f, indent=2)
+        os.replace(tmp, pipe)
+    except OSError:
+        pass
+
+
+def _another_import_active(project_id: str, job_id: str) -> bool:
+    for j in jobs_mod.list_jobs(PROJECTS_ROOT, project_id, limit=50):
+        if j["job_id"] != job_id and j["job_type"] == "import_discovery" \
+                and j["state"] in ("QUEUED", "RUNNING"):
+            return True
+    return False
+
+
+def _import_one_candidate(
+    project_dir: Path,
+    project_id: str,
+    run_id: str,
+    candidate_id: str,
+    on_stage: Any,
+    should_stop: Any,
+    job_id: str = "",
+) -> dict[str, Any]:
+    """Download + ingest one approved candidate. Returns a per-item result;
+    raises PipelineError only for job-level aborts (cancel/crash)."""
+    import shutil
+
+    from acquisition import AcquisitionError, fetch_pdf, stage_downloaded_pdf
+    from discovery_graph import update_candidate_status
+    from discovery_models import normalize_title
+    from project import load_project
+    from workspace import paper_dir, project_lock
+
+    item: dict[str, Any] = {"candidate_id": candidate_id, "ok": False}
+    with project_lock(project_id):
+        project = load_project(project_dir)
+        run = next((r for r in (project.discoveries or [])
+                    if r.run_id == run_id), None)
+        if run is None:
+            raise PipelineError(f"unknown discovery run '{run_id}'",
+                                retryable=False)
+        cand = next((c for c in run.candidates
+                     if c.candidate_id == candidate_id), None)
+        if cand is None:
+            item["error"] = f"unknown candidate '{candidate_id}'"
+            item["retryable"] = False
+            return item
+        status, pdf_url = cand.status, cand.pdf_url
+        paper_titles = {normalize_title(p.title): p.paper_id
+                        for p in project.papers}
+        attached_ids = {p.paper_id for p in project.papers}
+        title_key = normalize_title(cand.title)
+        importing_paper_id = cand.project_paper_id
+    if should_stop():
+        raise PipelineError("cancelled by researcher")
+    if status == "imported":
+        item.update(ok=True, paper_id=cand.project_paper_id,
+                    note="already imported; skipped")
+        return item
+    if status == "importing":
+        # Self-heal: the paper attached since (researcher answered the
+        # investigator's review) — finalize instead of re-importing.
+        if importing_paper_id and importing_paper_id in attached_ids:
+            update_candidate_status(
+                project_dir, run_id, candidate_id, "imported",
+                reason="attached after researcher review",
+                evidence_access_level="full_text_analyzed")
+            item.update(ok=True, paper_id=importing_paper_id,
+                        note="attached after review; finalized")
+            return item
+        if _another_import_active(project_id, job_id):
+            item.update(ok=True, note="another import is already handling "
+                                      "this candidate; skipped")
+            return item
+        # Stale (previous import crashed): fall through and re-run; the
+        # deterministic paper id + resumable ingest make this safe.
+    if status == "dismissed":
+        item["error"] = "candidate was dismissed; approve it first to import"
+        item["retryable"] = False
+        return item
+    if status == "pending":
+        update_candidate_status(project_dir, run_id, candidate_id, "approved",
+                                reason="approved via import")
+    if title_key and title_key in paper_titles:
+        dup = paper_titles[title_key]
+        item["error"] = (f"a paper with the same title is already in the "
+                         f"project as '{dup}'")
+        item["duplicate_of"] = dup
+        item["retryable"] = False
+        return item
+    if not pdf_url:
+        update_candidate_status(project_dir, run_id, candidate_id,
+                                "full_text_unavailable",
+                                reason="provider advertises no PDF URL")
+        item["error"] = ("full text unavailable: the provider lists no "
+                         "open-access PDF for this record")
+        item["unavailable"] = True
+        item["retryable"] = False
+        return item
+    paper_id = _import_paper_id(run_id, candidate_id)
+    item["paper_id"] = paper_id
+    on_stage("downloading", f"Downloading full text: {cand.title[:80]}")
+    fetcher = discovery_deps().fetch_pdf or fetch_pdf
+    try:
+        fetched = fetcher(pdf_url)
+    except AcquisitionError as e:
+        update_candidate_status(project_dir, run_id, candidate_id,
+                                "import_failed",
+                                reason=f"download failed: {e}")
+        item["error"] = f"full-text download failed: {e}"
+        item["retryable"] = e.retryable
+        return item
+    if should_stop():
+        raise PipelineError("cancelled by researcher")
+    stage_downloaded_pdf(project_dir, paper_id, fetched.pdf_bytes)
+    update_candidate_status(project_dir, run_id, candidate_id, "importing",
+                            reason=f"downloaded {fetched.size} bytes",
+                            project_paper_id=paper_id, sha256=fetched.sha256)
+    on_stage("analyzing", f"Analyzing imported paper: {cand.title[:80]}")
+
+    def _sub(stage: str, detail: str = "") -> None:
+        on_stage(stage, detail)
+
+    try:
+        result = pipeline_mod.run_ingest(
+            PROJECTS_ROOT, project_id, paper_id, fetched.pdf_bytes,
+            f"{paper_id}.pdf", on_progress=_sub, deps=deps(),
+            should_stop=should_stop)
+    except DuplicatePDFError as e:
+        try:
+            shutil.rmtree(paper_dir(project_dir, paper_id))
+        except OSError:
+            pass
+        update_candidate_status(project_dir, run_id, candidate_id, "imported",
+                                reason="identical PDF already in project as "
+                                       f"'{e.paper_id}'",
+                                project_paper_id=e.paper_id,
+                                sha256=fetched.sha256,
+                                evidence_access_level="full_text_analyzed")
+        item.update(ok=True, paper_id=e.paper_id, duplicate_of=e.paper_id,
+                    note="identical PDF already in project; linked instead")
+        return item
+    except PipelineError as e:
+        update_candidate_status(project_dir, run_id, candidate_id,
+                                "import_failed", reason=str(e))
+        item["error"] = str(e)
+        item["retryable"] = e.retryable
+        return item
+    if result.get("awaiting_review"):
+        # Analysis is done; findings attach when the researcher answers.
+        # The candidate stays "importing" and finalizes on the next
+        # import call (self-heal above) once the paper attaches.
+        update_candidate_status(
+            project_dir, run_id, candidate_id, "importing",
+            reason="analysis complete; waiting on your review "
+                   f"({result['awaiting_review']}) to attach findings")
+        item.update(ok=True, awaiting_review=result["awaiting_review"],
+                    note="analysis complete; answer the review to attach "
+                         "findings, then re-import to finalize")
+        return item
+    update_candidate_status(project_dir, run_id, candidate_id, "imported",
+                            reason="ingested through the M7 pipeline",
+                            sha256=fetched.sha256,
+                            evidence_access_level="full_text_analyzed")
+    _record_import_provenance(project_dir, paper_id, run_id, candidate_id, cand)
+    item.update(ok=True, ingest=result)
+    return item
+
+
+def run_import_job(job: dict) -> None:
+    """Milestone 8: import approved discovery candidates through M7 ingest.
+
+    Per-candidate results (never a mid-list abort): the job COMPLETES once
+    every candidate reached a terminal state; failures are explicit,
+    per-item, and re-importable.
+    """
+    from workspace import resolve_project_dir
+
+    project_id = job["project_id"]
+    job_id = job["job_id"]
+    params = job.get("params") or {}
+    run_id = str(params.get("run_id", ""))
+    candidate_ids = [str(c) for c in (params.get("candidate_ids") or [])]
+    if not run_id or not candidate_ids:
+        raise PipelineError("import job is missing its run parameters",
+                            retryable=False)
+    project_dir = resolve_project_dir(PROJECTS_ROOT, project_id)
+
+    def on_stage(stage: str, detail: str = "") -> None:
+        jobs_mod.update_job(PROJECTS_ROOT, job_id, stage=stage,
+                            stage_detail=detail)
+
+    def should_stop() -> bool:
+        return _job_cancelled(job_id)
+
+    on_stage("preparing", f"Importing {len(candidate_ids)} candidate(s)")
+    items = [_import_one_candidate(project_dir, project_id, run_id, cid,
+                                   on_stage, should_stop, job_id)
+             for cid in candidate_ids]
+    if _job_cancelled(job_id):
+        raise PipelineError("cancelled by researcher")
+    ok_count = sum(1 for i in items if i.get("ok"))
+    jobs_mod.update_job(
+        PROJECTS_ROOT, job_id, state="COMPLETED", stage="ready",
+        stage_detail=(f"Import finished: {ok_count}/{len(items)} imported"),
+        result={"run_id": run_id, "items": items,
+                "imported": ok_count, "total": len(items)})
+
+
 def _dispatch_once() -> bool:
     job = jobs_mod.claim_next_queued(PROJECTS_ROOT)
     if job is None:
@@ -556,6 +906,10 @@ def _dispatch_once() -> bool:
             run_ingest_job(jobs_mod.get_job(PROJECTS_ROOT, job_id))
         elif job["job_type"] in ("rescore_question", "rebuild_findings"):
             run_rescore_job(jobs_mod.get_job(PROJECTS_ROOT, job_id))
+        elif job["job_type"] == "discover_papers":
+            run_discovery_job(jobs_mod.get_job(PROJECTS_ROOT, job_id))
+        elif job["job_type"] == "import_discovery":
+            run_import_job(jobs_mod.get_job(PROJECTS_ROOT, job_id))
         else:
             raise PipelineError(f"unknown job type '{job['job_type']}'")
     except DuplicatePDFError as e:
@@ -671,6 +1025,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._serve_verify_file(seg[2], seg[4], seg[6])
             elif seg[:2] == ["api", "projects"] and len(seg) == 4 and seg[3] == "audits":
                 self._get_audits(seg[2])
+            elif seg[:2] == ["api", "projects"] and len(seg) == 4 and seg[3] == "discoveries":
+                self._list_discoveries(seg[2])
+            elif seg[:2] == ["api", "projects"] and len(seg) == 5 and seg[3] == "discoveries":
+                self._get_discovery(seg[2], seg[4])
             elif seg[0:2] == ["api", "agent"]:
                 self._legacy_get(seg[2:])
             else:
@@ -704,6 +1062,15 @@ class Handler(BaseHTTPRequestHandler):
             elif seg[:2] == ["api", "projects"] and len(seg) == 5 and seg[3] == "audits" \
                     and seg[4] == "start":
                 self._start_audit(seg[2])
+            elif seg[:2] == ["api", "projects"] and len(seg) == 5 and seg[3] == "discoveries" \
+                    and seg[4] == "start":
+                self._start_discovery(seg[2])
+            elif seg[:2] == ["api", "projects"] and len(seg) == 6 and seg[3] == "discoveries" \
+                    and seg[5] == "decide":
+                self._decide_candidates(seg[2], seg[4])
+            elif seg[:2] == ["api", "projects"] and len(seg) == 6 and seg[3] == "discoveries" \
+                    and seg[5] == "import":
+                self._import_candidates(seg[2], seg[4])
             elif seg[0:2] == ["api", "agent"]:
                 self._legacy_post(seg[2:])
             else:
@@ -1449,6 +1816,224 @@ class Handler(BaseHTTPRequestHandler):
                                         external, thread_id), daemon=True)
         thread.start()
         _ok(self, {"status": "started", "thread_id": thread_id}, status=202)
+
+    # -- Milestone 8: literature discovery -----------------------------------
+
+    def _list_discoveries(self, project_id: str) -> None:
+        from project import load_project
+
+        try:
+            project_dir = self._scoped_dir(project_id)
+        except ValueError as e:
+            _err(self, 400, str(e))
+            return
+        except FileNotFoundError:
+            _err(self, 404, f"unknown project '{project_id}'")
+            return
+        project = load_project(project_dir)
+        runs = [r.model_dump(mode="json") for r in (project.discoveries or [])]
+        active = None
+        for j in jobs_mod.list_jobs(PROJECTS_ROOT, project_id, limit=50):
+            if j["job_type"] in ("discover_papers", "import_discovery") \
+                    and j["state"] in ("QUEUED", "RUNNING"):
+                active = j
+                break
+        _ok(self, {"discoveries": runs, "active_job": active,
+                   "question_version": project.question_version or 1})
+
+    def _get_discovery(self, project_id: str, run_id: str) -> None:
+        import json as _json
+
+        from agent_graph import load_run_record
+        from discovery_graph import discovery_dir
+        from project import load_project
+
+        try:
+            project_dir = self._scoped_dir(project_id)
+        except ValueError as e:
+            _err(self, 400, str(e))
+            return
+        except FileNotFoundError:
+            _err(self, 404, f"unknown project '{project_id}'")
+            return
+        project = load_project(project_dir)
+        run = next((r for r in (project.discoveries or [])
+                    if r.run_id == run_id), None)
+        if run is None:
+            _err(self, 404, f"unknown discovery run '{run_id}'")
+            return
+        # Paths are built from the STORED ids (validated above), never the
+        # raw URL segment, so no traversal is possible here.
+        log = None
+        log_path = discovery_dir(project_dir) / f"{run.run_id}.json"
+        if log_path.is_file():
+            try:
+                log = _json.loads(log_path.read_text(encoding="utf-8"))
+            except (OSError, _json.JSONDecodeError):
+                log = None
+        record = None
+        try:
+            rec = load_run_record(project_dir, run.thread_id)
+            record = {"status": rec.status, "decisions": rec.decisions,
+                      "telemetry": rec.telemetry}
+        except FileNotFoundError:
+            record = None
+        _ok(self, {"run": run.model_dump(mode="json"),
+                   "retrieval_log": log, "record": record})
+
+    def _start_discovery(self, project_id: str) -> None:
+        payload, err = _read_json(self)
+        if err:
+            _err(self, 400, err)
+            return
+        assert payload is not None
+        try:
+            self._scoped_dir(project_id)
+        except ValueError as e:
+            _err(self, 400, str(e))
+            return
+        except FileNotFoundError:
+            _err(self, 404, f"unknown project '{project_id}'")
+            return
+        focus = payload.get("focus", "")
+        if not isinstance(focus, str):
+            _err(self, 400, "focus must be a string")
+            return
+        focus = focus.strip()
+        if len(focus) > MAX_DISCOVERY_FOCUS:
+            _err(self, 400, f"focus exceeds {MAX_DISCOVERY_FOCUS} characters")
+            return
+        try:
+            budget = validated_discovery_budget(payload.get("budget"))
+        except ValueError as e:
+            _err(self, 400, str(e))
+            return
+        request_key = payload.get("request_key", "")
+        if request_key:
+            if not isinstance(request_key, str) \
+                    or not REQUEST_KEY_RE.match(request_key):
+                _err(self, 400, "request_key must match [A-Za-z0-9-]{1,64}")
+                return
+            idem = f"discover:{request_key}"
+        else:
+            idem = ""
+        job = jobs_mod.create_job(PROJECTS_ROOT, project_id, "discover_papers",
+                                  idempotency_key=idem, stage="searching",
+                                  params={"focus": focus, "budget": budget})
+        _ok(self, {"job": job}, status=202)
+
+    def _decide_candidates(self, project_id: str, run_id: str) -> None:
+        from discovery_graph import update_candidate_status
+        from project import load_project
+
+        payload, err = _read_json(self)
+        if err:
+            _err(self, 400, err)
+            return
+        assert payload is not None
+        try:
+            project_dir = self._scoped_dir(project_id)
+        except ValueError as e:
+            _err(self, 400, str(e))
+            return
+        except FileNotFoundError:
+            _err(self, 404, f"unknown project '{project_id}'")
+            return
+        decisions = payload.get("decisions")
+        if not isinstance(decisions, list) or not decisions \
+                or len(decisions) > 50:
+            _err(self, 400, "decisions must be a non-empty list (<=50)")
+            return
+        project = load_project(project_dir)
+        if not any(r.run_id == run_id for r in (project.discoveries or [])):
+            _err(self, 404, f"unknown discovery run '{run_id}'")
+            return
+        items = []
+        for entry in decisions:
+            item: dict = {"ok": False}
+            if not isinstance(entry, dict):
+                item["error"] = "decision must be an object"
+                items.append(item)
+                continue
+            cid = entry.get("candidate_id", "")
+            action = entry.get("action", "")
+            reason = entry.get("reason", "")
+            item["candidate_id"] = cid
+            if action == "approve":
+                status = "approved"
+            elif action == "dismiss":
+                status = "dismissed"
+            else:
+                item["error"] = "action must be 'approve' or 'dismiss'"
+                items.append(item)
+                continue
+            if not isinstance(cid, str) or not cid:
+                item["error"] = "candidate_id must be a non-empty string"
+                items.append(item)
+                continue
+            if not isinstance(reason, str):
+                item["error"] = "reason must be a string"
+                items.append(item)
+                continue
+            try:
+                cand = update_candidate_status(project_dir, run_id, cid,
+                                               status, reason=reason)
+            except FileNotFoundError:
+                item["error"] = f"unknown candidate '{cid}'"
+            except ValueError as e:
+                item["error"] = str(e)
+            else:
+                item["ok"] = True
+                item["status"] = cand.status
+            items.append(item)
+        _ok(self, {"run_id": run_id, "items": items})
+
+    def _import_candidates(self, project_id: str, run_id: str) -> None:
+        from project import load_project
+
+        payload, err = _read_json(self)
+        if err:
+            _err(self, 400, err)
+            return
+        assert payload is not None
+        try:
+            project_dir = self._scoped_dir(project_id)
+        except ValueError as e:
+            _err(self, 400, str(e))
+            return
+        except FileNotFoundError:
+            _err(self, 404, f"unknown project '{project_id}'")
+            return
+        raw_ids = payload.get("candidate_ids")
+        if not isinstance(raw_ids, list) or not raw_ids or len(raw_ids) > 8:
+            _err(self, 400, "candidate_ids must be a non-empty list (<=8)")
+            return
+        if any(not isinstance(c, str) or not c for c in raw_ids):
+            _err(self, 400, "candidate_ids must be non-empty strings")
+            return
+        candidate_ids = list(dict.fromkeys(raw_ids))
+        project = load_project(project_dir)
+        run = next((r for r in (project.discoveries or [])
+                    if r.run_id == run_id), None)
+        if run is None:
+            _err(self, 404, f"unknown discovery run '{run_id}'")
+            return
+        known = {c.candidate_id: c for c in run.candidates}
+        unknown = [c for c in candidate_ids if c not in known]
+        if unknown:
+            _err(self, 400, f"unknown candidate(s): {', '.join(unknown)}")
+            return
+        dismissed = [c for c in candidate_ids
+                     if known[c].status == "dismissed"]
+        if dismissed:
+            _err(self, 400, f"dismissed candidate(s) cannot be imported "
+                            f"(approve first): {', '.join(dismissed)}")
+            return
+        job = jobs_mod.create_job(PROJECTS_ROOT, project_id, "import_discovery",
+                                  stage="preparing",
+                                  params={"run_id": run_id,
+                                          "candidate_ids": candidate_ids})
+        _ok(self, {"job": job}, status=202)
 
     # -- legacy M5/M6/M6.1 routes (exact shapes, default project) -------------
 

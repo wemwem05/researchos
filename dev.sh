@@ -21,7 +21,7 @@ BACKEND_PORT="${RESEARCHOS_BACKEND_PORT:-8765}"
 FRONTEND_PORT="${FRONTEND_PORT:-3000}"
 # Must match SERVER_VERSION in prototype/workspace_server.py; bump both on any
 # API/shape/CORS change so a stale reused backend fails loudly, not oddly.
-EXPECTED_SERVER_VERSION="7.3"
+EXPECTED_SERVER_VERSION="8.0"
 
 BACKEND_PID=""
 FRONTEND_PID=""

@@ -1,4 +1,4 @@
-# Open-Weight Model Usage (Milestones 5–6.1)
+# Open-Weight Model Usage (Milestones 5–6.1, 8)
 
 ## Identity
 
@@ -82,6 +82,19 @@ recorded 17 Spark calls (~132k tokens), all on the exact hackathon model id —
 see `prototype/projects/transport-geometry-investigation/agent/telemetry.jsonl`
 (local, git-ignored).
 
+## Milestone 8 — literature discovery
+
+The same client and exact model ID power the discovery graph
+(`prototype/discovery_graph.py`): Spark Open plans the search strategy,
+evaluates each shortlisted paper's relevance against live project state
+(verdict + five grounded reasons + novelty-overlap flags), decides
+whether a second bounded round is worthwhile, and critiques the final
+recommendations (with at most one bounded revision). Deterministic work
+— ID normalization, dedup, shortlisting, ranking, budget enforcement —
+stays in Python. A typical run makes 4–6 Spark calls inside an 8-call
+budget; usage (calls, tokens, latency) is persisted per run and visible
+in the search-provenance UI.
+
 ## What still uses hosted Muse, and why
 
 PDF perception is unchanged and still uses `muse-spark-1.3` via the Meta
@@ -121,6 +134,11 @@ agentic reasoning layer is what moved to the open-weight model.
    Python-recomputed audits with methodology/cross-paper/external
    sections and evidence-scoped verdicts. Audit vs computational
    statuses are deliberately different vocabularies.
+8. **Run discovery live**: from any project, Discover papers runs the
+   full agent loop against OpenAlex; the run's queries, strategy notes,
+   reflection, critic verdict, and token usage are inspectable in the
+   project UI and in `project.json` (`discoveries`) plus
+   `agent/discovery/<run>.json`.
 
 ## Where telemetry is stored
 
@@ -135,6 +153,9 @@ agentic reasoning layer is what moved to the open-weight model.
 - `<project>/agent/audits/<thread>/audit.json` — the attached audit
   report; `<project>/agent/openalex_cache/` — cached external records
   (searches never repeat after resume).
+- `<project>/agent/discovery/<run>.json` — full discovery retrieval log
+  (queries, slim records, duplicates log, usage) behind each persisted
+  `discoveries[]` run in `project.json`.
 
 API keys are never written to any of these files (covered by test).
 Modal credentials stay on the host (env or `~/.modal.toml`) and are never

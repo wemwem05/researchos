@@ -30,7 +30,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 STATES = ("QUEUED", "RUNNING", "COMPLETED", "FAILED", "CANCELLED")
 TERMINAL_STATES = ("COMPLETED", "FAILED", "CANCELLED")
 
-JOB_TYPES = ("ingest_paper", "rescore_question", "rebuild_findings")
+JOB_TYPES = ("ingest_paper", "rescore_question", "rebuild_findings",
+             "discover_papers", "import_discovery")
 
 # Researcher-facing stage labels for the ingest pipeline (real backend
 # stages, never time-derived percentages).

@@ -56,6 +56,7 @@ from analyze_paper import (
     AnalysisResult,
     extract_json,
 )
+from discovery_models import DiscoveryRun
 
 SCHEMA_VERSION = "m4-1"
 MAX_FINDINGS_PER_PAPER = 5
@@ -271,6 +272,9 @@ class Project(BaseModel):
     novelty_risks: list[NoveltyRisk] = Field(default_factory=list)
     verifications: list[VerificationEvidence] = Field(default_factory=list)
     audits: list[ScientificAudit] = Field(default_factory=list)
+    # Milestone 8: autonomous literature discovery runs. Default-empty so all
+    # pre-M8 project.json files load unchanged.
+    discoveries: list[DiscoveryRun] = Field(default_factory=list)
     # Milestone 7: workspace metadata. All optional so M4-M6.1 files load
     # unchanged; only live arrays above hold CURRENT-version conclusions.
     title: str = ""
@@ -321,6 +325,13 @@ class Project(BaseModel):
         for a in self.audits:
             if a.paper_id not in paper_ids:
                 raise ValueError(f"audit {a.audit_id} references unknown paper '{a.paper_id}'")
+        run_ids = [r.run_id for r in self.discoveries if r.run_id]
+        if len(set(run_ids)) != len(run_ids):
+            raise ValueError("discovery run ids must be unique")
+        for r in self.discoveries:
+            cand_ids = [c.candidate_id for c in r.candidates]
+            if len(set(cand_ids)) != len(cand_ids):
+                raise ValueError(f"discovery run {r.run_id} has duplicate candidate ids")
         return self
 
 
@@ -498,6 +509,7 @@ def apply_delta(
         # (M7 fix: verifications/audits used to be silently dropped here.)
         verifications=project.verifications,
         audits=project.audits,
+        discoveries=project.discoveries,
         title=project.title,
         question_version=project.question_version,
         created_at=project.created_at,

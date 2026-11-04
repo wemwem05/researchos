@@ -607,3 +607,77 @@ paper's job refuses early with "re-upload to try again"; (5) retry-action
 errors now surface in the UI instead of an unhandled rejection. Server
 version bumped to 7.3 (+ `dev.sh` expectation). 224/224 backend, 40/40
 frontend, `tsc` clean, `next build` green.
+
+## Milestone 8 — Autonomous Literature Discovery (2026-11-04)
+
+**Goal:** a researcher with a question (and zero or more papers) gets
+agent-discovered, project-grounded reading recommendations — approved by
+them, imported through the existing pipeline. Real agent workflow, not a
+search box.
+
+**Built (M1–M7 preserved, wrap-don't-rewrite):**
+
+- `prototype/discovery_models.py` — candidate/run/budget/query models,
+  DOI/OpenAlex/arXiv/title normalization, `DedupIndex` + `dedupe_records`
+  (stable ids, arXiv-version-insensitive, exact-title fallback),
+  evidence levels, novelty-overclaim clamp.
+- `prototype/discovery_graph.py` — LangGraph workflow on the shared
+  SQLite checkpointer: load_context → plan_search → retrieve_candidates
+  → normalize_and_deduplicate → shortlist → evaluate_relevance →
+  reflect → discovery_critic → decision_gate → bounded_revision? →
+  prepare → persist. Spark Open (exact `meta-models/muse-spark-open-1026`,
+  no fallback) plans, evaluates, reflects, critiques, revises; Python
+  does hygiene/dedup/shortlist/rank/budgets. No `interrupt()` —
+  approval is post-completion API. Budgets: 2 rounds, ≤3 queries/round,
+  ≤50 records, ≤8 shortlist, ≤5 recommended, ≤2 expansions, ≤3 deep
+  inspections, ≤8 Spark calls.
+- `prototype/openalex.py` (extended) — richer records (venue, dates,
+  arxiv, license, work type, OA flags), `search_filtered`/`get_work`/
+  `works_batch`/`referenced_ids`, backoff + throttle + attribution +
+  disk cache. `pdf_url` now only from real OpenAlex PDF fields (a
+  landing-URL fallback bug fixed). Semantic Scholar evaluated, rejected.
+- `prototype/acquisition.py` — SSRF-guarded full-text fetch: scheme/
+  port/credential/host rules, per-hop redirect re-validation, global-
+  routable DNS for direct connections (literals always checked, proxied
+  egress defers to the proxy), size/MIME/magic guards, atomic staging.
+- `prototype/workspace_server.py` (extended, v8.0) — `discover_papers`
+  + `import_discovery` job types on the M7 dispatcher; routes
+  `discoveries/start|list|detail|decide|import` with validated budgets,
+  idempotent start keys, per-item decide/import results, deterministic
+  paper slugs, duplicate + unavailable handling, review-aware import
+  finalization with self-heal, and `pipeline.json` discovery provenance.
+  `apply_delta` now preserves `discoveries` (same bug class as M7's
+  audit fix).
+- `web/app/lib/discovery.ts` + `web/app/components/DiscoverySection.tsx`
+  — focus input, budget line, progress, run selector with stale badges,
+  five filters, expandable candidate cards (verdict/evidence/novelty,
+  five grounded reasons, abstract, ids, query provenance), approve/
+  dismiss/source/import per paper + bulk, import results, provenance
+  disclosure, Reader deep-links for imports.
+- `docs/LITERATURE_DISCOVERY.md` — providers, graph, budgets, grounding,
+  novelty limits, approval, acquisition, versioning, telemetry.
+
+**Live acceptance (safe `/tmp` copy of `ot-correspondence`; real Spark +
+OpenAlex + Meta APIs; original bytes unchanged):** the agent chose 6
+queries over 2 adaptive rounds (strategy notes reference project
+findings f1–f8; round 2 pivoted to Gromov-Wasserstein / unbalanced OT /
+ground-cost ablations) → 50 retrieved, 1 duplicate, 8 shortlisted, 5
+recommended in 147 s (5 Spark calls, ~69k tokens), critic SUPPORTED, no
+revision. Approved dc32 ("Partial transport for point-cloud
+registration", Springer OA 1.9 MB, doi:10.1007/s43670-025-00097-1):
+downloaded, ingested, analyzed (61 objects), localized (34), +5 grounded
+findings f9–f13, +7 cross-paper connections (8→13 findings, 3→10). Honest
+negatives: 43 MB arXiv PDF rejected by the size cap, MDPI bot-filter /
+HTML interstitial rejected as non-PDF, dc-label expansion ids dropped
+with logged notes. Restart persistence, Reader files, and provenance
+verified in a fresh process.
+
+**Bugs found building/live (each with regression tests):** usage
+accounting lost at checkpoints (returned explicitly); checkpointer
+context-manager misuse; undefined `DiscoveryFailure`; evidence-case
+corruption (re-validation on status update); title-only dedup gap;
+premature imported-on-review; 50-record persistence bloat (actionable
+subset only); proxy-unaware DNS guard.
+
+**Verification:** 295/295 backend (71 new), 50/50 frontend (10 new),
+`tsc` clean, `next build` green (webpack).

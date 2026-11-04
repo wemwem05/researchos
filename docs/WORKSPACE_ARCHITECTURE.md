@@ -1,4 +1,4 @@
-# ResearchOS Workspace Architecture (Milestone 7)
+# ResearchOS Workspace Architecture (Milestones 7–8)
 
 Milestone 7 turns ResearchOS from a static, preconfigured demo into a usable
 research application: a new researcher creates projects, edits the research
@@ -73,6 +73,12 @@ the two Reader bytes endpoints intentionally return raw bodies:
 - Project-scoped agent routes: `runs`, `runs/<t>`, `runs/<t>/review`,
   `telemetry`, `verifications[/start]`, `verifications/<t>/files/<n>`,
   `audits[/start]`
+- Milestone 8 discovery routes: `GET /api/projects/<id>/discoveries`,
+  `POST .../discoveries/start` (`focus`, `budget`, `request_key`),
+  `GET .../discoveries/<run>`, `POST .../discoveries/<run>/decide`
+  (bulk approve/dismiss, per-item results),
+  `POST .../discoveries/<run>/import` (≤8 candidates → one job,
+  per-item results, never a mid-list abort)
 - Legacy `/api/agent/*` routes keep their exact M5/M6/M6.1 shapes and map to
   the default project (`ot-correspondence`).
 
@@ -106,6 +112,14 @@ job; progress tracks real pipeline stages (`validating`, `reading_document`,
 - Human review is not a failure: a job whose investigation awaits review
   completes with `{awaiting_review}` and the paper attaches on resume — with
   zero repeated model calls (LangGraph checkpoints).
+- Milestone 8 adds two job types on the same machinery: `discover_papers`
+  (runs the discovery graph; each attempt gets a fresh `discover-*` thread
+  so retries never resume failed graph state) and `import_discovery`
+  (SSRF-guarded download + the standard `run_ingest` per candidate, with
+  per-item terminal states). Discovery runs persist as `project.discoveries`
+  (shortlist + evaluations + already-in-project matches only; the full
+  ≤50-record retrieval log lives in `agent/discovery/<run>.json`), and
+  reuse the shared checkpointer, run records, locks, and atomic writes.
 
 ## Question-version semantics
 
@@ -165,8 +179,10 @@ project. The test suite covers cross-project paper/job/thread invisibility.
 
 The `ot-correspondence` demo (2 papers, 8 findings, 3 connections, 5
 questions, 4 risks, 3 verifications, 7 audits) loads unchanged — old
-`project.json` files gain defaults, and its bytes are never rewritten by the
-workspace. All M1–M6.1 tests still pass unmodified.
+`project.json` files gain defaults (`discoveries: []`), and its bytes are
+never rewritten by the workspace. All M1–M6.1 tests still pass unmodified;
+M8 extends `apply_delta`'s preserved-fields list so add-paper never drops
+discovery runs (the same bug class M7 fixed for audits/verifications).
 
 ## Limitations before production deployment
 
