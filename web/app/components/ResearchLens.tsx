@@ -19,10 +19,10 @@ interface Props {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
         {title}
       </h3>
-      <div className="mt-1 text-sm leading-relaxed text-neutral-800">{children}</div>
+      <div className="mt-1 text-sm leading-relaxed text-slate-800">{children}</div>
     </section>
   );
 }
@@ -30,15 +30,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs font-medium text-neutral-500">{label}</div>
-      <div className="mt-0.5 text-sm leading-relaxed text-neutral-800">{children}</div>
+      <div className="text-xs font-medium text-slate-500">{label}</div>
+      <div className="mt-0.5 text-sm leading-relaxed text-slate-800">{children}</div>
     </div>
   );
 }
 
 function TypeBadge({ type }: { type: SciObject["type"] }) {
   return (
-    <span className="rounded bg-neutral-200 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-700">
+    <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-slate-700">
       {type}
     </span>
   );
@@ -47,7 +47,7 @@ function TypeBadge({ type }: { type: SciObject["type"] }) {
 const LEVEL_BADGE: Record<SciObject["research_relevance_level"], string> = {
   high: "bg-indigo-700 text-white",
   related: "bg-blue-100 text-blue-900",
-  context: "bg-neutral-200 text-neutral-700",
+  context: "bg-slate-200 text-slate-700",
 };
 
 export default function ResearchLens({ data, selected, localizedCount, highCount, onSelectRelated, paperId = null, projectId = null }: Props) {
@@ -57,24 +57,24 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
     return (
       <div className="flex h-full flex-col gap-5 p-6">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+          <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Research Lens
           </div>
-          <h2 className="mt-2 font-serif text-xl leading-snug text-neutral-900">
+          <h2 className="mt-2 font-serif text-xl leading-snug text-slate-900">
             {analysis.paper_title}
           </h2>
         </div>
-        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
-          <div className="text-xs font-medium text-neutral-500">Your research question</div>
-          <p className="mt-1 text-sm font-medium leading-relaxed text-neutral-900">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="text-xs font-medium text-slate-500">Your research question</div>
+          <p className="mt-1 text-sm font-medium leading-relaxed text-slate-900">
             {analysis.research_question}
           </p>
         </div>
-        <p className="text-sm text-neutral-600">
+        <p className="text-sm text-slate-600">
           ResearchOS found {analysis.objects.length} scientific objects.{" "}
           {highCount} are highly relevant to your research question.
         </p>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="text-sm leading-relaxed text-slate-700">
           Select a highlighted equation, figure, or table to understand its role in
           this paper and its relevance to your research.
         </p>
@@ -91,7 +91,7 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
       <div>
         <div className="flex flex-wrap items-center gap-2">
           {selected.label && (
-            <span className="text-sm font-semibold text-neutral-900">{selected.label}</span>
+            <span className="text-sm font-semibold text-slate-900">{selected.label}</span>
           )}
           <TypeBadge type={selected.type} />
           <span
@@ -103,25 +103,25 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
             {relevanceLabel(selected.research_relevance_level)} relevance
           </span>
           {selected.page !== null && (
-            <span className="text-xs text-neutral-500">p. {selected.page}</span>
+            <span className="text-xs text-slate-500">p. {selected.page}</span>
           )}
         </div>
-        <h2 className="mt-1.5 font-serif text-lg leading-snug text-neutral-900">
+        <h2 className="mt-1.5 font-serif text-lg leading-snug text-slate-900">
           {selected.title}
         </h2>
-        <p className="mt-1 text-[13px] text-neutral-600">
+        <p className="mt-1 text-[13px] text-slate-600">
           <span className="font-medium">Supports:</span> {selected.claim_supported}
         </p>
         <dl className="mt-2 flex flex-col gap-1 text-[13px]">
           <div className="flex gap-2">
-            <dt className="shrink-0 text-neutral-500">Importance to paper:</dt>
-            <dd className="font-medium text-neutral-800">
+            <dt className="shrink-0 text-slate-500">Importance to paper:</dt>
+            <dd className="font-medium text-slate-800">
               {importanceLabel(selected.paper_importance)}
             </dd>
           </div>
           <div className="flex gap-2">
-            <dt className="shrink-0 text-neutral-500">Research relevance:</dt>
-            <dd className="font-medium text-neutral-800">
+            <dt className="shrink-0 text-slate-500">Research relevance:</dt>
+            <dd className="font-medium text-slate-800">
               {relevanceLabel(selected.research_relevance_level)}
             </dd>
           </div>
@@ -133,7 +133,7 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
       <Section title="Why it matters to your research">
         <div className="flex flex-col gap-1.5">
           <p>{selected.research_relevance}</p>
-          <p className="text-[13px] text-neutral-600">{selected.research_relevance_reason}</p>
+          <p className="text-[13px] text-slate-600">{selected.research_relevance_reason}</p>
         </div>
       </Section>
       <Section title="What this does not establish">{selected.limitations}</Section>
@@ -142,21 +142,21 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
         <Section title="Equation detail">
           <div className="flex flex-col gap-3">
             {selected.equation.latex ? (
-              <div className="overflow-x-auto rounded-md border border-neutral-200 bg-white p-2">
+              <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white p-2">
                 <Latex tex={selected.equation.latex} />
               </div>
             ) : (
-              <p className="text-neutral-500">LaTeX not recoverable from the PDF.</p>
+              <p className="text-slate-500">LaTeX not recoverable from the PDF.</p>
             )}
             {selected.equation.symbols.length > 0 && (
               <Field label="Symbols">
                 <dl className="flex flex-col gap-1.5">
                   {selected.equation.symbols.map((s) => (
                     <div key={s.symbol} className="flex gap-2">
-                      <dt className="shrink-0 font-mono text-[13px] font-semibold text-neutral-900">
+                      <dt className="shrink-0 font-mono text-[13px] font-semibold text-slate-900">
                         {s.symbol}
                       </dt>
-                      <dd className="text-[13px] text-neutral-700">{s.meaning}</dd>
+                      <dd className="text-[13px] text-slate-700">{s.meaning}</dd>
                     </div>
                   ))}
                 </dl>
@@ -203,7 +203,7 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
             {selected.table.metric && <Field label="Metric">{selected.table.metric}</Field>}
             {selected.table.higher_or_lower_is_better && (
               <Field label="Better direction">
-                <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-xs font-medium text-white">
+                <span className="rounded bg-slate-900 px-1.5 py-0.5 text-xs font-medium text-white">
                   {selected.table.higher_or_lower_is_better === "higher"
                     ? "Higher is better ↑"
                     : "Lower is better ↓"}
@@ -234,16 +234,25 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
 
       {paperId && selected.type === "claim" && (
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
-            Scientific verification
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Examine this claim
           </h3>
-          <div className="mt-2 flex flex-col items-start gap-2">
-            <AuditClaim paperId={paperId} claim={selected} projectId={projectId} />
-            <div className="w-full border-t border-neutral-100 pt-2">
-              <p className="mb-1 text-[11px] leading-relaxed text-neutral-500">
-                Optional: run a computational test of this claim in an isolated sandbox.
+          <div className="mt-2 flex flex-col items-start gap-3">
+            <div className="w-full">
+              <AuditClaim paperId={paperId} claim={selected} projectId={projectId} />
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+                Evidence audit: recomputes the numbers and assesses methodology
+                from the paper. No code runs.
               </p>
+            </div>
+            <div className="w-full border-t border-slate-100 pt-2">
               <VerifyClaim paperId={paperId} claim={selected} projectId={projectId} />
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+                Computational test: runs a small benchmark in an isolated
+                sandbox. Only meaningful for feasible performance or scaling
+                claims — a passing test supports the tested aspect, never the
+                paper&apos;s full conclusion.
+              </p>
             </div>
           </div>
         </section>
@@ -251,7 +260,7 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
 
       {related.length > 0 && (
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Related objects
           </h3>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -260,7 +269,7 @@ export default function ResearchLens({ data, selected, localizedCount, highCount
                 key={o.id}
                 type="button"
                 onClick={() => onSelectRelated(o.id)}
-                className="rounded-full border border-neutral-300 bg-white px-2.5 py-1 text-xs font-medium text-neutral-700 hover:border-indigo-600 hover:text-indigo-800"
+                className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-indigo-600 hover:text-indigo-800"
               >
                 {o.label ?? o.id}
               </button>

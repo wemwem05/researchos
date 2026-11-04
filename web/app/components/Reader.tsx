@@ -14,7 +14,7 @@ import type { OverlayBox } from "./OverlayLayer";
 const PdfReader = dynamic(() => import("./PdfReader"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+    <div className="flex h-full items-center justify-center text-sm text-slate-500">
       Loading paper…
     </div>
   ),
@@ -124,7 +124,7 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
 
   if (loadError) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-neutral-600">
+      <div className="flex h-screen items-center justify-center text-sm text-slate-600">
         Could not load analysis data ({dataUrl}). Re-run stage-web or re-copy
         the prototype fixtures.
       </div>
@@ -132,7 +132,7 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
   }
   if (!data) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-neutral-500">
+      <div className="flex h-screen items-center justify-center text-sm text-slate-500">
         Loading ResearchOS…
       </div>
     );
@@ -142,40 +142,27 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
 
   return (
     <div className="flex h-screen flex-col overflow-x-auto">
-      <header className="flex items-center justify-between border-b border-neutral-300 bg-white px-5 py-3">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-lg font-bold tracking-tight text-neutral-900">
-            ResearchOS
-          </h1>
-          <span className="text-xs text-neutral-500">research-aware paper reader</span>
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-slate-200 bg-white px-4 py-2.5 sm:px-6">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           <Link
             href={projectHref}
-            className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600 hover:border-neutral-500 hover:text-neutral-900"
+            className="shrink-0 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:border-slate-400"
           >
-            Project
+            ← Project
           </Link>
+          <div className="min-w-0 max-w-full truncate font-serif text-[15px] text-slate-900 sm:max-w-[46vw]">
+            {data.analysis.paper_title}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
           <Link
             href="/"
-            className="rounded-full border border-neutral-300 px-2.5 py-0.5 text-xs font-medium text-neutral-600 hover:border-neutral-500 hover:text-neutral-900"
+            className="hidden text-sm font-bold tracking-tight text-slate-900 hover:text-slate-600 md:inline"
           >
-            Projects
+            ResearchOS
           </Link>
-        </div>
-        <div className="max-w-[55%] truncate font-serif text-sm italic text-neutral-600">
-          {data.analysis.paper_title}
-        </div>
-      </header>
-
-      <div className="border-b border-neutral-300 bg-white px-5 py-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="text-xs font-medium text-neutral-500">Research question</div>
-            <p className="mt-0.5 font-serif text-lg leading-snug text-neutral-900">
-              {data.analysis.research_question}
-            </p>
-          </div>
           <div
-            className="flex shrink-0 items-center rounded-full border border-neutral-300 bg-neutral-50 p-0.5"
+            className="flex items-center rounded-lg border border-slate-300 bg-slate-50 p-0.5"
             role="tablist"
             aria-label="Lens mode"
           >
@@ -187,10 +174,10 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
                 aria-selected={mode === m}
                 onClick={() => setMode(m)}
                 className={[
-                  "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                  "rounded-md px-3 py-1 text-xs font-semibold transition-colors",
                   mode === m
-                    ? "bg-neutral-900 text-white"
-                    : "text-neutral-600 hover:text-neutral-900",
+                    ? "bg-indigo-600 text-white"
+                    : "text-slate-600 hover:text-slate-900",
                 ].join(" ")}
               >
                 {m === "focus" ? "Focus" : "Show all"}
@@ -198,8 +185,21 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
             ))}
           </div>
         </div>
+      </header>
+
+      <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Research question
+            </div>
+            <p className="mt-0.5 line-clamp-2 font-serif text-base leading-snug text-slate-800">
+              {data.analysis.research_question}
+            </p>
+          </div>
+        </div>
         {mode === "focus" && (
-          <p className="mt-2 text-[13px] text-neutral-600">
+          <p className="mt-2 text-[13px] text-slate-600">
             ResearchOS found {navigable.length} scientific objects.{" "}
             {highCount} are highly relevant to your research question.
           </p>
@@ -215,8 +215,8 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
         </div>
       </div>
 
-      <main className="flex min-h-0 flex-1">
-        <div className="w-[65%] min-w-[560px] overflow-y-auto bg-neutral-200 px-6">
+      <main className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        <div className="min-h-[50vh] w-full overflow-y-auto bg-slate-200 px-3 sm:px-6 lg:h-auto lg:w-[65%] lg:min-w-[560px]">
           <PdfReader
             pdfUrl={pdfUrl}
             overlaysByPage={overlaysByPage}
@@ -226,7 +226,7 @@ export default function Reader({ pdfUrl, dataUrl, initialSelectedId = null, pape
             registerPageRef={registerPageRef}
           />
         </div>
-        <aside className="w-[35%] min-w-[320px] overflow-y-auto border-l border-neutral-300 bg-neutral-50">
+        <aside className="min-h-0 w-full flex-1 overflow-y-auto border-t border-slate-300 bg-slate-50 lg:w-[35%] lg:min-w-[320px] lg:flex-none lg:border-l lg:border-t-0">
           <ResearchLens
             data={data}
             selected={selected}

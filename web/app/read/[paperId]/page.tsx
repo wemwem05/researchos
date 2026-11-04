@@ -28,7 +28,7 @@ function PaperReader() {
 
   if (missing) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-neutral-600">
+      <div className="flex h-screen items-center justify-center text-sm text-slate-600">
         Unknown paper “{paperId}”. Re-run stage-web or pick a paper from the{" "}
         <a href="/project" className="ml-1 underline">project view</a>.
       </div>
@@ -36,7 +36,7 @@ function PaperReader() {
   }
   if (!paper) {
     return (
-      <div className="flex h-screen items-center justify-center text-sm text-neutral-500">
+      <div className="flex h-screen items-center justify-center text-sm text-slate-500">
         Loading ResearchOS…
       </div>
     );
@@ -55,7 +55,7 @@ export default function ReadPaperPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center text-sm text-neutral-500">
+        <div className="flex h-screen items-center justify-center text-sm text-slate-500">
           Loading ResearchOS…
         </div>
       }

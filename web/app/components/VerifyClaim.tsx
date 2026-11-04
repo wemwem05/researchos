@@ -120,7 +120,7 @@ export default function VerifyClaim({
       <button
         type="button"
         onClick={() => setPhase("confirm")}
-        className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-500"
+        className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400"
       >
         Verify computationally
       </button>
@@ -129,18 +129,21 @@ export default function VerifyClaim({
 
   if (phase === "confirm") {
     return (
-      <div className="rounded-md border border-neutral-200 bg-white p-3">
-        <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
           Confirm computational verification
         </div>
-        <p className="mt-1 text-[13px] font-medium leading-relaxed text-neutral-900">{claim.title}</p>
-        <p className="mt-0.5 font-mono text-[11px] text-neutral-500">
+        <p className="mt-1 text-[13px] font-medium leading-relaxed text-slate-900">{claim.title}</p>
+        <p className="mt-0.5 font-mono text-[11px] text-slate-500">
           {paperId} · {claim.id}
           {claim.related_objects.length > 0 && ` · refs ${claim.related_objects.join(", ")}`}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-neutral-600">
-          Plans a CPU benchmark and runs it in an isolated Modal sandbox (a few minutes).
-          Nothing executes until you confirm.
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">
+          Plans a CPU benchmark and runs it in an isolated Modal sandbox (a few
+          minutes). Nothing executes until you confirm. Scope: feasible
+          performance or scaling claims only — a passing test supports the
+          tested aspect, not the paper&apos;s full conclusion, and never counts
+          as reproducing the result.
         </p>
         {live === false && (
           <p className="mt-1 font-mono text-[11px] leading-relaxed text-amber-800">
@@ -153,14 +156,14 @@ export default function VerifyClaim({
             type="button"
             onClick={start}
             disabled={live !== true}
-            className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Confirm &amp; run
           </button>
           <button
             type="button"
             onClick={() => setPhase("idle")}
-            className="rounded-full border border-neutral-300 px-3 py-1 text-xs text-neutral-700 hover:border-neutral-500"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400"
           >
             Cancel
           </button>
@@ -170,12 +173,12 @@ export default function VerifyClaim({
   }
 
   if (phase === "starting") {
-    return <p className="text-xs text-neutral-500">Starting verification…</p>;
+    return <p className="text-xs text-slate-500">Starting verification…</p>;
   }
 
   return (
     <div className="flex flex-col gap-2">
-      {!run && <p className="text-xs text-neutral-500">Starting verification run…</p>}
+      {!run && <p className="text-xs text-slate-500">Starting verification run…</p>}
       <AgentRunSection run={run} />
       {run && run.status === "awaiting_human" && (
         <ReviewCard
@@ -193,13 +196,13 @@ export default function VerifyClaim({
         <p className="text-xs text-red-700">Verification failed: {run.error}</p>
       )}
       {run && run.status === "discarded" && (
-        <p className="text-xs text-neutral-600">Verification discarded — project untouched.</p>
+        <p className="text-xs text-slate-600">Verification discarded — project untouched.</p>
       )}
       {phase === "done" &&
         (evidence ? (
           <VerificationEvidence evidence={evidence} />
         ) : (
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-slate-500">
             Run completed. Evidence will appear in the project view
             {projectId ? "." : " after stage-web."}{" "}
             <a className="underline" href={projectId ? `/projects/${projectId}` : "/project"}>

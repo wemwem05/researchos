@@ -114,7 +114,7 @@ export default function AuditClaim({
       <button
         type="button"
         onClick={() => setPhase("confirm")}
-        className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-700"
+        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
       >
         Audit scientific claim
       </button>
@@ -123,21 +123,21 @@ export default function AuditClaim({
 
   if (phase === "confirm") {
     return (
-      <div className="rounded-md border border-neutral-200 bg-white p-3">
-        <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
           Confirm evidence audit
         </div>
-        <p className="mt-1 text-[13px] font-medium leading-relaxed text-neutral-900">{claim.title}</p>
-        <p className="mt-0.5 font-mono text-[11px] text-neutral-500">
+        <p className="mt-1 text-[13px] font-medium leading-relaxed text-slate-900">{claim.title}</p>
+        <p className="mt-0.5 font-mono text-[11px] text-slate-500">
           {paperId} · {claim.id}
           {claim.related_objects.length > 0 && ` · refs ${claim.related_objects.join(", ")}`}
         </p>
-        <p className="mt-1 text-xs leading-relaxed text-neutral-600">
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">
           Audits the claim against its paper evidence: recomputed numbers, methodology,
           comparison with project findings
           {external ? ", and bounded external literature." : "."} No code is executed.
         </p>
-        <label className="mt-2 flex cursor-pointer items-start gap-2 text-xs text-neutral-700">
+        <label className="mt-2 flex cursor-pointer items-start gap-2 text-xs text-slate-700">
           <input
             type="checkbox"
             checked={external}
@@ -161,14 +161,14 @@ export default function AuditClaim({
             type="button"
             onClick={start}
             disabled={live !== true}
-            className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Confirm &amp; audit
           </button>
           <button
             type="button"
             onClick={() => setPhase("idle")}
-            className="rounded-full border border-neutral-300 px-3 py-1 text-xs text-neutral-700 hover:border-neutral-500"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400"
           >
             Cancel
           </button>
@@ -178,12 +178,12 @@ export default function AuditClaim({
   }
 
   if (phase === "starting") {
-    return <p className="text-xs text-neutral-500">Starting audit…</p>;
+    return <p className="text-xs text-slate-500">Starting audit…</p>;
   }
 
   return (
     <div className="flex flex-col gap-2">
-      {!run && <p className="text-xs text-neutral-500">Starting audit run…</p>}
+      {!run && <p className="text-xs text-slate-500">Starting audit run…</p>}
       <AgentRunSection run={run} />
       {run && run.status === "awaiting_human" && (
         <ReviewCard
@@ -201,13 +201,13 @@ export default function AuditClaim({
         <p className="text-xs text-red-700">Audit failed: {run.error}</p>
       )}
       {run && run.status === "discarded" && (
-        <p className="text-xs text-neutral-600">Audit discarded — project untouched.</p>
+        <p className="text-xs text-slate-600">Audit discarded — project untouched.</p>
       )}
       {phase === "done" &&
         (audit ? (
           <AuditEvidence audit={audit} />
         ) : (
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-slate-500">
             Run completed. The report will appear in the project view
             {projectId ? "." : " after stage-web."}{" "}
             <a className="underline" href={projectId ? `/projects/${projectId}` : "/project"}>

@@ -56,7 +56,7 @@ function LivePaperReader() {
 
   if (state === "missing") {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2 text-sm text-neutral-600">
+      <div className="flex h-screen flex-col items-center justify-center gap-2 text-sm text-slate-600">
         <p>Unknown paper “{paperId}” in this project.</p>
         <Link href={`/projects/${projectId}`} className="underline">
           Back to project
@@ -66,7 +66,7 @@ function LivePaperReader() {
   }
   if (state === "down") {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2 text-sm text-neutral-600">
+      <div className="flex h-screen flex-col items-center justify-center gap-2 text-sm text-slate-600">
         <p>Workspace backend not running — start it with ./dev.sh</p>
         <div className="flex gap-3">
           <button type="button" onClick={load} className="underline">
@@ -81,7 +81,7 @@ function LivePaperReader() {
   }
   if (!data) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2 text-sm text-neutral-500">
+      <div className="flex h-screen flex-col items-center justify-center gap-2 text-sm text-slate-500">
         <p>
           {paperStatus
             ? `${stageLabel(paperStatus.stage ?? "")}${paperStatus.stage_detail ? ` — ${paperStatus.stage_detail}` : ""}`
@@ -113,7 +113,7 @@ export default function LiveReadPaperPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center text-sm text-neutral-500">
+        <div className="flex h-screen items-center justify-center text-sm text-slate-500">
           Loading ResearchOS…
         </div>
       }

@@ -7,9 +7,24 @@
 # Generated prototype output (recreate with prototype/analyze_paper.py)
 prototype/output.json
 prototype/localized_output.json
+prototype/deep_shells_output.json
+prototype/deep_shells_localized.json
+prototype/loc_cache.json
 prototype/debug/
+prototype/debug_ds/
+prototype/projects/
+
+# Paper PDFs: local-only fixtures. Do NOT commit paper PDFs — redistribution
+# rights for published papers are unclear and the repo is public. Papers stay
+# on the researcher's machine; only model-generated JSON fixtures are committed.
+*.pdf
 
 # Python bytecode / caches
 __pycache__/
 *.pyc
 *.pyo
+
+# Next.js
+web/node_modules/
+web/.next/
+web/tsconfig.tsbuildinfo

@@ -21,8 +21,34 @@ pip install -r prototype/requirements.txt
 cp .env.example .env   # then put your key in .env (never commit it)
 ```
 
-The only secret is `MODEL_API_KEY`, read from the environment (a local `.env`
-file works too). See `.env.example`.
+Secrets are read from the environment (a local `.env` file works too;
+never commit it). See `.env.example` for the full list: `MODEL_API_KEY`
+(PDF analysis), `BASETEN_API_KEY` (agentic reasoning, model
+`meta-models/muse-spark-open-1026`), `MODAL_TOKEN_ID`/`MODAL_TOKEN_SECRET`
+(computational verification), and optional `OPENALEX_API_KEY`/`OPENALEX_MAILTO`
+(literature discovery, works keyless with lower rate limits).
+
+### Demo data & PDFs on a fresh clone
+
+Paper PDFs are intentionally git-ignored (redistribution rights for published
+papers are unclear). A fresh clone ships all code plus the model-generated JSON
+demo fixtures under `web/public/data/`, so audits, agent runs, Modal reports
+and cross-paper evidence are inspectable without keys or PDFs — but the Reader
+shows overlays without underlying PDF pages until you supply the papers.
+
+To restore the full EOT + Deep Shells demo, download from the official open
+sources and place them at these exact local paths (or upload any PDF through
+the browser in a running project — no CLI needed):
+
+- `samples/Le_Integrating_Efficient_Optimal_Transport_and_Functional_Maps_For_Unsupervised_Shape_CVPR_2024_paper.pdf`
+  — CVPR 2024 open access: "Integrating Efficient Optimal Transport and
+  Functional Maps for Unsupervised Shape Correspondence"
+- `samples/NeurIPS-2020-deep-shells-unsupervised-shape-correspondence-with-optimal-transport-Paper.pdf`
+  — NeurIPS 2020 proceedings: "Deep Shells: Unsupervised Shape Correspondence
+  with Optimal Transport"
+- `web/public/paper.pdf` and `web/public/papers/eot-maps.pdf`,
+  `web/public/papers/deep-shells.pdf` — local copies of the same two papers
+  for the legacy reader fixtures (same content, see `docs/FINAL_REPO_AUDIT.md`).
 
 ## Run
 
@@ -345,7 +371,13 @@ Details: `docs/LITERATURE_DISCOVERY.md`.
   frontend unit tests (vitest): `cd web && npm test`
 - `prototype/requirements.txt` — `openai`, `pydantic`, `python-dotenv`,
   `pymupdf`, `pillow`, `langgraph`, `langgraph-checkpoint-sqlite`, `modal`
-- `web/` — Milestone 3 Next.js reader (`app/`, `public/paper.pdf`,
-  `public/data/localized_output.json`)
+- `web/` — Milestone 3 Next.js reader (`app/`, `public/paper.pdf`
+  (local-only, git-ignored), `public/data/localized_output.json`)
 - `samples/` — sample paper PDF
 - `HACKATHON_LOG.md` — milestone log
+
+## License
+
+MIT — see `LICENSE`. Third-party paper PDFs stay local-only and are never
+committed (see `.gitignore`); only model-generated JSON fixtures ship in
+`web/public/data/`.

@@ -39,20 +39,20 @@ import {
 const VERDICT_BADGE: Record<RelevanceVerdict, string> = {
   highly_relevant: "bg-indigo-100 text-indigo-900",
   relevant: "bg-blue-100 text-blue-900",
-  tangential: "bg-neutral-100 text-neutral-600",
-  off_topic: "bg-neutral-100 text-neutral-500",
+  tangential: "bg-slate-100 text-slate-600",
+  off_topic: "bg-slate-100 text-slate-500",
 };
 
 const EVIDENCE_BADGE: Record<EvidenceAccessLevel, string> = {
   full_text_analyzed: "bg-green-100 text-green-900",
   full_text_available: "bg-green-50 text-green-800",
-  title_and_abstract: "bg-neutral-100 text-neutral-600",
+  title_and_abstract: "bg-slate-100 text-slate-600",
   metadata_only: "bg-amber-50 text-amber-900",
 };
 
 const STATUS_BADGE: Partial<Record<CandidateStatus, string>> = {
   approved: "bg-green-100 text-green-900",
-  dismissed: "bg-neutral-100 text-neutral-500",
+  dismissed: "bg-slate-100 text-slate-500",
   importing: "bg-indigo-100 text-indigo-900",
   imported: "bg-green-100 text-green-900",
   import_failed: "bg-red-100 text-red-900",
@@ -63,10 +63,10 @@ function EvalField({ label, text }: { label: string; text: string }) {
   if (!text) return null;
   return (
     <div className="mt-2">
-      <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-400">
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
         {label}
       </div>
-      <p className="mt-0.5 text-[13px] leading-relaxed text-neutral-700">{text}</p>
+      <p className="mt-0.5 text-[13px] leading-relaxed text-slate-700">{text}</p>
     </div>
   );
 }
@@ -99,7 +99,7 @@ function CandidateCard({
   const statusBadge = STATUS_BADGE[c.status];
 
   return (
-    <div className="rounded-md border border-neutral-200 bg-white p-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex items-start gap-3">
         {selectable && (
           <input
@@ -114,7 +114,7 @@ function CandidateCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             {c.recommended && (
-              <span className="rounded bg-indigo-900 px-1.5 py-0.5 text-[11px] font-semibold text-white">
+              <span className="rounded bg-indigo-600 px-1.5 py-0.5 text-[11px] font-semibold text-white">
                 Recommended
               </span>
             )}
@@ -134,7 +134,7 @@ function CandidateCard({
               </span>
             )}
             {c.already_in_project && (
-              <span className="rounded bg-neutral-200 px-1.5 py-0.5 text-[11px] font-medium text-neutral-700">
+              <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[11px] font-medium text-slate-700">
                 Already in project
               </span>
             )}
@@ -146,22 +146,22 @@ function CandidateCard({
               </span>
             )}
           </div>
-          <h3 className="mt-1.5 font-serif text-base leading-snug text-neutral-900">
+          <h3 className="mt-1.5 font-serif text-base leading-snug text-slate-900">
             {c.title || "(untitled record)"}
           </h3>
-          <p className="mt-1 text-[13px] text-neutral-600">{authorLine(c)}</p>
+          <p className="mt-1 text-[13px] text-slate-600">{authorLine(c)}</p>
           {ev.why_relevant && (
-            <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-700">
+            <p className="mt-1.5 text-[13px] leading-relaxed text-slate-700">
               {ev.why_relevant}
             </p>
           )}
-          <p className="mt-1 font-mono text-[11px] text-neutral-400">
+          <p className="mt-1 font-mono text-[11px] text-slate-400">
             via “{c.retrieval_query}” · round {c.retrieval_round}
             {c.citation_count != null && ` · cited by ${c.citation_count}`}
           </p>
 
           {expanded && (
-            <div className="mt-1 border-t border-neutral-100 pt-1">
+            <div className="mt-1 border-t border-slate-100 pt-1">
               <EvalField label="May contribute" text={ev.may_contribute} />
               <EvalField label="May overlap with" text={ev.may_overlap_with} />
               <EvalField label="Still unknown" text={ev.still_unknown} />
@@ -172,7 +172,7 @@ function CandidateCard({
               {c.abstract && (
                 <EvalField label="Abstract (provider)" text={c.abstract} />
               )}
-              <div className="mt-2 font-mono text-[11px] leading-relaxed text-neutral-500">
+              <div className="mt-2 font-mono text-[11px] leading-relaxed text-slate-500">
                 {c.doi && <div>doi: {c.doi}</div>}
                 {c.arxiv_id && <div>arxiv: {c.arxiv_id}</div>}
                 {c.openalex_id && <div>openalex: {c.openalex_id}</div>}
@@ -191,7 +191,7 @@ function CandidateCard({
             <button
               type="button"
               onClick={() => setExpanded((x) => !x)}
-              className="rounded-full border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-500"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400"
             >
               {expanded ? "Hide detail" : "Why this paper"}
             </button>
@@ -200,7 +200,7 @@ function CandidateCard({
                 href={sourceUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-500"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400"
               >
                 Open source
               </a>
@@ -210,7 +210,7 @@ function CandidateCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onDecide("approve")}
-                className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {busy ? "Working…" : "Approve"}
               </button>
@@ -220,7 +220,7 @@ function CandidateCard({
                 type="button"
                 disabled={busy}
                 onClick={() => onDecide("dismiss")}
-                className="rounded-full border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-500 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Dismiss
               </button>
@@ -230,19 +230,19 @@ function CandidateCard({
                 type="button"
                 disabled={busy}
                 onClick={onImport}
-                className="rounded-full bg-indigo-900 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {busy
                   ? "Working…"
                   : c.status === "import_failed"
-                    ? "Retry import"
-                    : "Import full text"}
+                    ? "Retry adding"
+                    : "Add to project"}
               </button>
             )}
             {c.status === "imported" && c.project_paper_id && (
               <Link
                 href={`/projects/${projectId}/read/${c.project_paper_id}`}
-                className="rounded-full bg-green-700 px-3 py-1 text-xs font-semibold text-white hover:bg-green-600"
+                className="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-600"
               >
                 Open in reader
               </Link>
@@ -288,16 +288,16 @@ function RunProvenance({
   }, [open, detail, projectId, run.run_id, run.usage]);
 
   return (
-    <div className="rounded-md border border-neutral-200 bg-white px-4 py-3">
+    <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
       <button
         type="button"
         onClick={() => setOpen((x) => !x)}
-        className="text-[13px] font-medium text-neutral-700 hover:text-neutral-900"
+        className="text-[13px] font-medium text-slate-700 hover:text-slate-900"
       >
         {open ? "Hide search provenance" : "Show search provenance"}
       </button>
       {open && (
-        <div className="mt-2 flex flex-col gap-2 text-[13px] text-neutral-700">
+        <div className="mt-2 flex flex-col gap-2 text-[13px] text-slate-700">
           {run.strategy_notes && (
             <p className="leading-relaxed">
               <span className="font-medium">Strategy: </span>
@@ -310,7 +310,7 @@ function RunProvenance({
               {run.queries.map((q, i) => (
                 <li
                   key={`${q.query}-${i}`}
-                  className="font-mono text-xs text-neutral-600"
+                  className="font-mono text-xs text-slate-600"
                 >
                   r{q.round} [{q.strategy || "?"}] “{q.query}” → {q.n_records}{" "}
                   records{q.error && ` (failed: ${q.error})`}
@@ -332,7 +332,7 @@ function RunProvenance({
             </p>
           )}
           {detail && (
-            <p className="font-mono text-xs text-neutral-500">
+            <p className="font-mono text-xs text-slate-500">
               usage:{" "}
               {Object.entries(detail.usage)
                 .map(([k, v]) => `${k}=${v}`)
@@ -347,10 +347,12 @@ function RunProvenance({
 
 export default function DiscoverySection({
   projectId,
+  question,
   questionVersion,
   onProjectChanged,
 }: {
   projectId: string;
+  question?: string;
   questionVersion: number;
   onProjectChanged: () => void;
 }) {
@@ -507,56 +509,67 @@ export default function DiscoverySection({
   const checkedList = useMemo(() => [...checked], [checked]);
 
   return (
-    <section className="mt-8">
-      <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-500">
-        Discover papers
-      </h2>
-
-      <div className="mt-3 rounded-md border border-neutral-200 bg-white p-4">
-        <div className="text-sm font-semibold text-neutral-900">
-          Autonomous literature discovery
-        </div>
-        <p className="mt-1 text-[13px] leading-relaxed text-neutral-600">
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          Discover literature
+        </h1>
+        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">
           The research agent searches OpenAlex for papers relevant to question v
           {questionVersion}, evaluates them against this project, and recommends
           what to read next. Nothing is added without your approval.
         </p>
-        <p className="mt-1 font-mono text-[11px] text-neutral-500">
-          Budget: 2 rounds · ≤3 queries/round · ≤50 records · ≤8 shortlisted ·
-          ≤5 recommended
-        </p>
-        <input
-          value={focus}
-          onChange={(e) => setFocus(e.target.value)}
-          placeholder="Optional narrower focus, e.g. sliced Wasserstein vs entropic transport"
-          maxLength={500}
-          className="mt-2 w-full rounded border border-neutral-300 bg-white p-2 text-sm text-neutral-900"
-        />
-        {actionError && (
-          <p className="mt-2 text-xs text-red-700">{actionError}</p>
+        {question && (
+          <p className="mt-2 line-clamp-2 border-l-2 border-indigo-200 pl-3 font-serif text-[15px] italic leading-snug text-slate-700">
+            {question}
+          </p>
         )}
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <label
+          htmlFor="discovery-focus"
+          className="text-xs font-medium text-slate-500"
+        >
+          Search focus (optional)
+        </label>
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          <input
+            id="discovery-focus"
+            value={focus}
+            onChange={(e) => setFocus(e.target.value)}
+            placeholder="Narrower focus, e.g. sliced Wasserstein vs entropic transport"
+            maxLength={500}
+            className="w-full flex-1 rounded-lg border border-slate-300 bg-white p-2.5 text-sm text-slate-900"
+          />
           <button
             type="button"
             onClick={doStart}
             disabled={starting}
-            className="rounded-full bg-neutral-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="shrink-0 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {starting ? "Starting…" : "Discover papers"}
           </button>
-          {activeJob && isJobActive(activeJob) && (
-            <span className="text-xs text-neutral-600">
-              {stageLabel(activeJob.stage)}
-              {activeJob.stage_detail ? ` — ${activeJob.stage_detail}` : ""}
-            </span>
-          )}
         </div>
+        <p className="mt-2 font-mono text-[11px] text-slate-400">
+          Budget: 2 rounds · ≤3 queries/round · ≤50 records · ≤8 shortlisted ·
+          ≤5 recommended
+        </p>
+        {actionError && (
+          <p className="mt-2 text-xs text-red-700">{actionError}</p>
+        )}
+        {activeJob && isJobActive(activeJob) && (
+          <p className="mt-2 text-[13px] text-slate-600">
+            {stageLabel(activeJob.stage)}
+            {activeJob.stage_detail ? ` — ${activeJob.stage_detail}` : ""}
+          </p>
+        )}
       </div>
 
       {loadError && <p className="mt-3 text-xs text-red-700">{loadError}</p>}
 
       {runs.length > 0 && run && (
-        <div className="mt-3 flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2">
             {runs.length > 1 && (
               <select
@@ -566,7 +579,7 @@ export default function DiscoverySection({
                   setChecked(new Set());
                   setFilter("ALL");
                 }}
-                className="rounded border border-neutral-300 bg-white p-1.5 text-xs text-neutral-800"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800"
                 aria-label="Discovery run"
               >
                 {runs.map((r) => (
@@ -578,8 +591,11 @@ export default function DiscoverySection({
                 ))}
               </select>
             )}
-            <span className="font-mono text-[11px] text-neutral-500">
-              {run.run_id} · question v{run.research_question_version}
+            <span
+              className="font-mono text-[11px] text-slate-500"
+              title={`Run ${run.run_id}`}
+            >
+              {formatTime(run.created_at)} · question v{run.research_question_version}
             </span>
             {stale && (
               <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-900">
@@ -594,23 +610,29 @@ export default function DiscoverySection({
           </div>
 
           {run.focus && (
-            <p className="text-[13px] text-neutral-600">
+            <p className="text-[13px] text-slate-600">
               <span className="font-medium">Focus:</span> {run.focus}
             </p>
           )}
-          <p className="font-mono text-[11px] text-neutral-500">
+          <p className="font-mono text-[11px] text-slate-500">
             {run.counts.retrieved ?? 0} retrieved ·{" "}
             {run.counts.duplicates ?? 0} duplicates ·{" "}
             {run.counts.shortlisted ?? 0} shortlisted ·{" "}
             {run.counts.recommended ?? 0} recommended
           </p>
           {run.limitations && (
-            <div className="rounded-md border border-amber-300 bg-amber-50 p-3">
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
               <p className="text-[13px] leading-relaxed text-amber-950">
                 {run.limitations}
               </p>
             </div>
           )}
+
+          <p className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-xs leading-relaxed text-slate-600">
+            Recommendations below are based on abstracts and metadata — not
+            full-paper analysis. Add a paper to the project to analyze it
+            properly; each card shows exactly what evidence was available.
+          </p>
 
           <RunProvenance projectId={projectId} run={run} />
 
@@ -625,10 +647,10 @@ export default function DiscoverySection({
                   role="tab"
                   aria-selected={active}
                   onClick={() => setFilter(f)}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                  className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
                     active
-                      ? "border-neutral-900 bg-neutral-900 text-white"
-                      : "border-neutral-300 text-neutral-700 hover:border-neutral-500"
+                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      : "border-slate-300 text-slate-700 hover:border-slate-500"
                   }`}
                 >
                   {filterLabel(f)} ({n})
@@ -638,7 +660,7 @@ export default function DiscoverySection({
           </div>
 
           {checkedList.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 rounded-md border border-indigo-300 bg-indigo-50 p-3">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-indigo-300 bg-indigo-50 p-4">
               <span className="text-xs font-medium text-indigo-950">
                 {checkedList.length} selected
               </span>
@@ -646,7 +668,7 @@ export default function DiscoverySection({
                 type="button"
                 onClick={() => doDecide(checkedList, "approve")}
                 disabled={busyIds.size > 0}
-                className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white hover:bg-neutral-700 disabled:opacity-40"
+                className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 disabled:opacity-40"
               >
                 Approve selected
               </button>
@@ -654,15 +676,15 @@ export default function DiscoverySection({
                 type="button"
                 onClick={() => doImport(checkedList)}
                 disabled={busyIds.size > 0}
-                className="rounded-full bg-indigo-900 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-40"
+                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-40"
               >
-                Import selected
+                Add selected to project
               </button>
               <button
                 type="button"
                 onClick={() => doDecide(checkedList, "dismiss")}
                 disabled={busyIds.size > 0}
-                className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-neutral-700 hover:border-neutral-500 disabled:opacity-40"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-400 disabled:opacity-40"
               >
                 Dismiss selected
               </button>
@@ -670,13 +692,13 @@ export default function DiscoverySection({
           )}
 
           {lastImport && (
-            <div className="rounded-md border border-neutral-200 bg-white px-4 py-3">
-              <div className="text-[13px] font-medium text-neutral-800">
+            <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+              <div className="text-[13px] font-medium text-slate-800">
                 Last import ({lastImport.jobId})
               </div>
               <ul className="mt-1 flex flex-col gap-1">
                 {lastImport.items.map((item) => (
-                  <li key={item.candidate_id} className="text-xs text-neutral-600">
+                  <li key={item.candidate_id} className="text-xs text-slate-600">
                     <span className="font-mono">{item.candidate_id}</span>:{" "}
                     {item.ok ? (
                       <span className="text-green-800">
@@ -693,7 +715,7 @@ export default function DiscoverySection({
           )}
 
           {visible.length === 0 && (
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-slate-600">
               No candidates in this view — try another filter.
             </p>
           )}
@@ -720,11 +742,15 @@ export default function DiscoverySection({
       )}
 
       {runs.length === 0 && !loadError && (
-        <p className="mt-3 text-sm text-neutral-600">
-          No discovery runs yet — start one above. It works even before any
-          papers are uploaded.
-        </p>
+        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-8 text-center">
+          <p className="text-sm font-semibold text-slate-900">
+            No discovery runs yet
+          </p>
+          <p className="mx-auto mt-1 max-w-md text-[13px] leading-relaxed text-slate-500">
+            Start one above — it works even before any papers are uploaded.
+          </p>
+        </div>
       )}
-    </section>
+    </div>
   );
 }

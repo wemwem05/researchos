@@ -11,7 +11,7 @@ import {
 function BulletList({ items }: { items: string[] }) {
   if (items.length === 0) return null;
   return (
-    <ul className="list-disc pl-5 text-[13px] leading-relaxed text-neutral-700">
+    <ul className="list-disc pl-5 text-[13px] leading-relaxed text-slate-700">
       {items.map((x, i) => (
         <li key={i}>{x}</li>
       ))}
@@ -23,9 +23,9 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
   const cells = Object.entries(evidence.result_summary?.cells ?? {});
   const ratios = Object.entries(evidence.result_summary?.median_ratios ?? {});
   return (
-    <div className="rounded-md border border-neutral-200 bg-white p-4">
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="text-sm font-semibold text-neutral-900">
+        <div className="text-sm font-semibold text-slate-900">
           Verification {evidence.id} · claim {evidence.claim_id}
         </div>
         <span
@@ -34,11 +34,11 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
           {verifyStatusLabel(evidence.status)}
         </span>
       </div>
-      <p className="mt-1 text-[13px] leading-relaxed text-neutral-700">{evidence.claim_statement}</p>
+      <p className="mt-1 text-[13px] leading-relaxed text-slate-700">{evidence.claim_statement}</p>
 
       {evidence.observed.length > 0 && (
         <div className="mt-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             Directly observed
           </div>
           <div className="mt-1">
@@ -51,7 +51,7 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-left text-neutral-500">
+              <tr className="text-left text-slate-500">
                 <th className="pb-1 pr-3 font-medium">cell</th>
                 <th className="pb-1 pr-3 font-medium">median</th>
                 <th className="pb-1 pr-3 font-medium">IQR</th>
@@ -60,7 +60,7 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
             </thead>
             <tbody>
               {cells.map(([key, c]) => (
-                <tr key={key} className="border-t border-neutral-100 text-neutral-800">
+                <tr key={key} className="border-t border-slate-100 text-slate-800">
                   <td className="py-1 pr-3 font-mono text-[11px]">{key}</td>
                   <td className="py-1 pr-3">{formatSeconds(c.median_s)}</td>
                   <td className="py-1 pr-3">
@@ -80,24 +80,24 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
           <img
             src={evidence.web_plot}
             alt="Scaling behavior measured in the sandbox"
-            className="rounded border border-neutral-200 bg-white"
+            className="rounded border border-slate-200 bg-white"
           />
         </div>
       )}
 
       {ratios.length > 0 && (
-        <p className="mt-2 text-xs leading-relaxed text-neutral-600">
+        <p className="mt-2 text-xs leading-relaxed text-slate-600">
           Observed scaling ratios (descriptive, not asymptotic proof):{" "}
           {ratios.map(([k, v]) => `${k} = ${v.toFixed(2)}`).join("; ")}
         </p>
       )}
       {evidence.scaling_comment && (
-        <p className="mt-1 text-xs leading-relaxed text-neutral-600">{evidence.scaling_comment}</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">{evidence.scaling_comment}</p>
       )}
 
       {evidence.supported_conclusions.length > 0 && (
         <div className="mt-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             Interpretation (model-generated, not measured)
           </div>
           <div className="mt-1">
@@ -108,19 +108,19 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
 
       {evidence.criteria.length > 0 && (
         <div className="mt-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             Success criteria
           </div>
           <ul className="mt-1 flex flex-col gap-1">
             {evidence.criteria.map((c, i) => (
-              <li key={i} className="text-xs leading-relaxed text-neutral-700">
+              <li key={i} className="text-xs leading-relaxed text-slate-700">
                 <span
                   className={`mr-1.5 inline-block h-2 w-2 rounded-full ${
-                    c.evaluated ? (c.met ? "bg-green-600" : "bg-red-500") : "bg-neutral-300"
+                    c.evaluated ? (c.met ? "bg-green-600" : "bg-red-500") : "bg-slate-300"
                   }`}
                 />
                 <span className="font-medium">{c.name}</span>
-                <span className="text-neutral-500"> — {c.detail || c.rule}</span>
+                <span className="text-slate-500"> — {c.detail || c.rule}</span>
               </li>
             ))}
           </ul>
@@ -129,7 +129,7 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
 
       {(evidence.partial.length > 0 || evidence.out_of_scope.length > 0) && (
         <div className="mt-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             Partially tested / out of scope
           </div>
           <div className="mt-1">
@@ -140,7 +140,7 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
 
       {evidence.limitations.length > 0 && (
         <div className="mt-3">
-          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             Limitations
           </div>
           <div className="mt-1">
@@ -151,32 +151,32 @@ export default function VerificationEvidence({ evidence }: { evidence: Verificat
 
       <div className="mt-3 flex flex-wrap gap-2 text-xs">
         {evidence.web_measurements && (
-          <a className="underline text-neutral-700" href={evidence.web_measurements}>
+          <a className="underline text-slate-700" href={evidence.web_measurements}>
             results.csv
           </a>
         )}
         {evidence.web_code && (
-          <a className="underline text-neutral-700" href={evidence.web_code}>
+          <a className="underline text-slate-700" href={evidence.web_code}>
             executed code
           </a>
         )}
         {evidence.web_stdout && (
-          <a className="underline text-neutral-700" href={evidence.web_stdout}>
+          <a className="underline text-slate-700" href={evidence.web_stdout}>
             stdout
           </a>
         )}
         {evidence.web_stderr && (
-          <a className="underline text-neutral-700" href={evidence.web_stderr}>
+          <a className="underline text-slate-700" href={evidence.web_stderr}>
             stderr
           </a>
         )}
         {evidence.web_evidence && (
-          <a className="underline text-neutral-700" href={evidence.web_evidence}>
+          <a className="underline text-slate-700" href={evidence.web_evidence}>
             full evidence.json
           </a>
         )}
       </div>
-      <p className="mt-2 font-mono text-[11px] leading-relaxed text-neutral-500">
+      <p className="mt-2 font-mono text-[11px] leading-relaxed text-slate-500">
         code {evidence.code_sha256.slice(0, 16)}… · sandbox {evidence.modal.sandbox_id || "—"} ·
         exit {evidence.modal.returncode ?? "—"} · {formatSeconds(evidence.modal.duration_s)} ·{" "}
         {evidence.attempts} attempt(s) · {evidence.repairs.length} repair(s)

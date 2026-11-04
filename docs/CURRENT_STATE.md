@@ -542,6 +542,72 @@ clean
 Production build:
 passing (webpack builder — sandbox blocks Turbopack, as before)
 
+## Milestone 9 — Product Experience & Finalization
+
+Working. No new AI features or backend architecture; all M1–M8
+capabilities, evidence, and tests preserved.
+
+**Navigation.** The project page is now a tabbed workspace — Overview |
+Papers | Discover | Evidence | Activity — on the same route (deep-linkable
+via `?tab=`, default Overview). A context strip always shows the project
+title, question version, and live counts; compact banners surface
+recomputation, rebuild, and review-needed states above the tabs; the
+Activity tab carries an attention dot. Legacy routes unchanged.
+
+**First-time experience.** Projects home states the ResearchOS value
+proposition; creating a project navigates straight into it; empty projects
+get a next-step card (Upload papers / Discover literature) instead of
+blank sections. The EOT + Deep Shells demo remains one click away.
+
+**Overview.** Research question (with the existing edit flow), a
+recommended-next-step card (review → processing → rebuild → start →
+examine evidence → discover), key findings, connections, open questions,
+corpus-scoped novelty risks, question history. Agent machinery moved to
+Activity; no fake progress anywhere.
+
+**Reader.** Same route and capabilities (Focus / Show All, overlays,
+navigator, Lens, audit + verify actions); stacks vertically on small
+screens (PDF canvas scales by CSS), wraps its header, and now frames
+claim examination explicitly: evidence audit (recompute + methodology,
+no code) vs. computational test (sandboxed benchmark, feasible claims
+only, passing ≠ reproduction).
+
+**Discovery.** Actions renamed to researcher language (Add to project);
+an abstract/metadata caveat sits above the recommendations so they never
+read as verified findings; raw run ids demoted to tooltips.
+
+**Evidence tab.** Audits and computational experiments live under one
+roof with scope headers and empty states that point at the Reader claim
+actions.
+
+**Activity tab.** Full review card (now states what happens after the
+response), processing jobs, agent timeline; telemetry condensed into an
+Advanced details disclosure. Telemetry node names unchanged.
+
+**Submission.** `docs/SUBMISSION.md`, `docs/DEMO_SCRIPT.md` (3-minute
+script), MIT `LICENSE`, `.env.example` (README referenced it but it was
+missing), `web/node_modules/` untracked from git (9,984 files; history
+untouched). Secret scan of tracked files clean; no PDFs tracked.
+
+**Verification.** 10-check in-process journey review passed against the
+real projects (OT intact, reader data + PDFs, audits, runs + telemetry,
+live awaiting-review run with options, legacy routes, temp-root
+mutations, M8 discovery evidence still on disk). Browser screenshots
+were NOT possible: the sandbox forbids port binding, so no live server
+could be screenshotted here — layout at desktop/mobile sizes needs one
+manual pass (see report). Backend 295/295, frontend 50/50, `tsc` clean,
+`next build` green.
+
+## Final Visual Redesign Pass
+
+Frontend-only restyle over the complete M9 product; no backend, API, or
+logic changes. Desktop app shell with sidebar navigation (deep-link
+`?tab=` URLs preserved), new Overview/Papers/Evidence/Activity
+compositions, regrouped Reader toolbar, slate + indigo-600 design
+system, shared `ui.tsx` primitives. See HACKATHON_LOG for details.
+Screenshots were not possible in the build sandbox (no port binding);
+run the manual screenshot checklist before submission.
+
 ## Next milestone
 
-TBD.
+None — M9 is the final milestone. Stop adding features.

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ResearchOS — Research-aware paper reader",
-  description: "Read the paper with its equations, figures, and tables explained in the context of your research question.",
+  title: "ResearchOS — From reading papers to investigating science",
+  description: "Discover literature, understand scientific papers, connect evidence, audit claims and test computational hypotheses.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-neutral-200 text-neutral-900 antialiased" suppressHydrationWarning>{children}</body>
+      <body className="bg-slate-50 text-slate-900 antialiased" suppressHydrationWarning>{children}</body>
     </html>
   );
 }

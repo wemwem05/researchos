@@ -681,3 +681,93 @@ subset only); proxy-unaware DNS guard.
 
 **Verification:** 295/295 backend (71 new), 50/50 frontend (10 new),
 `tsc` clean, `next build` green (webpack).
+
+## Milestone 9 — Product Experience & Finalization (2026-11-04)
+
+**Goal:** final pre-submission milestone — turn the capable M1–M8 system
+into a polished, intuitive workspace. No new AI features, no new backend
+architecture. Priority order P0 journey/regressions + readiness, P1
+polish, P2 only if time.
+
+**Product changes (frontend only; zero backend files touched):**
+
+- Project page restructured into tabs on the same route (`?tab=`):
+  Overview (question + edit, next-step card, findings, connections,
+  open questions, novelty risks, history) | Papers (upload + list +
+  processing states) | Discover (existing M8 section) | Evidence
+  (audits + experiments with scope headers and Reader-pointing empty
+  states) | Activity (review card, jobs, agent timeline, Advanced
+  details disclosure). Context strip + compact banners above tabs;
+  attention dot on Activity; question-edit, remove, retry, rebuild,
+  review flows unchanged.
+- Home: value proposition, direct navigation into newly created
+  projects, guided empty state; demo still listed.
+- Reader: same routes/capabilities; stacks on small screens, wraps
+  header, back-to-project link; claim examination reframed as audit
+  (no code) vs. computational test (sandboxed, feasible claims only,
+  passing != reproduction), with matching scope text in VerifyClaim.
+- Discovery: "Add to project" language, abstract/metadata caveat above
+  recommendations, raw run ids demoted.
+- AgentPanel: review card states what happens after submit; option/
+  submit buttons typed; telemetry moved into Advanced details.
+- Interaction: global `:focus-visible` styles, tablist semantics,
+  `line-clamp` on long titles/questions, wrapped headers, scrollable
+  tab bar. No new UI dependencies.
+
+**Submission readiness:**
+
+- New: `docs/SUBMISSION.md` (pitch, features, novelty, Meta tooling
+  incl. exact Spark Open model id + Baseten, agents, Modal,
+  reproducibility, limitations, real repo link, video placeholder),
+  `docs/DEMO_SCRIPT.md` (3-minute timed script over real persisted
+  evidence), MIT `LICENSE`, `.env.example` (README referenced it; the
+  file was missing — now documents all four credential groups).
+- Repo: `web/node_modules/` (9,984 files) untracked via `git rm --cached`
+  (history untouched); secret scan of tracked files clean; no PDFs
+  tracked; `.env` ignored; samples/ + prototype/projects/ local-only.
+
+**Demo review:** 10-check in-process script against the real stack
+(`/tmp/m9_review.py`, kept out of the repo): projects incl. OT demo, OT
+view intact (2 papers, 8 findings, 3 connections, 7 audits, 3 verifs),
+discoveries empty-state, M8 evidence on disk, reader data + PDFs for
+both papers, audits endpoint, runs + telemetry, a LIVE awaiting-review
+run with options (synthetic-hitl-demo), legacy routes (200), temp-root
+mutations (create/preview/start/reject). All passed, zero model calls.
+
+**Explicit limitation:** no browser screenshots — the sandbox forbids
+port binding, so no live server could be screenshotted here. Layout at
+desktop/mobile sizes needs one manual pass with `./dev.sh` + Chrome
+(questions/tabs/reader/discovery/evidence/activity at 1440px and 390px).
+
+**Verification:** 295/295 backend, 50/50 frontend, `tsc` clean,
+`next build` green (webpack). All M1–M8 preserved.
+
+## Final Visual Redesign Pass (2026-11-04)
+
+**Scope:** frontend only — zero backend files touched. New desktop app
+shell (240px sidebar, 1240px content cap, mobile slide-over), shared
+design primitives (`ui.tsx`: buttons, cards, headers, metrics, empty
+states), and per-tab compositions (Overview / Papers / Discover /
+Evidence / Activity) replacing the single long page and the M9 tab bar.
+
+**Palette:** slate surfaces/text, indigo-600 primary actions, existing
+scientific relevance/status colors preserved. Radii unified on
+rounded-lg/xl; focus-visible indigo; body #F8FAFC.
+
+**Key structural changes:** sidebar section nav with deep-link URLs
+(`?tab=` preserved) and project switcher; Overview is a 2-column
+summary (question panel, metrics, single next action, 5/3/2 progressive
+lists, connections); Papers is a library view with staged-upload panel;
+Evidence splits audits/experiments into sub-tabs with reader deep-links;
+Activity leads with review requests; Reader toolbar regrouped (back,
+title, Focus control) with question strip below; discovery actions
+renamed to researcher language with an abstract-evidence caveat.
+
+**Preserved:** all routes, all API integrations, question versioning,
+upload/remove/retry/rebuild/review flows, Focus/Show All, overlays,
+audit/verify actions, discovery approve/import, telemetry.
+
+**Verification:** tsc clean, 50/50 frontend, 295/295 backend, production
+build green, 10/10 in-process route checks. No screenshots: sandbox
+forbids port binding, so no live server could be rendered — manual
+screenshot checklist provided in the session report.

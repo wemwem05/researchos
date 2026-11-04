@@ -35,7 +35,7 @@ export default function PdfReader({
 
   if (failed) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-neutral-600">
+      <div className="flex h-full items-center justify-center text-sm text-slate-600">
         Could not load the PDF. Check that web/public/paper.pdf exists.
       </div>
     );
@@ -47,7 +47,7 @@ export default function PdfReader({
       onLoadSuccess={(doc) => setNumPages(doc.numPages)}
       onLoadError={() => setFailed(true)}
       loading={
-        <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+        <div className="flex h-full items-center justify-center text-sm text-slate-500">
           Loading paper…
         </div>
       }
@@ -71,7 +71,7 @@ export default function PdfReader({
             mode={mode}
             onSelect={onSelect}
           />
-          <div className="pointer-events-none absolute bottom-2 right-3 text-[11px] text-neutral-400">
+          <div className="pointer-events-none absolute bottom-2 right-3 text-[11px] text-slate-400">
             {pageNumber}
           </div>
         </div>

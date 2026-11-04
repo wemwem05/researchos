@@ -22,7 +22,7 @@ const FILTERS: { id: TypeFilter; label: string }[] = [
 const DOT: Record<SciObject["research_relevance_level"], string> = {
   high: "bg-indigo-600",
   related: "bg-blue-400",
-  context: "bg-neutral-300",
+  context: "bg-slate-300",
 };
 
 export default function ObjectNavigator({ objects, selectedId, filter, onFilter, onJump }: Props) {
@@ -41,23 +41,23 @@ export default function ObjectNavigator({ objects, selectedId, filter, onFilter,
               className={[
                 "rounded px-2 py-0.5 text-xs font-medium transition-colors",
                 active
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200",
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200",
               ].join(" ")}
             >
               {f.label}
             </button>
           );
         })}
-        <span className="ml-2 flex items-center gap-3 text-[11px] text-neutral-500" aria-label="Relevance legend">
+        <span className="ml-2 flex items-center gap-3 text-[11px] text-slate-500" aria-label="Relevance legend">
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-indigo-600" /> High
+            <span className="inline-block h-2 w-2 rounded-lg bg-indigo-600" /> High
           </span>
           <span className="flex items-center gap-1">
             <span className="inline-block h-2 w-2 rounded-full bg-blue-400" /> Related
           </span>
           <span className="flex items-center gap-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-neutral-300" /> Context
+            <span className="inline-block h-2 w-2 rounded-full bg-slate-300" /> Context
           </span>
         </span>
       </div>
@@ -72,12 +72,12 @@ export default function ObjectNavigator({ objects, selectedId, filter, onFilter,
               title={`${o.label ?? o.id} — ${o.title}`}
               onClick={() => onJump(o.id)}
               className={[
-                "flex items-center gap-1.5 rounded-full border px-3 py-1 text-[13px] font-medium transition-colors",
+                "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[13px] font-medium transition-colors",
                 selected
                   ? "border-indigo-700 bg-indigo-700 text-white"
                   : high
                     ? "border-indigo-300 bg-indigo-50 text-indigo-900 hover:border-indigo-500"
-                    : "border-neutral-300 bg-white text-neutral-700 hover:border-blue-500 hover:text-blue-800",
+                    : "border-slate-300 bg-white text-slate-700 hover:border-blue-500 hover:text-blue-800",
               ].join(" ")}
             >
               <span className={["inline-block h-1.5 w-1.5 rounded-full", DOT[o.research_relevance_level]].join(" ")} />

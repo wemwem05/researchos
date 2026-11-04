@@ -22,7 +22,7 @@ interface Props {
 const LEVEL_TEXT: Record<RelevanceLevel, string> = {
   high: "text-indigo-100",
   related: "text-blue-100",
-  context: "text-neutral-200",
+  context: "text-slate-200",
 };
 
 function boxClass(level: RelevanceLevel, treatment: string, selected: boolean): string {
@@ -31,7 +31,7 @@ function boxClass(level: RelevanceLevel, treatment: string, selected: boolean): 
       ? "border-indigo-600 bg-indigo-500/[0.16] ring-1 ring-indigo-600/50"
       : level === "related"
         ? "border-blue-600 bg-blue-500/[0.16] ring-1 ring-blue-600/50"
-        : "border-neutral-500 bg-neutral-400/[0.18] ring-1 ring-neutral-500/60";
+        : "border-slate-500 bg-slate-400/[0.18] ring-1 ring-slate-500/60";
   }
   switch (treatment) {
     case "accent": // high: persistent accent
@@ -39,7 +39,7 @@ function boxClass(level: RelevanceLevel, treatment: string, selected: boolean): 
     case "subtle": // related in Show All: faint blue
       return "border-blue-500/30 bg-blue-500/[0.05] hover:border-blue-600/60 hover:bg-blue-500/[0.14]";
     case "faint": // context in Show All: neutral gray
-      return "border-neutral-400/40 bg-neutral-400/[0.06] hover:border-neutral-500/70 hover:bg-neutral-400/[0.14]";
+      return "border-slate-400/40 bg-slate-400/[0.06] hover:border-slate-500/70 hover:bg-slate-400/[0.14]";
     default: // hidden (focus-mode related/context): invisible until hover
       return "border-transparent bg-transparent hover:border-current hover:bg-black/[0.04]";
   }
@@ -82,7 +82,7 @@ export default function OverlayLayer({ boxes, selectedId, mode, onSelect }: Prop
           >
             <span
               className={[
-                "absolute left-0 whitespace-nowrap rounded bg-neutral-900 px-2 py-0.5 text-[11px] font-medium shadow",
+                "absolute left-0 whitespace-nowrap rounded bg-slate-900 px-2 py-0.5 text-[11px] font-medium shadow",
                 LEVEL_TEXT[box.level],
                 chipBelow ? "top-full mt-1" : "-top-7",
                 selected || treatment === "accent" ? "block" : "hidden group-hover:block",
